@@ -90,9 +90,6 @@ function Navbar() {
           <a href="#browse" className="transition hover:text-frost">
             Browse
           </a>
-          <a href="#about" className="transition hover:text-frost">
-            About
-          </a>
           <a
             href="https://github.com/luyluish/persona-compendium"
             className="shard bg-sees-500 px-5 py-2 text-abyss transition hover:bg-sees-400"
@@ -475,51 +472,10 @@ export default function App() {
             </p>
           )}
         </section>
-
-        <section id="about" className="border-t border-edge/60 bg-night">
-          <div className="mx-auto grid max-w-6xl gap-5 px-6 py-20 md:grid-cols-3">
-            {[
-              {
-                n: "01",
-                title: "Complete data",
-                body: "All 213 personas mirrored straight from the in-game compendium.",
-              },
-              {
-                n: "02",
-                title: "Open API",
-                body: "A FastAPI backend serving clean, gzipped JSON at /api/personas/.",
-              },
-              {
-                n: "03",
-                title: "Fast & secure",
-                body: "In-memory data, hardened headers and a locked-down CSP.",
-              },
-            ].map((feature) => (
-              <div
-                key={feature.n}
-                className="border border-edge bg-panel/60 p-8"
-              >
-                <p className="font-display text-5xl font-extrabold italic text-sees-500/40">
-                  {feature.n}
-                </p>
-                <h3 className="mt-4 font-display text-2xl font-bold uppercase italic">
-                  {feature.title}
-                </h3>
-                <p className="mt-2 text-haze">{feature.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
 
       <footer className="border-t border-edge/60 py-10 text-center text-sm uppercase tracking-wider text-haze">
-        Data from the Persona 3 Reload compendium · API by{" "}
-        <a
-          className="font-semibold text-sees-400"
-          href="https://github.com/luyluish/persona-compendium"
-        >
-          luyluish/persona-compendium
-        </a>
+        © boundlessend
       </footer>
 
       {selected && (
