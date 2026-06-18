@@ -9,8 +9,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-# ponytail: 213 static read-only rows -> read the TSV into memory, no Postgres/SQLAlchemy.
-# Swap back to a real DB only if the data turns mutable or grows past memory.
 
 TSV_PATH = Path(__file__).resolve().parent.parent / "docs" / "compendium.tsv"
 FRONTEND_DIST = (Path(__file__).resolve().parent.parent.parent / "frontend" / "dist").resolve()
@@ -18,7 +16,6 @@ FRONTEND_DIST = (Path(__file__).resolve().parent.parent.parent / "frontend" / "d
 ARRAY_FIELDS = ("weak", "resists", "reflects", "absorbs", "nullifies")
 INT_FIELDS = ("id", "level", "strength", "magic", "endurance", "agility", "luck", "dlc")
 
-# All persona art is hosted here; pin the CSP image source to it.
 CONTENT_SECURITY_POLICY = (
     "default-src 'self'; "
     "base-uri 'self'; "
@@ -72,8 +69,7 @@ def _parse_row(row: dict[str, str]) -> Persona:
             parsed[key] = [item.strip() for item in value.split(",") if item.strip()]
         else:
             parsed[key] = value
-    # Art is mirrored locally under the frontend's /personas/ dir so the page
-    # never hits the upstream wiki at runtime; missing art falls back in the UI.
+
     parsed["image"] = f"/personas/{parsed['query']}.png"
     return Persona(**parsed)
 
@@ -93,10 +89,8 @@ app = FastAPI(
     version="v1",
 )
 
-# Optimization: gzip the persona payloads (the full list is ~120 KB -> ~20 KB).
 app.add_middleware(GZipMiddleware, minimum_size=512)
 
-# Security: the API is read-only; only allow the local dev origins to call it cross-origin.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -134,9 +128,7 @@ async def read_persona(persona_name: str) -> Persona:
     raise HTTPException(status_code=404, detail="Persona not found")
 
 
-# Serve the built frontend (SPA) when it exists.
 if FRONTEND_DIST.is_dir():
-    # Vite fingerprints asset filenames, so they are safe to cache forever.
     app.mount(
         "/assets",
         StaticFiles(directory=FRONTEND_DIST / "assets"),
@@ -148,7 +140,6 @@ if FRONTEND_DIST.is_dir():
         """отдаёт файл из сборки фронтенда, защищаясь от path traversal,
         а на неизвестные пути возвращает index.html (клиентский роутинг)"""
         candidate = (FRONTEND_DIST / full_path).resolve()
-        # Security: reject path traversal, only serve files inside the build dir.
         if (
             full_path
             and candidate.is_file()

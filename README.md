@@ -1,12 +1,10 @@
 # Persona Compendium · Persona 3 Reload
 
 A catalogue of all 213 personas from Persona 3 Reload: arcana, stats and
-elemental affinities, with artwork mirrored locally. Design inspired by
-[thursday.social](https://thursday.social), built on Vite + React + TypeScript +
+elemental affinities, with artwork mirrored locally. Built on Vite + React + TypeScript +
 Tailwind v4, served by a FastAPI backend forked from
 [luyluish/persona-compendium](https://github.com/luyluish/persona-compendium).
 
-[Русская версия ниже.](#русская-версия)
 
 ## Architecture
 
@@ -54,60 +52,3 @@ npm run dev                           # from repo root: API on :8000 + Vite on :
 
 BSD 3-Clause, see [LICENSE](LICENSE). Persona and Megami Tensei are trademarks
 of Atlus; the game data and artwork belong to Atlus.
-
----
-
-## Русская версия
-
-Каталог всех 213 персон из Persona 3 Reload: аркана, статы и стихийные
-аффинити, арты лежат локально. Дизайн вдохновлён
-[thursday.social](https://thursday.social), стек Vite + React + TypeScript +
-Tailwind v4, бэкенд на FastAPI (форк
-[luyluish/persona-compendium](https://github.com/luyluish/persona-compendium)).
-
-### Архитектура
-
-- `backend/` - FastAPI. Читает `docs/compendium.tsv` в память (213 read-only
-  строк, без базы). Эндпоинты: `GET /api/personas/`,
-  `GET /api/personas/{query}`. В продакшене тот же процесс отдаёт собранный
-  фронтенд из `frontend/dist`.
-- `frontend/` - SPA: hero, поиск, фильтр по арканам, сетка карточек и модалка с
-  описанием, статами и аффинити. Арты персон лежат в
-  `frontend/public/personas/` и входят в репозиторий.
-
-### Запуск через Docker (предпочтительно)
-
-```bash
-docker compose up --build
-# открыть http://localhost:8000
-```
-
-Один образ собирает фронтенд и отдаёт его вместе с API на порту 8000.
-
-### Локальный запуск
-
-Нужны Node 20+ и Python 3.13+.
-
-```bash
-# сборка фронтенда
-cd frontend && npm install && npm run build && cd ..
-
-# бэкенд (отдаёт API и собранный фронтенд)
-cd backend
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/uvicorn app.main:app --port 8000
-# открыть http://localhost:8000
-```
-
-Дев-режим с hot reload (два процесса):
-
-```bash
-cd frontend && npm install && cd ..   # один раз
-npm run dev                           # из корня: API на :8000 + Vite на :5173
-# открыть http://localhost:5173 (Vite проксирует /api на :8000)
-```
-
-### Лицензия
-
-BSD 3-Clause, см. [LICENSE](LICENSE). Persona и Megami Tensei - торговые марки
-Atlus, права на игровые данные и арты принадлежат Atlus.
