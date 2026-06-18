@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Saira Condensed", "Plus Jakarta Sans", sans-serif;
+
+  /* Persona 3 Reload palette: electric SEES blue on Dark Hour navy-black,
+     with the moon-green accent used sparingly. */
+  --color-abyss: #05070f;
+  --color-night: #0a0f20;
+  --color-panel: #0e1530;
+  --color-edge: #1b2752;
+  --color-sees-400: #4cc2ff;
+  --color-sees-500: #1f8fff;
+  --color-sees-600: #0a6cff;
+  --color-moon: #c2f24a;
+  --color-frost: #eaf1ff;
+  --color-haze: #8ea2cf;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-frost);
+  background: var(--color-abyss);
+}
+
+/* P3R menu shard: diagonal electric streak used as the page signature. */
+.shard {
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
