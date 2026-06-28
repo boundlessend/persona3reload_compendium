@@ -3,7 +3,6 @@ from pathlib import Path
 from functools import lru_cache
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -70,7 +69,10 @@ def _parse_row(row: dict[str, str]) -> Persona:
         else:
             parsed[key] = value
 
-    parsed["image"] = f"/personas/{parsed['query']}.png"
+    query = parsed["query"]
+    if not query:
+        raise ValueError(f"строка с id={parsed.get('id')} не содержит поля query")
+    parsed["image"] = f"/personas/{query}.png"
     return Persona(**parsed)
 
 
@@ -83,6 +85,12 @@ def load_personas() -> list[Persona]:
     return sorted(personas, key=lambda persona: persona.id)
 
 
+@lru_cache(maxsize=1)
+def _persona_index() -> dict[str, Persona]:
+    """строит индекс query -> Persona для поиска за O(1)"""
+    return {persona.query: persona for persona in load_personas()}
+
+
 app = FastAPI(
     title="Persona Compendium",
     description="API for getting information about all the personas from Persona 3 Reload",
@@ -90,18 +98,6 @@ app = FastAPI(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=512)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-    ],
-    allow_methods=["GET"],
-    allow_headers=["*"],
-)
 
 
 @app.middleware("http")
@@ -114,18 +110,18 @@ async def add_security_headers(request: Request, call_next) -> Response:
 
 
 @app.get("/api/personas/", response_model=list[Persona])
-async def read_personas(skip: int = 0) -> list[Persona]:
-    """отдаёт список персон, опционально пропуская первые skip записей"""
-    return load_personas()[skip:]
+async def read_personas() -> list[Persona]:
+    """отдаёт полный список персон"""
+    return load_personas()
 
 
-@app.get("/api/personas/{persona_name}", response_model=Persona)
-async def read_persona(persona_name: str) -> Persona:
+@app.get("/api/personas/{query}", response_model=Persona)
+async def read_persona(query: str) -> Persona:
     """ищет персону по полю query, иначе 404"""
-    for persona in load_personas():
-        if persona.query == persona_name:
-            return persona
-    raise HTTPException(status_code=404, detail="Persona not found")
+    persona = _persona_index().get(query)
+    if persona is None:
+        raise HTTPException(status_code=404, detail="Persona not found")
+    return persona
 
 
 if FRONTEND_DIST.is_dir():
