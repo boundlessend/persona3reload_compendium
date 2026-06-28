@@ -464,6 +464,45 @@ export default function App() {
       .catch((err) => setError(err.message));
   }, []);
 
+  // open the persona named in the URL (/persona/<query>) once data is loaded
+  useEffect(() => {
+    if (!personas.length) return;
+    const match = window.location.pathname.match(/^\/persona\/(.+)$/);
+    if (!match) return;
+    const persona = personas.find(
+      (item) => item.query === decodeURIComponent(match[1]),
+    );
+    if (persona) setSelected(persona);
+  }, [personas]);
+
+  useEffect(() => {
+    const onPop = () => {
+      const match = window.location.pathname.match(/^\/persona\/(.+)$/);
+      const persona = match
+        ? personas.find((item) => item.query === decodeURIComponent(match[1]))
+        : undefined;
+      setSelected(persona ?? null);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [personas]);
+
+  useEffect(() => {
+    document.title = selected
+      ? `${selected.name} · Persona Compendium`
+      : "Persona Compendium · Persona 3 Reload";
+  }, [selected]);
+
+  const openPersona = (persona: Persona) => {
+    setSelected(persona);
+    window.history.pushState(null, "", `/persona/${persona.query}`);
+  };
+
+  const closePersona = () => {
+    setSelected(null);
+    window.history.pushState(null, "", "/");
+  };
+
   const arcanas = useMemo(
     () => ["All", ...Array.from(new Set(personas.map((p) => p.arcana))).sort()],
     [personas],
@@ -614,7 +653,7 @@ export default function App() {
               <PersonaCard
                 key={persona.id}
                 persona={persona}
-                onSelect={setSelected}
+                onSelect={openPersona}
               />
             ))}
           </div>
@@ -632,7 +671,7 @@ export default function App() {
       </footer>
 
       {selected && (
-        <PersonaModal persona={selected} onClose={() => setSelected(null)} />
+        <PersonaModal persona={selected} onClose={closePersona} />
       )}
     </div>
   );
