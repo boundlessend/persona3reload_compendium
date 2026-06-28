@@ -48,6 +48,20 @@ npm run dev                           # from repo root: API on :8000 + Vite on :
 # open http://localhost:5173 (Vite proxies /api to :8000)
 ```
 
+## Tests
+
+End-to-end smoke tests (Playwright) run against the production-shaped server
+(the backend serving the built SPA):
+
+```bash
+cd frontend
+npm run test:e2e
+```
+
+The runner builds the frontend and starts the backend automatically. It expects
+the backend virtualenv at `backend/.venv`; set `PYTHON` to point at another
+interpreter if yours lives elsewhere.
+
 ## License
 
 BSD 3-Clause, see [LICENSE](LICENSE). Persona and Megami Tensei are trademarks
