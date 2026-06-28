@@ -242,10 +242,12 @@ function PersonaCard({
   persona,
   onSelect,
   marked,
+  isFavorite,
 }: {
   persona: Persona;
   onSelect: (persona: Persona) => void;
   marked: boolean;
+  isFavorite: boolean;
 }) {
   return (
     <button
@@ -270,6 +272,14 @@ function PersonaCard({
             DLC
           </span>
         )}
+        {isFavorite && (
+          <span
+            className="absolute bottom-2 right-2 text-lg leading-none text-moon"
+            aria-label="Favorite"
+          >
+            ★
+          </span>
+        )}
       </div>
       <p className="mt-4 font-display text-xl font-bold uppercase italic leading-none">
         {persona.name}
@@ -284,9 +294,13 @@ function PersonaCard({
 function PersonaModal({
   persona,
   onClose,
+  isFavorite,
+  onToggleFavorite,
 }: {
   persona: Persona;
   onClose: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: (query: string) => void;
 }) {
   const [zoom, setZoom] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -367,13 +381,29 @@ function PersonaModal({
               </h2>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="grid h-9 w-9 place-items-center border border-edge text-haze transition hover:border-sees-500 hover:text-frost"
-            aria-label="Close"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onToggleFavorite(persona.query)}
+              aria-pressed={isFavorite}
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+              className={`grid h-9 w-9 place-items-center border text-lg leading-none transition ${
+                isFavorite
+                  ? "border-moon text-moon"
+                  : "border-edge text-haze hover:border-sees-500 hover:text-frost"
+              }`}
+            >
+              {isFavorite ? "★" : "☆"}
+            </button>
+            <button
+              onClick={onClose}
+              className="grid h-9 w-9 place-items-center border border-edge text-haze transition hover:border-sees-500 hover:text-frost"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <p className="mt-6 leading-relaxed text-haze">{persona.description}</p>
@@ -568,6 +598,28 @@ export default function App() {
   const [selected, setSelected] = useState<Persona | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [compareList, setCompareList] = useState<Persona[]>([]);
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem("favorites");
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      return new Set();
+    }
+  });
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify([...favorites]));
+  }, [favorites]);
+
+  const toggleFavorite = (query: string) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(query)) next.delete(query);
+      else next.add(query);
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchPersonas()
@@ -653,12 +705,23 @@ export default function App() {
       if (term && !persona.name.toLowerCase().includes(term)) return false;
       if (dlcFilter === "base" && persona.dlc !== 0) return false;
       if (dlcFilter === "dlc" && persona.dlc !== 1) return false;
+      if (favoritesOnly && !favorites.has(persona.query)) return false;
       if (element !== "All" && !persona[affinityType].includes(element))
         return false;
       return true;
     });
     return [...filtered].sort(SORTERS[sort]);
-  }, [personas, search, arcana, dlcFilter, element, affinityType, sort]);
+  }, [
+    personas,
+    search,
+    arcana,
+    dlcFilter,
+    favoritesOnly,
+    favorites,
+    element,
+    affinityType,
+    sort,
+  ]);
 
   return (
     <div className="min-h-screen bg-abyss">
@@ -756,9 +819,21 @@ export default function App() {
             </div>
 
             <button
+              onClick={() => setFavoritesOnly((on) => !on)}
+              aria-pressed={favoritesOnly}
+              className={`ml-auto px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+                favoritesOnly
+                  ? "bg-moon text-abyss"
+                  : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
+              }`}
+            >
+              ★ Favorites
+            </button>
+
+            <button
               onClick={toggleCompareMode}
               aria-pressed={compareMode}
-              className={`ml-auto px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+              className={`px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
                 compareMode
                   ? "bg-moon text-abyss"
                   : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
@@ -803,6 +878,7 @@ export default function App() {
                 persona={persona}
                 onSelect={onCardClick}
                 marked={compareList.some((item) => item.id === persona.id)}
+                isFavorite={favorites.has(persona.query)}
               />
             ))}
           </div>
@@ -820,7 +896,12 @@ export default function App() {
       </footer>
 
       {selected && (
-        <PersonaModal persona={selected} onClose={closePersona} />
+        <PersonaModal
+          persona={selected}
+          onClose={closePersona}
+          isFavorite={favorites.has(selected.query)}
+          onToggleFavorite={toggleFavorite}
+        />
       )}
 
       {compareList.length === 2 && (
