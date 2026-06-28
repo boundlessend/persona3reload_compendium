@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   fetchPersonas,
   PERSONA_COUNT,
@@ -291,41 +291,32 @@ function PersonaCard({
   );
 }
 
-function PersonaModal({
-  persona,
-  onClose,
-  isFavorite,
-  onToggleFavorite,
-}: {
-  persona: Persona;
-  onClose: () => void;
-  isFavorite: boolean;
-  onToggleFavorite: (query: string) => void;
-}) {
-  const [zoom, setZoom] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // lock background scroll, move focus into the dialog, restore it on close
+// shared dialog behaviour: scroll lock, initial focus, focus restore on close,
+// Escape, and a Tab focus trap (disabled while trapActive is false)
+function useDialog(
+  ref: RefObject<HTMLDivElement | null>,
+  onEscape: () => void,
+  trapActive: boolean,
+) {
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
-    panelRef.current?.focus();
+    ref.current?.focus();
     return () => {
       document.body.style.overflow = "";
       previouslyFocused?.focus();
     };
-  }, []);
+  }, [ref]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        if (zoom) setZoom(false);
-        else onClose();
+        onEscape();
         return;
       }
-      if (event.key !== "Tab" || zoom) return;
-      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button, input, [tabindex]:not([tabindex="-1"])',
+      if (event.key !== "Tab" || !trapActive) return;
+      const focusable = ref.current?.querySelectorAll<HTMLElement>(
+        'a[href], button, input, select, [tabindex]:not([tabindex="-1"])',
       );
       if (!focusable?.length) return;
       const first = focusable[0];
@@ -340,7 +331,25 @@ function PersonaModal({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, zoom]);
+  }, [ref, onEscape, trapActive]);
+}
+
+function PersonaModal({
+  persona,
+  onClose,
+  isFavorite,
+  onToggleFavorite,
+}: {
+  persona: Persona;
+  onClose: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: (query: string) => void;
+}) {
+  const [zoom, setZoom] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Escape closes the zoom first, then the modal; Tab trap pauses during zoom
+  useDialog(panelRef, () => (zoom ? setZoom(false) : onClose()), !zoom);
 
   return (
     <div
@@ -493,17 +502,8 @@ function CompareModal({
   b: Persona;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [onClose]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialog(panelRef, onClose, true);
 
   return (
     <div
@@ -514,7 +514,9 @@ function CompareModal({
       aria-label="Compare personas"
     >
       <div
-        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-edge bg-night p-8 shadow-[0_0_60px_-15px_rgba(31,143,255,0.6)]"
+        ref={panelRef}
+        tabIndex={-1}
+        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-edge bg-night p-5 shadow-[0_0_60px_-15px_rgba(31,143,255,0.6)] outline-none sm:p-8"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -530,7 +532,7 @@ function CompareModal({
           </button>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-6">
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-6">
           {[a, b].map((persona) => (
             <div key={persona.id} className="space-y-4">
               <div className="text-center">
@@ -538,7 +540,7 @@ function CompareModal({
                   persona={persona}
                   className="mx-auto h-24 object-contain drop-shadow-[0_0_18px_rgba(31,143,255,0.4)]"
                 />
-                <p className="mt-2 font-display text-2xl font-bold uppercase italic leading-none">
+                <p className="mt-2 font-display text-xl font-bold uppercase italic leading-none sm:text-2xl">
                   {persona.name}
                 </p>
                 <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-sees-400">
@@ -904,7 +906,7 @@ export default function App() {
         />
       )}
 
-      {compareList.length === 2 && (
+      {compareList.length === 2 && !selected && (
         <CompareModal
           a={compareList[0]}
           b={compareList[1]}
