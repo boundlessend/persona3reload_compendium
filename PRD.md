@@ -65,9 +65,11 @@ and no external database.
   the favorites filter and card badges.
 
 ### Accessibility
-- Modal is a labelled `role="dialog"`, closeable via Escape and backdrop.
-- Focus trap on Tab, focus returns to the triggering card on close,
-  background scroll is locked while open.
+- Both dialogs (persona detail and compare) are labelled `role="dialog"`,
+  closeable via Escape and backdrop, with a Tab focus trap, focus restored to
+  the trigger on close, and background scroll locked while open (shared
+  `useDialog` hook).
+- Filter controls (sort, affinity type, element) have accessible names.
 - `prefers-reduced-motion` disables smooth scroll and transitions.
 
 ## 6. Architecture
@@ -115,7 +117,8 @@ nullifies[], dlc, query`.
 - **Data integrity**: parser raises on a row with an empty `query`; CI asserts
   the dataset loads, has a sane size and unique `query` values.
 - **Testing**: Playwright e2e smoke tests (catalog load, search, modal,
-  deep link) run in CI against the production-shaped server.
+  deep link, arcana filter, favorites, compare) run in CI against the
+  production-shaped server.
 
 ## 9. Tech stack
 
