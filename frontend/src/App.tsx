@@ -7,7 +7,9 @@ import {
   type StatKey,
 } from "./api";
 
-const AFFINITIES: { key: keyof Persona; label: string; tone: string }[] = [
+type AffinityKey = "weak" | "resists" | "reflects" | "absorbs" | "nullifies";
+
+const AFFINITIES: { key: AffinityKey; label: string; tone: string }[] = [
   {
     key: "weak",
     label: "Weak",
@@ -43,14 +45,7 @@ const STAT_LABELS: Record<StatKey, string> = {
   luck: "Luck",
 };
 
-const AFFINITY_KEYS = [
-  "weak",
-  "resists",
-  "reflects",
-  "absorbs",
-  "nullifies",
-] as const;
-type AffinityKey = (typeof AFFINITY_KEYS)[number];
+const AFFINITY_KEYS: readonly AffinityKey[] = AFFINITIES.map((item) => item.key);
 
 const AFFINITY_FILTER_LABELS: Record<AffinityKey, string> = {
   weak: "Weak to",
@@ -436,7 +431,7 @@ function PersonaModal({
             </h3>
             <div className="mt-3 space-y-3">
               {AFFINITIES.map(({ key, label, tone }) => {
-                const values = persona[key] as string[];
+                const values = persona[key];
                 if (!values.length) return null;
                 return (
                   <div
@@ -457,9 +452,9 @@ function PersonaModal({
                   </div>
                 );
               })}
-              {AFFINITIES.every(
-                ({ key }) => !(persona[key] as string[]).length,
-              ) && <p className="text-sm text-haze">No notable affinities.</p>}
+              {AFFINITIES.every(({ key }) => !persona[key].length) && (
+                <p className="text-sm text-haze">No notable affinities.</p>
+              )}
             </div>
           </div>
         </div>
@@ -558,7 +553,7 @@ function CompareModal({
               </div>
               <div className="space-y-2">
                 {AFFINITIES.map(({ key, label, tone }) => {
-                  const values = persona[key] as string[];
+                  const values = persona[key];
                   if (!values.length) return null;
                   return (
                     <div
@@ -611,7 +606,11 @@ export default function App() {
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify([...favorites]));
+    try {
+      localStorage.setItem("favorites", JSON.stringify([...favorites]));
+    } catch {
+      // storage unavailable (private mode / quota): degrade to in-memory only
+    }
   }, [favorites]);
 
   const toggleFavorite = (query: string) => {
@@ -665,7 +664,8 @@ export default function App() {
 
   const closePersona = () => {
     setSelected(null);
-    window.history.pushState(null, "", "/");
+    if (window.location.pathname !== "/")
+      window.history.pushState(null, "", "/");
   };
 
   const toggleCompareMode = () => {
@@ -766,13 +766,14 @@ export default function App() {
               </select>
             </label>
 
-            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-haze">
+            <div className="flex items-center gap-2">
               <select
                 value={affinityType}
                 onChange={(event) =>
                   setAffinityType(event.target.value as AffinityKey)
                 }
                 className={SELECT_CLASS}
+                aria-label="Affinity type"
               >
                 {AFFINITY_KEYS.map((key) => (
                   <option key={key} value={key}>
@@ -792,7 +793,7 @@ export default function App() {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
 
             <div
               className="flex"
