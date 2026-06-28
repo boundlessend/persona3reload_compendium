@@ -10,8 +10,8 @@ Tailwind v4, served by a FastAPI backend forked from
 
 - `backend/` - FastAPI. Reads `docs/compendium.tsv` into memory (213 read-only
   rows, no database). Endpoints: `GET /api/personas/`,
-  `GET /api/personas/{query}`. In production it also serves the built frontend
-  from `frontend/dist`, so one process answers everything.
+  `GET /api/personas/{query}`, `GET /api/health`. In production it also serves
+  the built frontend from `frontend/dist`, so one process answers everything.
 - `frontend/` - SPA: hero, search, arcana filter, card grid, and a modal with
   description, stats and affinities. Persona art lives under
   `frontend/public/personas/` and ships with the repo.
