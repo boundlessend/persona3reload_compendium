@@ -21,8 +21,9 @@ and no external database.
 
 ## 3. Non-goals
 
-- No fusion calculator, team builder or any write/persistence feature.
-- No authentication, accounts or personalization.
+- No fusion calculator or team builder.
+- No accounts, authentication or server-side state; the only client-side
+  persistence is the favorites list in localStorage.
 - No live data source; the compendium is a static TSV bundled at build time.
 - No mobile-native apps (responsive web only).
 
@@ -35,16 +36,33 @@ and no external database.
 ## 5. Implemented features
 
 ### Catalog
-- Full grid of 213 personas, sorted by id.
+- Full grid of 213 personas with selectable sort: default (id) / level /
+  name / arcana.
 - Free-text search by name (case-insensitive, substring).
 - Arcana filter derived from the data (no hardcoded list).
-- Live result counter (`N of 213 personas`).
+- Affinity filter: pick an element and the affinity type
+  (weak / resists / reflects / absorbs / nullifies); the element list is
+  derived from the data.
+- DLC filter (all / base / DLC).
+- Favorites-only filter.
+- Live result counter.
 
 ### Persona detail
 - Modal with description, five stats (rendered as bars normalized to 99),
   and grouped affinities (weak / resists / reflects / absorbs / nullifies).
+- Favorite toggle, persisted in localStorage.
 - Artwork zoom overlay.
 - Inline SVG placeholder when an image is missing.
+- Shareable deep link: `/persona/<query>` opens the persona directly and is
+  reflected in the document title and browser history.
+
+### Compare
+- Compare mode: pick any two personas from the grid and view their stats and
+  affinities side by side.
+
+### Favorites
+- Star personas from the modal; the set persists in localStorage and drives
+  the favorites filter and card badges.
 
 ### Accessibility
 - Modal is a labelled `role="dialog"`, closeable via Escape and backdrop.
@@ -96,13 +114,17 @@ nullifies[], dlc, query`.
   `restart: unless-stopped` in compose.
 - **Data integrity**: parser raises on a row with an empty `query`; CI asserts
   the dataset loads, has a sane size and unique `query` values.
+- **Testing**: Playwright e2e smoke tests (catalog load, search, modal,
+  deep link) run in CI against the production-shaped server.
 
 ## 9. Tech stack
 
 - Backend: Python 3.13, FastAPI, uvicorn, Pydantic.
 - Frontend: React 19, TypeScript 5.7, Vite 7, Tailwind CSS v4.
+- Testing: Playwright (e2e).
 - Infra: Docker (multi-stage), docker-compose, GitHub Actions CI
-  (frontend typecheck + build, backend ruff + data check, docker build).
+  (frontend typecheck + build, backend ruff + data check, docker build,
+  Playwright e2e).
 
 ## 10. Data
 
