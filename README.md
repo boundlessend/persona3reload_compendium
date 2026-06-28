@@ -27,7 +27,7 @@ One image builds the frontend and serves it together with the API on port 8000.
 
 ## Run locally
 
-Requires Node 20+ and Python 3.13+.
+Requires Node 22+ and Python 3.13+.
 
 ```bash
 # frontend build
