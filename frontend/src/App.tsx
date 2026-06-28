@@ -43,6 +43,42 @@ const STAT_LABELS: Record<StatKey, string> = {
   luck: "Luck",
 };
 
+const AFFINITY_KEYS = [
+  "weak",
+  "resists",
+  "reflects",
+  "absorbs",
+  "nullifies",
+] as const;
+type AffinityKey = (typeof AFFINITY_KEYS)[number];
+
+const AFFINITY_FILTER_LABELS: Record<AffinityKey, string> = {
+  weak: "Weak to",
+  resists: "Resists",
+  reflects: "Reflects",
+  absorbs: "Absorbs",
+  nullifies: "Nullifies",
+};
+
+type SortKey = "id" | "level" | "name" | "arcana";
+const SORT_LABELS: Record<SortKey, string> = {
+  id: "Default",
+  level: "Level",
+  name: "Name",
+  arcana: "Arcana",
+};
+const SORTERS: Record<SortKey, (a: Persona, b: Persona) => number> = {
+  id: (a, b) => a.id - b.id,
+  level: (a, b) => a.level - b.level,
+  name: (a, b) => a.name.localeCompare(b.name),
+  arcana: (a, b) => a.arcana.localeCompare(b.arcana) || a.level - b.level,
+};
+
+type DlcFilter = "all" | "base" | "dlc";
+
+const SELECT_CLASS =
+  "border border-edge bg-panel px-3 py-2 text-sm font-semibold uppercase tracking-wider text-frost outline-none transition focus:border-sees-500";
+
 // Inline placeholder for the handful of personas whose upstream art 404s.
 function placeholderFor(name: string): string {
   const initial = name.slice(0, 1).toUpperCase();
@@ -416,6 +452,10 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [arcana, setArcana] = useState("All");
+  const [sort, setSort] = useState<SortKey>("id");
+  const [element, setElement] = useState("All");
+  const [affinityType, setAffinityType] = useState<AffinityKey>("weak");
+  const [dlcFilter, setDlcFilter] = useState<DlcFilter>("all");
   const [selected, setSelected] = useState<Persona | null>(null);
 
   useEffect(() => {
@@ -429,14 +469,27 @@ export default function App() {
     [personas],
   );
 
+  const elements = useMemo(() => {
+    const set = new Set<string>();
+    for (const persona of personas)
+      for (const key of AFFINITY_KEYS)
+        for (const value of persona[key]) set.add(value);
+    return ["All", ...Array.from(set).sort()];
+  }, [personas]);
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return personas.filter((persona) => {
-      const matchesArcana = arcana === "All" || persona.arcana === arcana;
-      const matchesSearch = !term || persona.name.toLowerCase().includes(term);
-      return matchesArcana && matchesSearch;
+    const filtered = personas.filter((persona) => {
+      if (arcana !== "All" && persona.arcana !== arcana) return false;
+      if (term && !persona.name.toLowerCase().includes(term)) return false;
+      if (dlcFilter === "base" && persona.dlc !== 0) return false;
+      if (dlcFilter === "dlc" && persona.dlc !== 1) return false;
+      if (element !== "All" && !persona[affinityType].includes(element))
+        return false;
+      return true;
     });
-  }, [personas, search, arcana]);
+    return [...filtered].sort(SORTERS[sort]);
+  }, [personas, search, arcana, dlcFilter, element, affinityType, sort]);
 
   return (
     <div className="min-h-screen bg-abyss">
@@ -463,7 +516,78 @@ export default function App() {
             />
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-haze">
+              Sort
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value as SortKey)}
+                className={SELECT_CLASS}
+              >
+                {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
+                  <option key={key} value={key}>
+                    {SORT_LABELS[key]}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-haze">
+              <select
+                value={affinityType}
+                onChange={(event) =>
+                  setAffinityType(event.target.value as AffinityKey)
+                }
+                className={SELECT_CLASS}
+              >
+                {AFFINITY_KEYS.map((key) => (
+                  <option key={key} value={key}>
+                    {AFFINITY_FILTER_LABELS[key]}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={element}
+                onChange={(event) => setElement(event.target.value)}
+                className={SELECT_CLASS}
+                aria-label="Element"
+              >
+                {elements.map((name) => (
+                  <option key={name} value={name}>
+                    {name === "All" ? "Any element" : name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div
+              className="flex"
+              role="group"
+              aria-label="Filter by DLC"
+            >
+              {(
+                [
+                  ["all", "All"],
+                  ["base", "Base"],
+                  ["dlc", "DLC"],
+                ] as [DlcFilter, string][]
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setDlcFilter(value)}
+                  className={`px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+                    dlcFilter === value
+                      ? "bg-sees-500 text-abyss"
+                      : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
             {arcanas.map((name) => (
               <button
                 key={name}
