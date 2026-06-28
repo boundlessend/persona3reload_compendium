@@ -241,14 +241,21 @@ function StatBar({ label, value }: { label: string; value: number }) {
 function PersonaCard({
   persona,
   onSelect,
+  marked,
 }: {
   persona: Persona;
   onSelect: (persona: Persona) => void;
+  marked: boolean;
 }) {
   return (
     <button
       onClick={() => onSelect(persona)}
-      className="group flex flex-col border border-edge/70 bg-panel/60 p-5 text-left transition hover:-translate-y-1 hover:border-sees-500/60 hover:bg-panel hover:shadow-[0_0_30px_-10px_rgba(31,143,255,0.7)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400"
+      aria-pressed={marked}
+      className={`group flex flex-col border bg-panel/60 p-5 text-left transition hover:-translate-y-1 hover:bg-panel hover:shadow-[0_0_30px_-10px_rgba(31,143,255,0.7)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+        marked
+          ? "border-sees-500 ring-2 ring-sees-500/50"
+          : "border-edge/70 hover:border-sees-500/60"
+      }`}
     >
       <div className="relative grid h-36 place-items-center bg-night">
         <PersonaImage
@@ -447,6 +454,108 @@ function PersonaModal({
   );
 }
 
+function CompareModal({
+  a,
+  b,
+  onClose,
+}: {
+  a: Persona;
+  b: Persona;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-abyss/80 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Compare personas"
+    >
+      <div
+        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-edge bg-night p-8 shadow-[0_0_60px_-15px_rgba(31,143,255,0.6)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-3xl font-extrabold uppercase italic">
+            Compare
+          </h2>
+          <button
+            onClick={onClose}
+            className="grid h-9 w-9 place-items-center border border-edge text-haze transition hover:border-sees-500 hover:text-frost"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-6">
+          {[a, b].map((persona) => (
+            <div key={persona.id} className="space-y-4">
+              <div className="text-center">
+                <PersonaImage
+                  persona={persona}
+                  className="mx-auto h-24 object-contain drop-shadow-[0_0_18px_rgba(31,143,255,0.4)]"
+                />
+                <p className="mt-2 font-display text-2xl font-bold uppercase italic leading-none">
+                  {persona.name}
+                </p>
+                <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-sees-400">
+                  {persona.arcana} · Lv {persona.level}
+                </p>
+              </div>
+              <div className="space-y-2">
+                {STAT_KEYS.map((key) => (
+                  <StatBar
+                    key={key}
+                    label={STAT_LABELS[key]}
+                    value={persona[key]}
+                  />
+                ))}
+              </div>
+              <div className="space-y-2">
+                {AFFINITIES.map(({ key, label, tone }) => {
+                  const values = persona[key] as string[];
+                  if (!values.length) return null;
+                  return (
+                    <div
+                      key={label}
+                      className="flex flex-wrap items-center gap-1"
+                    >
+                      <span className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wider text-haze">
+                        {label}
+                      </span>
+                      {values.map((value) => (
+                        <span
+                          key={value}
+                          className={`px-2 py-0.5 text-[10px] font-semibold uppercase ${tone}`}
+                        >
+                          {value}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -457,6 +566,8 @@ export default function App() {
   const [affinityType, setAffinityType] = useState<AffinityKey>("weak");
   const [dlcFilter, setDlcFilter] = useState<DlcFilter>("all");
   const [selected, setSelected] = useState<Persona | null>(null);
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareList, setCompareList] = useState<Persona[]>([]);
 
   useEffect(() => {
     fetchPersonas()
@@ -501,6 +612,25 @@ export default function App() {
   const closePersona = () => {
     setSelected(null);
     window.history.pushState(null, "", "/");
+  };
+
+  const toggleCompareMode = () => {
+    setCompareMode((on) => !on);
+    setCompareList([]);
+  };
+
+  const toggleCompare = (persona: Persona) => {
+    setCompareList((prev) => {
+      if (prev.some((item) => item.id === persona.id))
+        return prev.filter((item) => item.id !== persona.id);
+      if (prev.length >= 2) return [prev[1], persona];
+      return [...prev, persona];
+    });
+  };
+
+  const onCardClick = (persona: Persona) => {
+    if (compareMode) toggleCompare(persona);
+    else openPersona(persona);
   };
 
   const arcanas = useMemo(
@@ -624,7 +754,25 @@ export default function App() {
                 </button>
               ))}
             </div>
+
+            <button
+              onClick={toggleCompareMode}
+              aria-pressed={compareMode}
+              className={`ml-auto px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+                compareMode
+                  ? "bg-moon text-abyss"
+                  : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
+              }`}
+            >
+              {compareMode ? "Comparing…" : "Compare"}
+            </button>
           </div>
+
+          {compareMode && (
+            <p className="mt-3 text-sm uppercase tracking-wider text-moon">
+              Pick two personas to compare ({compareList.length}/2).
+            </p>
+          )}
 
           <div className="mt-4 flex flex-wrap gap-2">
             {arcanas.map((name) => (
@@ -653,7 +801,8 @@ export default function App() {
               <PersonaCard
                 key={persona.id}
                 persona={persona}
-                onSelect={openPersona}
+                onSelect={onCardClick}
+                marked={compareList.some((item) => item.id === persona.id)}
               />
             ))}
           </div>
@@ -672,6 +821,14 @@ export default function App() {
 
       {selected && (
         <PersonaModal persona={selected} onClose={closePersona} />
+      )}
+
+      {compareList.length === 2 && (
+        <CompareModal
+          a={compareList[0]}
+          b={compareList[1]}
+          onClose={() => setCompareList([])}
+        />
       )}
     </div>
   );
