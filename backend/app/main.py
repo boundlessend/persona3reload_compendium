@@ -109,6 +109,12 @@ async def add_security_headers(request: Request, call_next) -> Response:
     return response
 
 
+@app.get("/api/health")
+async def health() -> dict[str, str]:
+    """лёгкая проверка живости для healthcheck контейнера"""
+    return {"status": "ok"}
+
+
 @app.get("/api/personas/", response_model=list[Persona])
 async def read_personas() -> list[Persona]:
     """отдаёт полный список персон"""
