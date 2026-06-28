@@ -8,6 +8,10 @@ __pycache__/
 frontend/dist/
 frontend/tsconfig.tsbuildinfo
 
+# test artifacts
+frontend/test-results/
+frontend/playwright-report/
+
 # env / secrets
 .env
 
