@@ -1,5 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { fetchPersonas, STAT_KEYS, type Persona, type StatKey } from "./api";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  fetchPersonas,
+  PERSONA_COUNT,
+  STAT_KEYS,
+  type Persona,
+  type StatKey,
+} from "./api";
 
 const AFFINITIES: { key: keyof Persona; label: string; tone: string }[] = [
   {
@@ -91,7 +97,7 @@ function Navbar() {
             Browse
           </a>
           <a
-            href="https://github.com/luyluish/persona-compendium"
+            href="https://github.com/boundlessend/persona3reload_compendium"
             className="shard bg-sees-500 px-5 py-2 text-abyss transition hover:bg-sees-400"
           >
             Source
@@ -103,7 +109,7 @@ function Navbar() {
 }
 
 function Hero({ personas }: { personas: Persona[] }) {
-  const count = personas.length || 213;
+  const count = personas.length || PERSONA_COUNT;
   const showcase = personas.slice(0, 4);
   return (
     <section id="top" className="relative overflow-hidden">
@@ -131,12 +137,6 @@ function Hero({ personas }: { personas: Persona[] }) {
               className="shard bg-sees-500 px-8 py-4 font-display text-lg font-bold uppercase italic tracking-wide text-abyss shadow-[0_0_40px_-8px_rgba(31,143,255,0.8)] transition hover:bg-sees-400"
             >
               Open compendium
-            </a>
-            <a
-              href="#about"
-              className="font-semibold uppercase tracking-wider text-haze transition hover:text-frost"
-            >
-              How it works →
             </a>
           </div>
           <div className="mt-10 flex items-center gap-8 border-t border-edge/60 pt-6">
@@ -246,12 +246,39 @@ function PersonaModal({
   onClose: () => void;
 }) {
   const [zoom, setZoom] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // lock background scroll, move focus into the dialog, restore it on close
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+    return () => {
+      document.body.style.overflow = "";
+      previouslyFocused?.focus();
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         if (zoom) setZoom(false);
         else onClose();
+        return;
+      }
+      if (event.key !== "Tab" || zoom) return;
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button, input, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -267,7 +294,9 @@ function PersonaModal({
       aria-label={persona.name}
     >
       <div
-        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto border border-edge bg-night p-8 shadow-[0_0_60px_-15px_rgba(31,143,255,0.6)] sm:max-w-2xl"
+        ref={panelRef}
+        tabIndex={-1}
+        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto border border-edge bg-night p-8 shadow-[0_0_60px_-15px_rgba(31,143,255,0.6)] outline-none sm:max-w-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-6">
@@ -422,7 +451,7 @@ export default function App() {
                 The compendium
               </h2>
               <p className="mt-2 uppercase tracking-wider text-haze">
-                {visible.length} of {personas.length || 213} personas
+                {visible.length} of {personas.length || PERSONA_COUNT} personas
               </p>
             </div>
             <input

@@ -36,3 +36,7 @@ export const STAT_KEYS = [
 ] as const;
 
 export type StatKey = (typeof STAT_KEYS)[number];
+
+// Fallback count shown before the API responds; mirrors the row count in
+// backend/docs/compendium.tsv.
+export const PERSONA_COUNT = 213;
