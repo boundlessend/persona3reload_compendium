@@ -1,6 +1,15 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import {
   fetchPersonas,
+  MAX_STAT,
   PERSONA_COUNT,
   STAT_KEYS,
   type Persona,
@@ -99,11 +108,9 @@ function placeholderFor(name: string): string {
 function PersonaImage({
   persona,
   className,
-  onClick,
 }: {
   persona: Persona;
   className: string;
-  onClick?: () => void;
 }) {
   return (
     <img
@@ -111,7 +118,6 @@ function PersonaImage({
       alt={persona.name}
       loading="lazy"
       decoding="async"
-      onClick={onClick}
       onError={(event) => {
         const img = event.currentTarget;
         img.onerror = null;
@@ -153,7 +159,13 @@ function Navbar() {
   );
 }
 
-function Hero({ personas }: { personas: Persona[] }) {
+function Hero({
+  personas,
+  arcanaCount,
+}: {
+  personas: Persona[];
+  arcanaCount: number;
+}) {
   const count = personas.length || PERSONA_COUNT;
   return (
     <section id="top" className="border-b-2 border-ink">
@@ -184,8 +196,8 @@ function Hero({ personas }: { personas: Persona[] }) {
           {(
             [
               [count, "Personas"],
-              [22, "Arcana"],
-              [5, "Affinities"],
+              [arcanaCount || 22, "Arcana"],
+              [AFFINITIES.length, "Affinities"],
             ] as [number, string][]
           ).map(([value, label], index) => (
             <div
@@ -207,7 +219,7 @@ function Hero({ personas }: { personas: Persona[] }) {
 }
 
 function StatBar({ label, value }: { label: string; value: number }) {
-  const pct = Math.min(100, (value / 99) * 100);
+  const pct = Math.min(100, (value / MAX_STAT) * 100);
   return (
     <div>
       <div className="mb-1 flex justify-between font-mono text-[11px] uppercase tracking-wider text-mut">
@@ -221,7 +233,7 @@ function StatBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-function PersonaCard({
+const PersonaCard = memo(function PersonaCard({
   persona,
   onSelect,
   marked,
@@ -277,7 +289,7 @@ function PersonaCard({
       </p>
     </button>
   );
-}
+});
 
 // shared dialog behaviour: scroll lock, initial focus, focus restore on close,
 // Escape, and a Tab focus trap (disabled while trapActive is false)
@@ -286,6 +298,10 @@ function useDialog(
   onEscape: () => void,
   trapActive: boolean,
 ) {
+  // hold the latest onEscape so the key listener is not re-bound every render
+  const escapeRef = useRef(onEscape);
+  escapeRef.current = onEscape;
+
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
@@ -299,7 +315,7 @@ function useDialog(
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onEscape();
+        escapeRef.current();
         return;
       }
       if (event.key !== "Tab" || !trapActive) return;
@@ -319,7 +335,7 @@ function useDialog(
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ref, onEscape, trapActive]);
+  }, [ref, trapActive]);
 }
 
 function PersonaModal({
@@ -644,9 +660,14 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchPersonas()
+    const controller = new AbortController();
+    fetchPersonas(controller.signal)
       .then(setPersonas)
-      .catch((err) => setError(err.message));
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        setError(err.message);
+      });
+    return () => controller.abort();
   }, []);
 
   // open the persona named in the URL (/persona/<query>) once data is loaded
@@ -680,11 +701,11 @@ export default function App() {
       : "Persona Compendium · Persona 3 Reload";
   }, [selected]);
 
-  const openPersona = (persona: Persona) => {
+  const openPersona = useCallback((persona: Persona) => {
     setSelected(persona);
     window.history.pushState(null, "", `/persona/${persona.query}`);
     historyPushedRef.current = true;
-  };
+  }, []);
 
   const closePersona = () => {
     setSelected(null);
@@ -703,19 +724,22 @@ export default function App() {
     setCompareList([]);
   };
 
-  const toggleCompare = (persona: Persona) => {
+  const toggleCompare = useCallback((persona: Persona) => {
     setCompareList((prev) => {
       if (prev.some((item) => item.id === persona.id))
         return prev.filter((item) => item.id !== persona.id);
       if (prev.length >= 2) return [prev[1], persona];
       return [...prev, persona];
     });
-  };
+  }, []);
 
-  const onCardClick = (persona: Persona) => {
-    if (compareMode) toggleCompare(persona);
-    else openPersona(persona);
-  };
+  const onCardClick = useCallback(
+    (persona: Persona) => {
+      if (compareMode) toggleCompare(persona);
+      else openPersona(persona);
+    },
+    [compareMode, toggleCompare, openPersona],
+  );
 
   const arcanas = useMemo(
     () => ["All", ...Array.from(new Set(personas.map((p) => p.arcana))).sort()],
@@ -742,7 +766,7 @@ export default function App() {
         return false;
       return true;
     });
-    return [...filtered].sort(SORTERS[sort]);
+    return filtered.sort(SORTERS[sort]);
   }, [
     personas,
     search,
@@ -759,7 +783,7 @@ export default function App() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <main>
-        <Hero personas={personas} />
+        <Hero personas={personas} arcanaCount={arcanas.length - 1} />
 
         <section id="browse" className="mx-auto max-w-6xl px-6 py-16">
           <div className="flex flex-col gap-6 border-b-2 border-ink pb-6 md:flex-row md:items-end md:justify-between">

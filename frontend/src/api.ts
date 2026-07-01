@@ -19,10 +19,10 @@ export type Persona = {
   query: string;
 };
 
-export async function fetchPersonas(): Promise<Persona[]> {
+export async function fetchPersonas(signal: AbortSignal): Promise<Persona[]> {
   // статический справочник, собираемый из TSV на этапе сборки (см.
   // frontend/scripts/generate-personas.mjs) - рантайм-бэкенд не нужен
-  const response = await fetch("/personas.json");
+  const response = await fetch("/personas.json", { signal });
   if (!response.ok) {
     throw new Error(`Failed to load personas: ${response.status}`);
   }
@@ -38,6 +38,9 @@ export const STAT_KEYS = [
 ] as const;
 
 export type StatKey = (typeof STAT_KEYS)[number];
+
+// stats are normalized to this cap when rendered as bars
+export const MAX_STAT = 99;
 
 // Fallback count shown before the API responds; mirrors the row count in
 // backend/docs/compendium.tsv.
