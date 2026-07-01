@@ -76,6 +76,15 @@ const SELECT_CLASS =
 
 const idTag = (id: number): string => `№${String(id).padStart(3, "0")}`;
 
+// декодирует сегмент query из URL; на битом percent-encoding возвращает null
+function decodeQuery(raw: string): string | null {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+}
+
 // Inline placeholder for the handful of personas whose upstream art 404s.
 function placeholderFor(name: string): string {
   const initial = name.slice(0, 1).toUpperCase();
@@ -577,6 +586,8 @@ export default function App() {
   const [affinityType, setAffinityType] = useState<AffinityKey>("weak");
   const [dlcFilter, setDlcFilter] = useState<DlcFilter>("all");
   const [selected, setSelected] = useState<Persona | null>(null);
+  // did WE push a /persona/... entry? drives whether close pops or replaces
+  const historyPushedRef = useRef(false);
   const [compareMode, setCompareMode] = useState(false);
   const [compareList, setCompareList] = useState<Persona[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(() => {
@@ -617,17 +628,19 @@ export default function App() {
     if (!personas.length) return;
     const match = window.location.pathname.match(/^\/persona\/(.+)$/);
     if (!match) return;
-    const persona = personas.find(
-      (item) => item.query === decodeURIComponent(match[1]),
-    );
+    const query = decodeQuery(match[1]);
+    if (query === null) return;
+    const persona = personas.find((item) => item.query === query);
     if (persona) setSelected(persona);
   }, [personas]);
 
   useEffect(() => {
     const onPop = () => {
+      historyPushedRef.current = false;
       const match = window.location.pathname.match(/^\/persona\/(.+)$/);
-      const persona = match
-        ? personas.find((item) => item.query === decodeURIComponent(match[1]))
+      const query = match ? decodeQuery(match[1]) : null;
+      const persona = query
+        ? personas.find((item) => item.query === query)
         : undefined;
       setSelected(persona ?? null);
     };
@@ -644,12 +657,19 @@ export default function App() {
   const openPersona = (persona: Persona) => {
     setSelected(persona);
     window.history.pushState(null, "", `/persona/${persona.query}`);
+    historyPushedRef.current = true;
   };
 
   const closePersona = () => {
     setSelected(null);
-    if (window.location.pathname !== "/")
-      window.history.pushState(null, "", "/");
+    // pop our own entry so Back does not re-open the modal; on a direct deep
+    // link (no entry of ours) replace it instead, to avoid leaving the site
+    if (historyPushedRef.current) {
+      historyPushedRef.current = false;
+      window.history.back();
+    } else if (window.location.pathname !== "/") {
+      window.history.replaceState(null, "", "/");
+    }
   };
 
   const toggleCompareMode = () => {
