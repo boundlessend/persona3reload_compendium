@@ -852,7 +852,7 @@ export default function App() {
 
           {error && (
             <p className="mt-10 border-2 border-blood bg-blood/10 p-5 font-mono text-sm text-blood">
-              Could not load personas: {error}. Is the API running on :8000?
+              Could not load personas: {error}. Try refreshing the page.
             </p>
           )}
 

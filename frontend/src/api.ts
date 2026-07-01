@@ -20,7 +20,9 @@ export type Persona = {
 };
 
 export async function fetchPersonas(): Promise<Persona[]> {
-  const response = await fetch("/api/personas/");
+  // статический справочник, собираемый из TSV на этапе сборки (см.
+  // frontend/scripts/generate-personas.mjs) - рантайм-бэкенд не нужен
+  const response = await fetch("/personas.json");
   if (!response.ok) {
     throw new Error(`Failed to load personas: ${response.status}`);
   }

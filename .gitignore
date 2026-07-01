@@ -7,6 +7,7 @@ __pycache__/
 # build output
 frontend/dist/
 frontend/tsconfig.tsbuildinfo
+frontend/public/personas.json
 
 # test artifacts
 frontend/test-results/

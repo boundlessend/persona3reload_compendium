@@ -4,7 +4,10 @@
   "version": "1.2.0",
   "type": "module",
   "scripts": {
+    "generate:data": "node scripts/generate-personas.mjs",
+    "predev": "npm run generate:data",
     "dev": "vite",
+    "prebuild": "npm run generate:data",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test"
