@@ -13,27 +13,27 @@ const AFFINITIES: { key: AffinityKey; label: string; tone: string }[] = [
   {
     key: "weak",
     label: "Weak",
-    tone: "bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30",
+    tone: "bg-blood text-paper",
   },
   {
     key: "resists",
     label: "Resists",
-    tone: "bg-amber-400/15 text-amber-200 ring-1 ring-amber-400/30",
+    tone: "bg-ink text-paper",
   },
   {
     key: "reflects",
     label: "Reflects",
-    tone: "bg-sees-500/15 text-sees-400 ring-1 ring-sees-500/40",
+    tone: "border border-ink text-ink",
   },
   {
     key: "absorbs",
     label: "Absorbs",
-    tone: "bg-moon/15 text-moon ring-1 ring-moon/30",
+    tone: "bg-mut text-paper",
   },
   {
     key: "nullifies",
     label: "Nulls",
-    tone: "bg-haze/15 text-haze ring-1 ring-haze/30",
+    tone: "border border-ink/40 text-mut",
   },
 ];
 
@@ -72,15 +72,17 @@ const SORTERS: Record<SortKey, (a: Persona, b: Persona) => number> = {
 type DlcFilter = "all" | "base" | "dlc";
 
 const SELECT_CLASS =
-  "border border-edge bg-panel px-3 py-2 text-sm font-semibold uppercase tracking-wider text-frost outline-none transition focus:border-sees-500";
+  "border-2 border-ink bg-transparent px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink outline-none transition focus:border-blood";
+
+const idTag = (id: number): string => `№${String(id).padStart(3, "0")}`;
 
 // Inline placeholder for the handful of personas whose upstream art 404s.
 function placeholderFor(name: string): string {
   const initial = name.slice(0, 1).toUpperCase();
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
-    <rect width="200" height="200" fill="#0e1530"/>
-    <text x="50%" y="54%" font-family="sans-serif" font-size="96" font-weight="800"
-      font-style="italic" fill="#1f8fff" text-anchor="middle" dominant-baseline="middle">${initial}</text>
+    <rect width="200" height="200" fill="#eae4d6"/>
+    <text x="50%" y="56%" font-family="sans-serif" font-size="96" font-weight="800"
+      font-style="italic" fill="#c8102e" text-anchor="middle" dominant-baseline="middle">${initial}</text>
   </svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
@@ -113,25 +115,28 @@ function PersonaImage({
 
 function Navbar() {
   return (
-    <header className="sticky top-0 z-30 border-b border-edge/60 bg-abyss/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="#top" className="flex items-center gap-3">
-          <span className="shard grid h-9 w-9 place-items-center bg-sees-500 font-display text-lg font-extrabold italic text-abyss">
-            P3
-          </span>
-          <span className="font-display text-2xl font-extrabold uppercase italic tracking-wide">
+        <a href="#top" className="flex items-baseline gap-3">
+          <span className="font-display text-2xl uppercase tracking-tight">
             Compendium
           </span>
+          <span className="border border-blood px-1.5 py-0.5 font-mono text-[11px] tracking-widest text-blood">
+            P3R
+          </span>
         </a>
-        <div className="hidden items-center gap-8 text-sm font-semibold uppercase tracking-wider text-haze md:flex">
-          <a href="#browse" className="transition hover:text-frost">
+        <div className="flex items-center gap-5 md:gap-7">
+          <a
+            href="#browse"
+            className="font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood"
+          >
             Browse
           </a>
           <a
             href="https://github.com/boundlessend/persona3reload_compendium"
-            className="shard bg-sees-500 px-5 py-2 text-abyss transition hover:bg-sees-400"
+            className="bg-ink px-5 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood"
           >
-            Source
+            Source ↗
           </a>
         </div>
       </nav>
@@ -141,72 +146,49 @@ function Navbar() {
 
 function Hero({ personas }: { personas: Persona[] }) {
   const count = personas.length || PERSONA_COUNT;
-  const showcase = personas.slice(0, 4);
   return (
-    <section id="top" className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_90%_at_85%_-10%,rgba(31,143,255,0.28),transparent_55%)]" />
-      <div className="pointer-events-none absolute -left-1/4 top-1/4 h-[140%] w-1/2 -rotate-12 bg-[linear-gradient(90deg,transparent,rgba(31,143,255,0.06),transparent)]" />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 md:grid-cols-[1.1fr_0.9fr] md:py-28">
-        <div>
-          <span className="inline-flex items-center gap-2 border-l-2 border-moon pl-3 text-sm font-semibold uppercase tracking-[0.3em] text-moon">
-            Persona 3 Reload
-          </span>
-          <h1 className="mt-6 font-display text-7xl font-extrabold uppercase italic leading-[0.9] tracking-tight md:text-8xl">
-            Summon
-            <br />
-            <span className="bg-gradient-to-r from-sees-400 via-sees-500 to-sees-600 bg-clip-text text-transparent">
-              every persona
-            </span>
-          </h1>
-          <p className="mt-7 max-w-md text-lg text-haze">
-            The full in-game compendium, mirrored. All {count} personas with
-            their arcana, stats and elemental affinities, one click away.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center gap-5">
+    <section id="top" className="border-b-2 border-ink">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="grid items-end gap-8 py-16 md:grid-cols-[1.3fr_0.7fr] md:py-20">
+          <div>
+            <p className="font-mono text-sm tracking-[0.1em] text-blood">
+              FIG. 001 — {count} / THE FULL RECORD
+            </p>
+            <h1 className="mt-5 font-display text-6xl uppercase leading-[0.84] tracking-tight md:text-8xl">
+              Memento
+              <br />
+              <span className="text-blood">Mori.</span>
+            </h1>
             <a
               href="#browse"
-              className="shard bg-sees-500 px-8 py-4 font-display text-lg font-bold uppercase italic tracking-wide text-abyss shadow-[0_0_40px_-8px_rgba(31,143,255,0.8)] transition hover:bg-sees-400"
+              className="mt-8 inline-block bg-blood px-8 py-4 font-mono text-sm uppercase tracking-widest text-paper transition hover:bg-ink"
             >
-              Open compendium
+              Open the record →
             </a>
           </div>
-          <div className="mt-10 flex items-center gap-8 border-t border-edge/60 pt-6">
-            <div>
-              <p className="font-display text-4xl font-extrabold italic text-sees-400">
-                {count}
-              </p>
-              <p className="text-xs uppercase tracking-widest text-haze">
-                Personas
-              </p>
-            </div>
-            <div>
-              <p className="font-display text-4xl font-extrabold italic text-sees-400">
-                22
-              </p>
-              <p className="text-xs uppercase tracking-widest text-haze">
-                Arcana
-              </p>
-            </div>
-          </div>
+          <p className="max-w-sm pb-2 leading-relaxed text-mut md:text-right">
+            The full Persona 3 Reload compendium, mirrored. All {count} personas
+            catalogued: arcana, stats and elemental affinities, set in ink.
+          </p>
         </div>
-        <div className="relative hidden md:grid grid-cols-2 gap-4">
-          {showcase.map((persona, index) => (
+        <div className="flex border-t-2 border-ink">
+          {(
+            [
+              [count, "Personas"],
+              [22, "Arcana"],
+              [5, "Affinities"],
+            ] as [number, string][]
+          ).map(([value, label], index) => (
             <div
-              key={persona.id}
-              className={`shard border border-edge bg-panel/80 p-5 backdrop-blur ${
-                index % 2 ? "translate-y-7" : ""
-              }`}
+              key={label}
+              className={`flex-1 py-5 ${index < 2 ? "border-r-2 border-ink" : ""}`}
             >
-              <PersonaImage
-                persona={persona}
-                className="mx-auto h-32 object-contain drop-shadow-[0_0_18px_rgba(31,143,255,0.35)]"
-              />
-              <p className="mt-3 font-display text-xl font-bold uppercase italic">
-                {persona.name}
-              </p>
-              <p className="text-sm font-semibold uppercase tracking-wider text-sees-400">
-                {persona.arcana}
-              </p>
+              <div className="font-display text-4xl leading-none">
+                {String(value).padStart(2, "0")}
+              </div>
+              <div className="mt-1.5 font-mono text-[11px] uppercase tracking-widest text-mut">
+                {label}
+              </div>
             </div>
           ))}
         </div>
@@ -219,15 +201,12 @@ function StatBar({ label, value }: { label: string; value: number }) {
   const pct = Math.min(100, (value / 99) * 100);
   return (
     <div>
-      <div className="mb-1 flex justify-between text-xs font-semibold uppercase tracking-wider text-haze">
+      <div className="mb-1 flex justify-between font-mono text-[11px] uppercase tracking-wider text-mut">
         <span>{label}</span>
-        <span className="text-frost">{value}</span>
+        <span className="text-ink">{value}</span>
       </div>
-      <div className="h-1.5 bg-edge/60">
-        <div
-          className="h-1.5 bg-gradient-to-r from-sees-500 to-sees-400"
-          style={{ width: `${pct}%` }}
-        />
+      <div className="h-2 border border-ink">
+        <div className="h-full bg-ink" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -248,38 +227,41 @@ function PersonaCard({
     <button
       onClick={() => onSelect(persona)}
       aria-pressed={marked}
-      className={`group flex flex-col border bg-panel/60 p-5 text-left transition hover:-translate-y-1 hover:bg-panel hover:shadow-[0_0_30px_-10px_rgba(31,143,255,0.7)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
-        marked
-          ? "border-sees-500 ring-2 ring-sees-500/50"
-          : "border-edge/70 hover:border-sees-500/60"
+      className={`group relative flex flex-col border-b-2 border-r-2 border-ink bg-card p-5 text-left transition-colors hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
+        marked ? "outline outline-[3px] -outline-offset-[3px] outline-blood" : ""
       }`}
     >
-      <div className="relative grid h-36 place-items-center bg-night">
-        <PersonaImage
-          persona={persona}
-          className="h-32 object-contain transition group-hover:scale-105 group-hover:drop-shadow-[0_0_16px_rgba(31,143,255,0.45)]"
-        />
-        <span className="absolute left-2 top-2 bg-abyss/80 px-2 py-0.5 font-display text-xs font-bold italic text-haze">
+      <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-wider">
+        <span className="text-blood group-hover:text-[#ff8a9b]">
+          {idTag(persona.id)}
+        </span>
+        <span className="text-mut group-hover:text-paper2">
           LV {persona.level}
         </span>
+      </div>
+      <div className="relative my-3 grid h-36 place-items-center">
+        <PersonaImage
+          persona={persona}
+          className="h-32 object-contain mix-blend-multiply transition group-hover:mix-blend-normal"
+        />
         {persona.dlc === 1 && (
-          <span className="absolute right-2 top-2 bg-moon px-2 py-0.5 font-display text-xs font-bold italic text-abyss">
+          <span className="absolute right-0 top-0 bg-blood px-2 py-0.5 font-mono text-[10px] tracking-wider text-paper">
             DLC
           </span>
         )}
         {isFavorite && (
           <span
-            className="absolute bottom-2 right-2 text-lg leading-none text-moon"
+            className="absolute bottom-0 right-0 text-lg leading-none text-blood group-hover:text-paper"
             aria-label="Favorite"
           >
             ★
           </span>
         )}
       </div>
-      <p className="mt-4 font-display text-xl font-bold uppercase italic leading-none">
+      <p className="font-display text-xl uppercase leading-none text-ink group-hover:text-paper">
         {persona.name}
       </p>
-      <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-sees-400">
+      <p className="mt-1.5 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
         {persona.arcana}
       </p>
     </button>
@@ -348,7 +330,7 @@ function PersonaModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-abyss/80 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -357,30 +339,30 @@ function PersonaModal({
       <div
         ref={panelRef}
         tabIndex={-1}
-        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto border border-edge bg-night p-8 shadow-[0_0_60px_-15px_rgba(31,143,255,0.6)] outline-none sm:max-w-2xl"
+        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto border-2 border-ink bg-paper p-8 outline-none sm:shadow-[8px_8px_0_0_#16130d]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-6">
+        <div className="flex items-start justify-between gap-6 border-b-2 border-ink pb-6">
           <div className="flex items-center gap-5">
             <button
               type="button"
               onClick={() => setZoom(true)}
-              className="group relative grid h-28 w-28 shrink-0 place-items-center bg-panel focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400"
+              className="group relative grid h-28 w-28 shrink-0 place-items-center border-2 border-ink bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
               aria-label="Enlarge artwork"
             >
               <PersonaImage
                 persona={persona}
-                className="h-24 object-contain drop-shadow-[0_0_18px_rgba(31,143,255,0.4)]"
+                className="h-24 object-contain mix-blend-multiply"
               />
-              <span className="absolute bottom-1 right-1 bg-abyss/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-sees-400 opacity-0 transition group-hover:opacity-100">
+              <span className="absolute bottom-1 right-1 bg-ink px-1.5 py-0.5 font-mono text-[10px] uppercase text-paper opacity-0 transition group-hover:opacity-100">
                 Zoom
               </span>
             </button>
             <div>
-              <p className="text-sm font-semibold uppercase tracking-widest text-sees-400">
-                {persona.arcana} · Lv {persona.level}
+              <p className="font-mono text-xs uppercase tracking-wider text-blood">
+                {idTag(persona.id)} · {persona.arcana} · Lv {persona.level}
               </p>
-              <h2 className="font-display text-5xl font-extrabold uppercase italic leading-none">
+              <h2 className="mt-1 font-display text-5xl uppercase leading-none">
                 {persona.name}
               </h2>
             </div>
@@ -392,17 +374,17 @@ function PersonaModal({
               aria-label={
                 isFavorite ? "Remove from favorites" : "Add to favorites"
               }
-              className={`grid h-9 w-9 place-items-center border text-lg leading-none transition ${
+              className={`grid h-9 w-9 place-items-center border-2 text-lg leading-none transition ${
                 isFavorite
-                  ? "border-moon text-moon"
-                  : "border-edge text-haze hover:border-sees-500 hover:text-frost"
+                  ? "border-blood bg-blood text-paper"
+                  : "border-ink text-ink hover:bg-ink hover:text-paper"
               }`}
             >
               {isFavorite ? "★" : "☆"}
             </button>
             <button
               onClick={onClose}
-              className="grid h-9 w-9 place-items-center border border-edge text-haze transition hover:border-sees-500 hover:text-frost"
+              className="grid h-9 w-9 place-items-center border-2 border-ink text-ink transition hover:bg-ink hover:text-paper"
               aria-label="Close"
             >
               ✕
@@ -410,26 +392,28 @@ function PersonaModal({
           </div>
         </div>
 
-        <p className="mt-6 leading-relaxed text-haze">{persona.description}</p>
+        <p className="mt-6 leading-relaxed text-mut">{persona.description}</p>
 
         <div className="mt-8 grid gap-8 sm:grid-cols-2">
-          <div className="space-y-3">
-            <h3 className="font-display text-sm font-bold uppercase tracking-[0.3em] text-sees-400">
+          <div>
+            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
               Stats
             </h3>
-            {STAT_KEYS.map((key) => (
-              <StatBar
-                key={key}
-                label={STAT_LABELS[key]}
-                value={persona[key]}
-              />
-            ))}
+            <div className="mt-4 space-y-3">
+              {STAT_KEYS.map((key) => (
+                <StatBar
+                  key={key}
+                  label={STAT_LABELS[key]}
+                  value={persona[key]}
+                />
+              ))}
+            </div>
           </div>
           <div>
-            <h3 className="font-display text-sm font-bold uppercase tracking-[0.3em] text-sees-400">
+            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
               Affinities
             </h3>
-            <div className="mt-3 space-y-3">
+            <div className="mt-4 space-y-3">
               {AFFINITIES.map(({ key, label, tone }) => {
                 const values = persona[key];
                 if (!values.length) return null;
@@ -438,13 +422,13 @@ function PersonaModal({
                     key={label}
                     className="flex flex-wrap items-center gap-x-2 gap-y-1"
                   >
-                    <span className="w-20 shrink-0 text-sm font-semibold uppercase tracking-wider text-haze">
+                    <span className="w-20 shrink-0 font-mono text-[11px] uppercase tracking-wider text-mut">
                       {label}
                     </span>
                     {values.map((value) => (
                       <span
                         key={value}
-                        className={`px-3 py-1 text-xs font-semibold uppercase ${tone}`}
+                        className={`px-2 py-1 font-mono text-[10px] uppercase tracking-wide ${tone}`}
                       >
                         {value}
                       </span>
@@ -453,7 +437,9 @@ function PersonaModal({
                 );
               })}
               {AFFINITIES.every(({ key }) => !persona[key].length) && (
-                <p className="text-sm text-haze">No notable affinities.</p>
+                <p className="font-mono text-sm text-mut">
+                  No notable affinities.
+                </p>
               )}
             </div>
           </div>
@@ -462,7 +448,7 @@ function PersonaModal({
 
       {zoom && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-abyss/95 p-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/95 p-4"
           onClick={(event) => {
             event.stopPropagation();
             setZoom(false);
@@ -470,14 +456,14 @@ function PersonaModal({
         >
           <PersonaImage
             persona={persona}
-            className="max-h-[90vh] max-w-[90vw] object-contain drop-shadow-[0_0_50px_rgba(31,143,255,0.5)]"
+            className="max-h-[90vh] max-w-[90vw] object-contain"
           />
           <button
             onClick={(event) => {
               event.stopPropagation();
               setZoom(false);
             }}
-            className="absolute right-5 top-5 grid h-10 w-10 place-items-center border border-edge text-haze transition hover:border-sees-500 hover:text-frost"
+            className="absolute right-5 top-5 grid h-10 w-10 place-items-center border-2 border-paper text-paper transition hover:bg-paper hover:text-ink"
             aria-label="Close artwork"
           >
             ✕
@@ -502,7 +488,7 @@ function CompareModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-abyss/80 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -511,16 +497,14 @@ function CompareModal({
       <div
         ref={panelRef}
         tabIndex={-1}
-        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-edge bg-night p-5 shadow-[0_0_60px_-15px_rgba(31,143,255,0.6)] outline-none sm:p-8"
+        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto border-2 border-ink bg-paper p-5 outline-none sm:p-8 sm:shadow-[8px_8px_0_0_#16130d]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-3xl font-extrabold uppercase italic">
-            Compare
-          </h2>
+        <div className="flex items-center justify-between border-b-2 border-ink pb-5">
+          <h2 className="font-display text-3xl uppercase">Compare</h2>
           <button
             onClick={onClose}
-            className="grid h-9 w-9 place-items-center border border-edge text-haze transition hover:border-sees-500 hover:text-frost"
+            className="grid h-9 w-9 place-items-center border-2 border-ink text-ink transition hover:bg-ink hover:text-paper"
             aria-label="Close"
           >
             ✕
@@ -533,12 +517,12 @@ function CompareModal({
               <div className="text-center">
                 <PersonaImage
                   persona={persona}
-                  className="mx-auto h-24 object-contain drop-shadow-[0_0_18px_rgba(31,143,255,0.4)]"
+                  className="mx-auto h-24 object-contain mix-blend-multiply"
                 />
-                <p className="mt-2 font-display text-xl font-bold uppercase italic leading-none sm:text-2xl">
+                <p className="mt-2 font-display text-xl uppercase leading-none sm:text-2xl">
                   {persona.name}
                 </p>
-                <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-sees-400">
+                <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-blood">
                   {persona.arcana} · Lv {persona.level}
                 </p>
               </div>
@@ -560,13 +544,13 @@ function CompareModal({
                       key={label}
                       className="flex flex-wrap items-center gap-1"
                     >
-                      <span className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wider text-haze">
+                      <span className="w-16 shrink-0 font-mono text-[10px] uppercase tracking-wider text-mut">
                         {label}
                       </span>
                       {values.map((value) => (
                         <span
                           key={value}
-                          className={`px-2 py-0.5 text-[10px] font-semibold uppercase ${tone}`}
+                          className={`px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide ${tone}`}
                         >
                           {value}
                         </span>
@@ -726,18 +710,18 @@ export default function App() {
   ]);
 
   return (
-    <div className="min-h-screen bg-abyss">
+    <div className="min-h-screen bg-paper">
       <Navbar />
       <main>
         <Hero personas={personas} />
 
-        <section id="browse" className="mx-auto max-w-6xl px-6 py-20">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <section id="browse" className="mx-auto max-w-6xl px-6 py-16">
+          <div className="flex flex-col gap-6 border-b-2 border-ink pb-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 className="font-display text-5xl font-extrabold uppercase italic tracking-tight">
+              <h2 className="font-display text-5xl uppercase leading-none tracking-tight">
                 The compendium
               </h2>
-              <p className="mt-2 uppercase tracking-wider text-haze">
+              <p className="mt-3 font-mono text-xs uppercase tracking-wider text-mut">
                 {visible.length} of {personas.length || PERSONA_COUNT} personas
               </p>
             </div>
@@ -746,12 +730,12 @@ export default function App() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by name…"
-              className="w-full border border-edge bg-panel px-5 py-3 text-frost placeholder:text-haze/70 outline-none transition focus:border-sees-500 md:w-72"
+              className="w-full border-2 border-ink bg-transparent px-4 py-3 font-mono text-sm text-ink outline-none transition placeholder:text-mut focus:border-blood md:w-72"
             />
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-haze">
+            <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
               Sort
               <select
                 value={sort}
@@ -795,25 +779,23 @@ export default function App() {
               </select>
             </div>
 
-            <div
-              className="flex"
-              role="group"
-              aria-label="Filter by DLC"
-            >
+            <div className="flex border-2 border-ink" role="group" aria-label="Filter by DLC">
               {(
                 [
                   ["all", "All"],
                   ["base", "Base"],
                   ["dlc", "DLC"],
                 ] as [DlcFilter, string][]
-              ).map(([value, label]) => (
+              ).map(([value, label], index) => (
                 <button
                   key={value}
                   onClick={() => setDlcFilter(value)}
-                  className={`px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+                  className={`px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
+                    index < 2 ? "border-r-2 border-ink" : ""
+                  } ${
                     dlcFilter === value
-                      ? "bg-sees-500 text-abyss"
-                      : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
+                      ? "bg-ink text-paper"
+                      : "text-ink hover:bg-ink/10"
                   }`}
                 >
                   {label}
@@ -824,10 +806,10 @@ export default function App() {
             <button
               onClick={() => setFavoritesOnly((on) => !on)}
               aria-pressed={favoritesOnly}
-              className={`ml-auto px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+              className={`ml-auto border-2 px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
                 favoritesOnly
-                  ? "bg-moon text-abyss"
-                  : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
+                  ? "border-blood bg-blood text-paper"
+                  : "border-ink text-ink hover:bg-ink hover:text-paper"
               }`}
             >
               ★ Favorites
@@ -836,10 +818,10 @@ export default function App() {
             <button
               onClick={toggleCompareMode}
               aria-pressed={compareMode}
-              className={`px-3 py-2 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+              className={`border-2 px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
                 compareMode
-                  ? "bg-moon text-abyss"
-                  : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
+                  ? "border-blood bg-blood text-paper"
+                  : "border-ink text-ink hover:bg-ink hover:text-paper"
               }`}
             >
               {compareMode ? "Comparing…" : "Compare"}
@@ -847,7 +829,7 @@ export default function App() {
           </div>
 
           {compareMode && (
-            <p className="mt-3 text-sm uppercase tracking-wider text-moon">
+            <p className="mt-3 font-mono text-xs uppercase tracking-wider text-blood">
               Pick two personas to compare ({compareList.length}/2).
             </p>
           )}
@@ -857,10 +839,10 @@ export default function App() {
               <button
                 key={name}
                 onClick={() => setArcana(name)}
-                className={`px-4 py-1.5 text-sm font-semibold uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-sees-400 ${
+                className={`border-2 border-ink px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
                   arcana === name
-                    ? "bg-sees-500 text-abyss"
-                    : "border border-edge bg-panel/50 text-haze hover:border-sees-500/60 hover:text-frost"
+                    ? "bg-ink text-paper"
+                    : "text-ink hover:bg-ink hover:text-paper"
                 }`}
               >
                 {name}
@@ -869,12 +851,12 @@ export default function App() {
           </div>
 
           {error && (
-            <p className="mt-10 border border-rose-500/40 bg-rose-500/10 p-5 text-rose-200">
+            <p className="mt-10 border-2 border-blood bg-blood/10 p-5 font-mono text-sm text-blood">
               Could not load personas: {error}. Is the API running on :8000?
             </p>
           )}
 
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 border-l-2 border-t-2 border-ink sm:grid-cols-3 lg:grid-cols-4">
             {visible.map((persona) => (
               <PersonaCard
                 key={persona.id}
@@ -887,15 +869,18 @@ export default function App() {
           </div>
 
           {!error && !visible.length && (
-            <p className="mt-10 text-center uppercase tracking-wider text-haze">
+            <p className="mt-10 text-center font-mono text-sm uppercase tracking-wider text-mut">
               No personas match your filters.
             </p>
           )}
         </section>
       </main>
 
-      <footer className="border-t border-edge/60 py-10 text-center text-sm uppercase tracking-wider text-haze">
-        © boundlessend
+      <footer className="border-t-2 border-ink px-6 py-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-between font-mono text-xs uppercase tracking-wider text-mut">
+          <span>© boundlessend</span>
+          <span>Persona 3 Reload · Compendium</span>
+        </div>
       </footer>
 
       {selected && (

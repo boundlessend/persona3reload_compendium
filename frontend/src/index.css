@@ -1,21 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Saira Condensed", "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo Black", "Archivo", sans-serif;
+  --font-mono: "Space Mono", ui-monospace, "SFMono-Regular", monospace;
 
-  /* Persona 3 Reload palette: electric SEES blue on Dark Hour navy-black,
-     with the moon-green accent used sparingly. */
-  --color-abyss: #05070f;
-  --color-night: #0a0f20;
-  --color-panel: #0e1530;
-  --color-edge: #1b2752;
-  --color-sees-400: #4cc2ff;
-  --color-sees-500: #1f8fff;
-  --color-sees-600: #0a6cff;
-  --color-moon: #c2f24a;
-  --color-frost: #eaf1ff;
-  --color-haze: #8ea2cf;
+  /* Memento Mori palette: ink on bone paper with a single blood-red accent. */
+  --color-paper: #eae4d6;
+  --color-paper2: #e1d9c6;
+  --color-card: #f2ede1;
+  --color-ink: #16130d;
+  --color-blood: #c8102e;
+  --color-mut: #6d665a;
 }
 
 html {
@@ -24,13 +20,8 @@ html {
 
 body {
   font-family: var(--font-sans);
-  color: var(--color-frost);
-  background: var(--color-abyss);
-}
-
-/* P3R menu shard: diagonal electric streak used as the page signature. */
-.shard {
-  clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%);
+  color: var(--color-ink);
+  background: var(--color-paper);
 }
 
 @media (prefers-reduced-motion: reduce) {
