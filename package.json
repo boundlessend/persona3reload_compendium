@@ -2,8 +2,8 @@
   "name": "persona3-compendium",
   "private": true,
   "scripts": {
-    "dev": "trap 'kill 0' EXIT; (cd backend && .venv/bin/uvicorn app.main:app --port 8000) & (cd frontend && npm run dev) && wait",
+    "dev": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build",
-    "start": "cd backend && .venv/bin/uvicorn app.main:app --port 8000"
+    "preview": "cd frontend && npm run preview"
   }
 }

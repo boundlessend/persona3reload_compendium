@@ -22,26 +22,6 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm run build
 
-  backend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-      - run: pip install -r requirements.txt ruff
-      - run: ruff check
-      - run: python -c "from app.main import load_personas, _persona_index; ps = load_personas(); assert len(ps) > 200; assert len(_persona_index()) == len(ps)"
-
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - run: docker build -t persona-compendium .
-
   e2e:
     runs-on: ubuntu-latest
     steps:
