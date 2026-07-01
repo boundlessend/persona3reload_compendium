@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const TSV_PATH = resolve(here, "../../backend/docs/compendium.tsv");
+const TSV_PATH = resolve(here, "../data/compendium.tsv");
 const OUT_PATH = resolve(here, "../public/personas.json");
 
 const INT_FIELDS = new Set([
@@ -53,6 +53,18 @@ const personas = lines.slice(1).map((line) => {
   row.image = `/personas/${row.query}.png`;
   return row;
 });
+
+// целостность данных проверяется на этапе сборки (замена старой backend/CI-проверки)
+const seen = new Set();
+for (const persona of personas) {
+  if (seen.has(persona.query)) {
+    throw new Error(`duplicate query: ${persona.query}`);
+  }
+  seen.add(persona.query);
+}
+if (personas.length < 200) {
+  throw new Error(`unexpectedly few personas: ${personas.length}`);
+}
 
 personas.sort((a, b) => a.id - b.id);
 writeFileSync(OUT_PATH, JSON.stringify(personas));
