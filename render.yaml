@@ -17,9 +17,12 @@ services:
         name: Content-Security-Policy
         value: >-
           default-src 'self'; base-uri 'self'; frame-ancestors 'none';
-          object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'
-          https://fonts.googleapis.com; font-src https://fonts.gstatic.com;
-          img-src 'self' data:; connect-src 'self'
+          object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline';
+          font-src 'self'; img-src 'self' data:; connect-src 'self';
+          form-action 'self'
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=63072000; includeSubDomains; preload
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
