@@ -1,0 +1,34 @@
+# Render Blueprint: deploy the compendium as a pure static site (no backend).
+# The frontend build generates personas.json from the TSV, so the dist/ bundle
+# is fully self-contained. Security headers mirror the old FastAPI middleware.
+services:
+  - type: web
+    name: persona-compendium
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    # client-side routing: serve real files, fall back to the SPA shell
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: >-
+          default-src 'self'; base-uri 'self'; frame-ancestors 'none';
+          object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'
+          https://fonts.googleapis.com; font-src https://fonts.gstatic.com;
+          img-src 'self' data:; connect-src 'self'
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: Permissions-Policy
+        value: geolocation=(), microphone=(), camera=()
