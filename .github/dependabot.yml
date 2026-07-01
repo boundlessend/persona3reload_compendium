@@ -1,0 +1,12 @@
+version: 2
+# keeps GitHub Actions and frontend npm deps patched; combined with review this
+# covers the supply-chain hygiene the audit flagged (mutable action tags, deps)
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
