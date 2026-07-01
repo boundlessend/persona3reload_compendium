@@ -226,16 +226,18 @@ function PersonaCard({
   onSelect,
   marked,
   isFavorite,
+  compareMode,
 }: {
   persona: Persona;
   onSelect: (persona: Persona) => void;
   marked: boolean;
   isFavorite: boolean;
+  compareMode: boolean;
 }) {
   return (
     <button
       onClick={() => onSelect(persona)}
-      aria-pressed={marked}
+      aria-pressed={compareMode ? marked : undefined}
       className={`group relative flex flex-col border-b-2 border-r-2 border-ink bg-card p-5 text-left transition-colors hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
         marked ? "outline outline-[3px] -outline-offset-[3px] outline-blood" : ""
       }`}
@@ -333,9 +335,21 @@ function PersonaModal({
 }) {
   const [zoom, setZoom] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const enlargeRef = useRef<HTMLButtonElement>(null);
+  const zoomCloseRef = useRef<HTMLButtonElement>(null);
+
+  const closeZoom = () => {
+    setZoom(false);
+    enlargeRef.current?.focus();
+  };
 
   // Escape closes the zoom first, then the modal; Tab trap pauses during zoom
-  useDialog(panelRef, () => (zoom ? setZoom(false) : onClose()), !zoom);
+  useDialog(panelRef, () => (zoom ? closeZoom() : onClose()), !zoom);
+
+  // move focus into the zoom overlay when it opens
+  useEffect(() => {
+    if (zoom) zoomCloseRef.current?.focus();
+  }, [zoom]);
 
   return (
     <div
@@ -355,6 +369,7 @@ function PersonaModal({
           <div className="flex items-center gap-5">
             <button
               type="button"
+              ref={enlargeRef}
               onClick={() => setZoom(true)}
               className="group relative grid h-28 w-28 shrink-0 place-items-center border-2 border-ink bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
               aria-label="Enlarge artwork"
@@ -457,10 +472,20 @@ function PersonaModal({
 
       {zoom && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${persona.name} artwork`}
+          tabIndex={-1}
           className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/95 p-4"
           onClick={(event) => {
             event.stopPropagation();
-            setZoom(false);
+            closeZoom();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Tab") {
+              event.preventDefault();
+              zoomCloseRef.current?.focus();
+            }
           }}
         >
           <PersonaImage
@@ -468,9 +493,10 @@ function PersonaModal({
             className="max-h-[90vh] max-w-[90vw] object-contain"
           />
           <button
+            ref={zoomCloseRef}
             onClick={(event) => {
               event.stopPropagation();
-              setZoom(false);
+              closeZoom();
             }}
             className="absolute right-5 top-5 grid h-10 w-10 place-items-center border-2 border-paper text-paper transition hover:bg-paper hover:text-ink"
             aria-label="Close artwork"
@@ -810,6 +836,7 @@ export default function App() {
                 <button
                   key={value}
                   onClick={() => setDlcFilter(value)}
+                  aria-pressed={dlcFilter === value}
                   className={`px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
                     index < 2 ? "border-r-2 border-ink" : ""
                   } ${
@@ -859,6 +886,7 @@ export default function App() {
               <button
                 key={name}
                 onClick={() => setArcana(name)}
+                aria-pressed={arcana === name}
                 className={`border-2 border-ink px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
                   arcana === name
                     ? "bg-ink text-paper"
@@ -884,6 +912,7 @@ export default function App() {
                 onSelect={onCardClick}
                 marked={compareList.some((item) => item.id === persona.id)}
                 isFavorite={favorites.has(persona.query)}
+                compareMode={compareMode}
               />
             ))}
           </div>
