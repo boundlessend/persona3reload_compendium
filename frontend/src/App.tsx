@@ -61,7 +61,7 @@ function Hero({
         <div className="grid items-end gap-8 py-16 md:grid-cols-[1.3fr_0.7fr] md:py-20">
           <div>
             <p className="font-mono text-sm tracking-[0.1em] text-blood">
-              FIG. 001 — {count} / THE FULL RECORD
+              FIG. 001 / {count} PERSONAS / THE FULL RECORD
             </p>
             <h1 className="mt-5 font-display text-6xl uppercase leading-[0.84] tracking-tight md:text-8xl">
               Memento
