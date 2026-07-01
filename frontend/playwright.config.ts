@@ -1,17 +1,15 @@
 import { defineConfig } from "@playwright/test";
 
-// Python used to run the backend; override with PYTHON if your venv differs.
-const python = process.env.PYTHON ?? "../backend/.venv/bin/python";
-
-// Drives the production-shaped server: the FastAPI backend serves the built
-// SPA and the API on :8000, so tests exercise the same path users hit.
+// Drives the static build: `vite preview` serves the same dist/ bundle that
+// ships to the static host (SPA history fallback + generated personas.json),
+// so tests exercise exactly what users hit. No backend required.
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  use: { baseURL: "http://localhost:8000" },
+  use: { baseURL: "http://localhost:4173" },
   webServer: {
-    command: `npm run build && ${python} -m uvicorn app.main:app --app-dir ../backend --port 8000`,
-    url: "http://localhost:8000/api/health",
+    command: "npm run build && npm run preview -- --port 4173 --strictPort",
+    url: "http://localhost:4173",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
