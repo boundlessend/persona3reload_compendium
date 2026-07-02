@@ -19,25 +19,25 @@ import { CompareModal } from "./CompareModal";
 function Navbar() {
   return (
     <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="#top" className="flex items-baseline gap-3">
-          <span className="font-display text-2xl uppercase tracking-tight">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <a href="#top" className="flex items-baseline gap-2 sm:gap-3">
+          <span className="font-display text-lg uppercase tracking-tight sm:text-2xl">
             Compendium
           </span>
           <span className="border border-blood px-1.5 py-0.5 font-mono text-[11px] tracking-widest text-blood">
             P3R
           </span>
         </a>
-        <div className="flex items-center gap-5 md:gap-7">
+        <div className="flex items-center gap-4 sm:gap-5 md:gap-7">
           <a
             href="#browse"
-            className="font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood"
+            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
           >
             Browse
           </a>
           <a
             href="https://github.com/boundlessend/persona3reload_compendium"
-            className="bg-ink px-5 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood"
+            className="bg-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood sm:px-5"
           >
             Source ↗
           </a>
@@ -63,7 +63,7 @@ function Hero({
             <p className="font-mono text-sm tracking-[0.1em] text-blood">
               FIG. 001 / {count} PERSONAS / THE FULL RECORD
             </p>
-            <h1 className="mt-5 font-display text-6xl uppercase leading-[0.84] tracking-tight md:text-8xl">
+            <h1 className="mt-5 font-display text-[clamp(3rem,15vw,3.75rem)] uppercase leading-[0.84] tracking-tight md:text-8xl">
               Memento
               <br />
               <span className="text-blood">Mori.</span>
@@ -90,7 +90,7 @@ function Hero({
           ).map(([value, label], index) => (
             <div
               key={label}
-              className={`flex-1 py-5 ${index < 2 ? "border-r-2 border-ink" : ""}`}
+              className={`flex-1 py-5 ${index > 0 ? "pl-6" : ""} ${index < 2 ? "border-r-2 border-ink" : ""}`}
             >
               <div className="font-display text-4xl leading-none">
                 {String(value).padStart(2, "0")}
@@ -276,7 +276,7 @@ export default function App() {
         <section id="browse" className="mx-auto max-w-6xl px-6 py-16">
           <div className="flex flex-col gap-6 border-b-2 border-ink pb-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 className="font-display text-5xl uppercase leading-none tracking-tight">
+              <h2 className="font-display text-[clamp(2.25rem,11vw,3rem)] uppercase leading-none tracking-tight">
                 The compendium
               </h2>
               <p className="mt-3 font-mono text-xs uppercase tracking-wider text-mut">
