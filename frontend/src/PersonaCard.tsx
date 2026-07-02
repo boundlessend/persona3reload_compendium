@@ -51,7 +51,7 @@ export const PersonaCard = memo(function PersonaCard({
           </span>
         )}
       </div>
-      <p className="font-display text-xl uppercase leading-none text-ink group-hover:text-paper">
+      <p className="font-display text-xl uppercase leading-none text-ink break-words group-hover:text-paper">
         {persona.name}
       </p>
       <p className="mt-1.5 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">

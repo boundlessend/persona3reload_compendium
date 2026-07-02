@@ -48,8 +48,8 @@ export function PersonaModal({
         className="max-h-[92vh] w-full max-w-2xl overflow-y-auto border-2 border-ink bg-paper p-8 outline-none sm:shadow-[8px_8px_0_0_#16130d]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-6 border-b-2 border-ink pb-6">
-          <div className="flex items-center gap-5">
+        <div className="flex items-start justify-between gap-4 border-b-2 border-ink pb-6 sm:gap-6">
+          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             <button
               type="button"
               ref={enlargeRef}
@@ -65,11 +65,11 @@ export function PersonaModal({
                 Zoom
               </span>
             </button>
-            <div>
+            <div className="min-w-0">
               <p className="font-mono text-xs uppercase tracking-wider text-blood">
                 {idTag(persona.id)} · {persona.arcana} · Lv {persona.level}
               </p>
-              <h2 className="mt-1 font-display text-5xl uppercase leading-none">
+              <h2 className="mt-1 font-display text-4xl uppercase leading-none break-words sm:text-5xl">
                 {persona.name}
               </h2>
             </div>

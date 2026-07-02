@@ -49,7 +49,7 @@ export function CompareModal({
                   persona={persona}
                   className="mx-auto h-24 object-contain mix-blend-multiply"
                 />
-                <p className="mt-2 font-display text-xl uppercase leading-none sm:text-2xl">
+                <p className="mt-2 font-display text-xl uppercase leading-none break-words sm:text-2xl">
                   {persona.name}
                 </p>
                 <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-blood">
