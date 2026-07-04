@@ -442,9 +442,10 @@ export default function App() {
       </main>
 
       <footer className="border-t-2 border-ink px-6 py-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between font-mono text-xs uppercase tracking-wider text-mut">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-1 text-center font-mono text-xs uppercase tracking-wider text-mut">
           <span>© boundlessend</span>
-          <span>Persona 3 Reload · Compendium</span>
+          <span>Fan project · not affiliated with Atlus/Sega</span>
+          <span>Persona © Atlus/Sega</span>
         </div>
       </footer>
 
