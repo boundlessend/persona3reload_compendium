@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://persona-compendium-1zox.onrender.com/sitemap.xml
