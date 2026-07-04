@@ -17,7 +17,8 @@ services:
         name: Content-Security-Policy
         value: >-
           default-src 'self'; base-uri 'self'; frame-ancestors 'none';
-          object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline';
+          object-src 'none'; script-src 'self';
+          style-src 'self'; style-src-attr 'unsafe-inline';
           font-src 'self'; img-src 'self' data:; connect-src 'self';
           form-action 'self'
       - path: /*
@@ -34,4 +35,7 @@ services:
         value: no-referrer
       - path: /*
         name: Permissions-Policy
-        value: geolocation=(), microphone=(), camera=()
+        value: geolocation=(), microphone=(), camera=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin
