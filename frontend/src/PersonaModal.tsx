@@ -38,13 +38,14 @@ export function PersonaModal({
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={persona.name}
     >
       <div
         ref={panelRef}
         tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label={persona.name}
+        aria-hidden={zoom || undefined}
         className="max-h-[92vh] w-full max-w-2xl overflow-y-auto border-2 border-ink bg-paper p-8 outline-none sm:shadow-[8px_8px_0_0_#16130d]"
         onClick={(event) => event.stopPropagation()}
       >

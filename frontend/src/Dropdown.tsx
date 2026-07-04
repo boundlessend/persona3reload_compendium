@@ -1,21 +1,22 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 
-export type DropdownOption = { value: string; label: string };
+export type DropdownOption<T extends string> = { value: T; label: string };
 
 // кастомный listbox в брутализм-стиле сайта: замена нативному <select>,
 // с клавиатурной навигацией, click-outside и ARIA-разметкой
-export function Dropdown({
+export function Dropdown<T extends string>({
   value,
   options,
   onChange,
   ariaLabel,
 }: {
-  value: string;
-  options: DropdownOption[];
-  onChange: (value: string) => void;
+  value: T;
+  options: DropdownOption<T>[];
+  onChange: (value: T) => void;
   ariaLabel: string;
 }) {
   const [open, setOpen] = useState(false);
+  const listboxId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
 
@@ -39,7 +40,7 @@ export function Dropdown({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [open]);
 
-  const commit = (next: string): void => {
+  const commit = (next: T): void => {
     onChange(next);
     setOpen(false);
   };
@@ -71,10 +72,12 @@ export function Dropdown({
         focusOption(options.length - 1);
         break;
       case "Enter":
-      case " ":
+      case " ": {
         event.preventDefault();
-        commit(options[index].value);
+        const option = options[index];
+        if (option) commit(option.value);
         break;
+      }
       case "Escape":
         event.preventDefault();
         setOpen(false);
@@ -98,12 +101,13 @@ export function Dropdown({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={open ? listboxId : undefined}
         aria-label={ariaLabel}
         onPointerDown={() => setOpen((prev) => !prev)}
         onKeyDown={onTriggerKeyDown}
         className="flex items-center gap-2 border-2 border-ink bg-transparent px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
       >
-        {selected.label}
+        {selected?.label}
         <span
           aria-hidden="true"
           className={`text-blood transition-transform ${open ? "rotate-180" : ""}`}
@@ -113,6 +117,7 @@ export function Dropdown({
       </button>
       {open && (
         <ul
+          id={listboxId}
           role="listbox"
           aria-label={ariaLabel}
           className="absolute left-0 top-full z-20 mt-1 min-w-full border-2 border-ink bg-paper"
