@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchPersonas, PERSONA_COUNT, type Persona } from "./api";
 import {
-  AFFINITIES,
   AFFINITY_FILTER_LABELS,
   AFFINITY_KEYS,
-  decodeQuery,
   SORT_LABELS,
   SORTERS,
   type AffinityKey,
@@ -15,99 +13,15 @@ import { PersonaCard } from "./PersonaCard";
 import { PersonaModal } from "./PersonaModal";
 import { CompareModal } from "./CompareModal";
 import { Dropdown } from "./Dropdown";
-
-function Navbar() {
-  return (
-    <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <a href="#top" className="flex items-center gap-2 sm:gap-3">
-          <span className="font-display text-lg uppercase tracking-tight sm:text-2xl">
-            Compendium
-          </span>
-          <span className="border border-blood px-1.5 py-0.5 font-mono text-[11px] tracking-widest text-blood">
-            P3R
-          </span>
-        </a>
-        <div className="flex items-center gap-4 sm:gap-5 md:gap-7">
-          <a
-            href="#browse"
-            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
-          >
-            Browse
-          </a>
-          <a
-            href="https://github.com/boundlessend/persona3reload_compendium"
-            className="bg-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood sm:px-5"
-          >
-            Source ↗
-          </a>
-        </div>
-      </nav>
-    </header>
-  );
-}
-
-function Hero({
-  personas,
-  arcanaCount,
-}: {
-  personas: Persona[];
-  arcanaCount: number;
-}) {
-  const count = personas.length || PERSONA_COUNT;
-  return (
-    <section id="top" className="border-b-2 border-ink">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="grid items-end gap-8 py-16 md:grid-cols-[1.3fr_0.7fr] md:py-20">
-          <div>
-            <p className="font-mono text-sm tracking-[0.1em] text-blood">
-              FIG. 001 / {count} PERSONAS / THE FULL RECORD
-            </p>
-            <h1 className="mt-5 font-display text-[clamp(3rem,15vw,3.75rem)] uppercase leading-[0.84] tracking-tight md:text-8xl">
-              Memento
-              <br />
-              <span className="text-blood">Mori.</span>
-            </h1>
-            <a
-              href="#browse"
-              className="mt-8 inline-block bg-blood px-8 py-4 font-mono text-sm uppercase tracking-widest text-paper transition hover:bg-ink"
-            >
-              Open the record →
-            </a>
-          </div>
-          <p className="max-w-sm pb-2 leading-relaxed text-mut md:text-right">
-            The full Persona 3 Reload compendium, mirrored. All {count} personas
-            catalogued: arcana, stats and elemental affinities, set in ink.
-          </p>
-        </div>
-        <div className="flex border-t-2 border-ink">
-          {(
-            [
-              [count, "Personas"],
-              [arcanaCount || 22, "Arcana"],
-              [AFFINITIES.length, "Affinities"],
-            ] as [number, string][]
-          ).map(([value, label], index) => (
-            <div
-              key={label}
-              className={`flex-1 py-5 ${index > 0 ? "pl-6" : ""} ${index < 2 ? "border-r-2 border-ink" : ""}`}
-            >
-              <div className="font-display text-4xl leading-none">
-                {String(value).padStart(2, "0")}
-              </div>
-              <div className="mt-1.5 font-mono text-[11px] uppercase tracking-widest text-mut">
-                {label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+import { Navbar } from "./Navbar";
+import { Hero } from "./Hero";
+import { NotFound } from "./NotFound";
+import { useFavorites } from "./useFavorites";
+import { usePersonaRouting } from "./usePersonaRouting";
 
 export default function App() {
   const [personas, setPersonas] = useState<Persona[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [arcana, setArcana] = useState("All");
@@ -115,97 +29,27 @@ export default function App() {
   const [element, setElement] = useState("All");
   const [affinityType, setAffinityType] = useState<AffinityKey>("weak");
   const [dlcFilter, setDlcFilter] = useState<DlcFilter>("all");
-  const [selected, setSelected] = useState<Persona | null>(null);
-  // did WE push a /persona/... entry? drives whether close pops or replaces
-  const historyPushedRef = useRef(false);
   const [compareMode, setCompareMode] = useState(false);
   const [compareList, setCompareList] = useState<Persona[]>([]);
-  const [favorites, setFavorites] = useState<Set<string>>(() => {
-    try {
-      const raw = localStorage.getItem("favorites");
-      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch {
-      return new Set();
-    }
-  });
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem("favorites", JSON.stringify([...favorites]));
-    } catch {
-      // storage unavailable (private mode / quota): degrade to in-memory only
-    }
-  }, [favorites]);
-
-  const toggleFavorite = (query: string) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(query)) next.delete(query);
-      else next.add(query);
-      return next;
-    });
-  };
+  const { favorites, toggleFavorite } = useFavorites();
+  const { selected, notFound, openPersona, closePersona } =
+    usePersonaRouting(personas);
 
   useEffect(() => {
     const controller = new AbortController();
     fetchPersonas(controller.signal)
       .then(setPersonas)
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (controller.signal.aborted) return;
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
   }, []);
-
-  // open the persona named in the URL (/persona/<query>) once data is loaded
-  useEffect(() => {
-    if (!personas.length) return;
-    const match = window.location.pathname.match(/^\/persona\/(.+)$/);
-    if (!match) return;
-    const query = decodeQuery(match[1]);
-    if (query === null) return;
-    const persona = personas.find((item) => item.query === query);
-    if (persona) setSelected(persona);
-  }, [personas]);
-
-  useEffect(() => {
-    const onPop = () => {
-      historyPushedRef.current = false;
-      const match = window.location.pathname.match(/^\/persona\/(.+)$/);
-      const query = match ? decodeQuery(match[1]) : null;
-      const persona = query
-        ? personas.find((item) => item.query === query)
-        : undefined;
-      setSelected(persona ?? null);
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, [personas]);
-
-  useEffect(() => {
-    document.title = selected
-      ? `${selected.name} · Persona Compendium`
-      : "Persona Compendium · Persona 3 Reload";
-  }, [selected]);
-
-  const openPersona = useCallback((persona: Persona) => {
-    setSelected(persona);
-    window.history.pushState(null, "", `/persona/${persona.query}`);
-    historyPushedRef.current = true;
-  }, []);
-
-  const closePersona = () => {
-    setSelected(null);
-    // pop our own entry so Back does not re-open the modal; on a direct deep
-    // link (no entry of ours) replace it instead, to avoid leaving the site
-    if (historyPushedRef.current) {
-      historyPushedRef.current = false;
-      window.history.back();
-    } else if (window.location.pathname !== "/") {
-      window.history.replaceState(null, "", "/");
-    }
-  };
 
   const toggleCompareMode = () => {
     setCompareMode((on) => !on);
@@ -216,7 +60,10 @@ export default function App() {
     setCompareList((prev) => {
       if (prev.some((item) => item.id === persona.id))
         return prev.filter((item) => item.id !== persona.id);
-      if (prev.length >= 2) return [prev[1], persona];
+      if (prev.length >= 2) {
+        const kept = prev[prev.length - 1];
+        return kept ? [kept, persona] : [persona];
+      }
       return [...prev, persona];
     });
   }, []);
@@ -267,6 +114,10 @@ export default function App() {
     sort,
   ]);
 
+  const [compareA, compareB] = compareList;
+
+  if (notFound) return <NotFound />;
+
   return (
     <div className="min-h-screen bg-paper">
       <Navbar />
@@ -280,7 +131,9 @@ export default function App() {
                 The compendium
               </h2>
               <p className="mt-3 font-mono text-xs uppercase tracking-wider text-mut">
-                {visible.length} of {personas.length || PERSONA_COUNT} personas
+                {loading
+                  ? "Loading…"
+                  : `${visible.length} of ${personas.length || PERSONA_COUNT} personas`}
               </p>
             </div>
             <input
@@ -301,7 +154,7 @@ export default function App() {
                   value: key,
                   label: SORT_LABELS[key],
                 }))}
-                onChange={(value) => setSort(value as SortKey)}
+                onChange={setSort}
                 ariaLabel="Sort"
               />
             </label>
@@ -313,7 +166,7 @@ export default function App() {
                   value: key,
                   label: AFFINITY_FILTER_LABELS[key],
                 }))}
-                onChange={(value) => setAffinityType(value as AffinityKey)}
+                onChange={setAffinityType}
                 ariaLabel="Affinity type"
               />
               <Dropdown
@@ -423,7 +276,7 @@ export default function App() {
             ))}
           </div>
 
-          {!error && !visible.length && (
+          {!loading && !error && !visible.length && (
             <p className="mt-10 text-center font-mono text-sm uppercase tracking-wider text-mut">
               No personas match your filters.
             </p>
@@ -448,10 +301,10 @@ export default function App() {
         />
       )}
 
-      {compareList.length === 2 && !selected && (
+      {compareA && compareB && !selected && (
         <CompareModal
-          a={compareList[0]}
-          b={compareList[1]}
+          a={compareA}
+          b={compareB}
           onClose={() => setCompareList([])}
         />
       )}
