@@ -8,7 +8,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // держим React в отдельном долгоживущем чанке от кода приложения
-        manualChunks: { react: ["react", "react-dom"] },
+        // (vite 8 / rolldown принимает manualChunks только функцией)
+        manualChunks: (id) =>
+          /node_modules\/(react|react-dom|scheduler)\//.test(id)
+            ? "react"
+            : undefined,
       },
     },
   },
