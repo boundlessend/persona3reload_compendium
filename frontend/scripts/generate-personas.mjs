@@ -1,4 +1,4 @@
-// собирает статический public/personas.json из backend/docs/compendium.tsv.
+// собирает статический public/personas.json из frontend/data/compendium.tsv.
 // запускается на pre-сборке, чтобы фронтенд не зависел от рантайм-бэкенда:
 // TSV остаётся единственным источником правды, а на прод уезжает готовый JSON.
 import { readFileSync, writeFileSync } from "node:fs";
@@ -49,8 +49,8 @@ const personas = lines.slice(1).map((line) => {
   if (!row.query) {
     throw new Error(`row with id=${row.id} has no query field`);
   }
-  // локально зеркалированный арт лежит в public/personas/<query>.png
-  row.image = `/personas/${row.query}.png`;
+  // локально зеркалированный арт лежит в public/personas/<query>.webp
+  row.image = `/personas/${row.query}.webp`;
   return row;
 });
 
