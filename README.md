@@ -21,7 +21,7 @@ frontend/public/personas.json    generated build artifact
         |  bundled by `vite build`
         v
 frontend/dist/  ->  static host / CDN  --(fetch /personas.json)-->  browser SPA
-art: frontend/public/personas/*.png   213 files, shipped in repo
+art: frontend/public/personas/*.webp  213 files (~7.7 MB), shipped in repo
 ```
 
 - `frontend/data/compendium.tsv` is the single source of truth. The build step
@@ -33,7 +33,7 @@ art: frontend/public/personas/*.png   213 files, shipped in repo
   the repo.
 - Routing is client-side: `/persona/<query>` opens a persona directly via the
   History API. On a static host this works through an SPA-fallback rewrite to
-  `index.html`.
+  `index.html`; unknown paths render a client-side 404 page.
 - Client state is limited to the favorites list in `localStorage`. No accounts,
   auth, database or API.
 
@@ -80,9 +80,9 @@ Render:
 - build: `cd frontend && npm ci && npm run build`
 - publish: `frontend/dist`
 - SPA-fallback rewrite of `/*` to `/index.html`
-- security headers: `Content-Security-Policy`, `X-Frame-Options: DENY`,
-  `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`,
-  `Permissions-Policy`, `Strict-Transport-Security`
+- security headers: `Content-Security-Policy`, `Cross-Origin-Opener-Policy`,
+  `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: no-referrer`, `Permissions-Policy`, `Strict-Transport-Security`
 
 The same build and publish settings work on Vercel, Netlify or Cloudflare Pages;
 each needs an equivalent SPA rewrite and the same security headers.
