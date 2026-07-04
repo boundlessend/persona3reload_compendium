@@ -20,7 +20,7 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <a href="#top" className="flex items-baseline gap-2 sm:gap-3">
+        <a href="#top" className="flex items-center gap-2 sm:gap-3">
           <span className="font-display text-lg uppercase tracking-tight sm:text-2xl">
             Compendium
           </span>
