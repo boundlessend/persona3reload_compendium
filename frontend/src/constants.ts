@@ -53,9 +53,6 @@ export const SORTERS: Record<SortKey, (a: Persona, b: Persona) => number> = {
 
 export type DlcFilter = "all" | "base" | "dlc";
 
-export const SELECT_CLASS =
-  "border-2 border-ink bg-transparent px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink outline-none transition focus:border-blood";
-
 export const idTag = (id: number): string => `№${String(id).padStart(3, "0")}`;
 
 // декодирует сегмент query из URL; на битом percent-encoding возвращает null

@@ -5,7 +5,6 @@ import {
   AFFINITY_FILTER_LABELS,
   AFFINITY_KEYS,
   decodeQuery,
-  SELECT_CLASS,
   SORT_LABELS,
   SORTERS,
   type AffinityKey,
@@ -15,6 +14,7 @@ import {
 import { PersonaCard } from "./PersonaCard";
 import { PersonaModal } from "./PersonaModal";
 import { CompareModal } from "./CompareModal";
+import { Dropdown } from "./Dropdown";
 
 function Navbar() {
   return (
@@ -295,46 +295,36 @@ export default function App() {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
               Sort
-              <select
+              <Dropdown
                 value={sort}
-                onChange={(event) => setSort(event.target.value as SortKey)}
-                className={SELECT_CLASS}
-              >
-                {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
-                  <option key={key} value={key}>
-                    {SORT_LABELS[key]}
-                  </option>
-                ))}
-              </select>
+                options={(Object.keys(SORT_LABELS) as SortKey[]).map((key) => ({
+                  value: key,
+                  label: SORT_LABELS[key],
+                }))}
+                onChange={(value) => setSort(value as SortKey)}
+                ariaLabel="Sort"
+              />
             </label>
 
             <div className="flex items-center gap-2">
-              <select
+              <Dropdown
                 value={affinityType}
-                onChange={(event) =>
-                  setAffinityType(event.target.value as AffinityKey)
-                }
-                className={SELECT_CLASS}
-                aria-label="Affinity type"
-              >
-                {AFFINITY_KEYS.map((key) => (
-                  <option key={key} value={key}>
-                    {AFFINITY_FILTER_LABELS[key]}
-                  </option>
-                ))}
-              </select>
-              <select
+                options={AFFINITY_KEYS.map((key) => ({
+                  value: key,
+                  label: AFFINITY_FILTER_LABELS[key],
+                }))}
+                onChange={(value) => setAffinityType(value as AffinityKey)}
+                ariaLabel="Affinity type"
+              />
+              <Dropdown
                 value={element}
-                onChange={(event) => setElement(event.target.value)}
-                className={SELECT_CLASS}
-                aria-label="Element"
-              >
-                {elements.map((name) => (
-                  <option key={name} value={name}>
-                    {name === "All" ? "Any element" : name}
-                  </option>
-                ))}
-              </select>
+                options={elements.map((name) => ({
+                  value: name,
+                  label: name === "All" ? "Any element" : name,
+                }))}
+                onChange={setElement}
+                ariaLabel="Element"
+              />
             </div>
 
             <div
