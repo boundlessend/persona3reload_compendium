@@ -18,7 +18,7 @@ services:
         value: >-
           default-src 'self'; base-uri 'self'; frame-ancestors 'none';
           object-src 'none'; script-src 'self';
-          style-src 'self'; style-src-attr 'unsafe-inline';
+          style-src 'self';
           font-src 'self'; img-src 'self' data:; connect-src 'self';
           form-action 'self'
       - path: /*
@@ -39,3 +39,8 @@ services:
       - path: /*
         name: Cross-Origin-Opener-Policy
         value: same-origin
+      # .webmanifest has no built-in MIME on the static host (served as
+      # octet-stream); set the spec type so browsers accept the manifest
+      - path: /site.webmanifest
+        name: Content-Type
+        value: application/manifest+json

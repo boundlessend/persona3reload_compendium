@@ -6,15 +6,18 @@
   "theme_color": "#eae4d6",
   "background_color": "#eae4d6",
   "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
-      "src": "/og.png",
+      "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "1200x630"
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ]
 }

@@ -1,8 +1,15 @@
+import { useEffect, useRef } from "react";
 import { MAX_STAT, STAT_KEYS, type Persona } from "./api";
 import { AFFINITIES, STAT_LABELS } from "./constants";
 
 function StatBar({ label, value }: { label: string; value: number }) {
   const pct = Math.min(100, (value / MAX_STAT) * 100);
+  const barRef = useRef<HTMLDivElement>(null);
+  // ширина задаётся через CSSOM, а не инлайн-атрибут style: CSSOM-правки не
+  // подпадают под style-src-attr, поэтому CSP обходится без 'unsafe-inline'
+  useEffect(() => {
+    if (barRef.current) barRef.current.style.width = `${pct}%`;
+  }, [pct]);
   return (
     <div>
       <div className="mb-1 flex justify-between font-mono text-[11px] uppercase tracking-wider text-mut">
@@ -10,7 +17,7 @@ function StatBar({ label, value }: { label: string; value: number }) {
         <span className="text-ink">{value}</span>
       </div>
       <div className="h-2 border border-ink">
-        <div className="h-full bg-ink" style={{ width: `${pct}%` }} />
+        <div ref={barRef} className="h-full bg-ink" />
       </div>
     </div>
   );
