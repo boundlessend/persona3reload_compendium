@@ -26,13 +26,15 @@ function assertPersonas(data: unknown): asserts data is Persona[] {
     throw new Error("Malformed personas.json: expected an array");
   }
   for (const item of data) {
+    if (typeof item !== "object" || item === null) {
+      throw new Error("Malformed personas.json: unexpected persona shape");
+    }
+    const fields = item as Record<string, unknown>;
     if (
-      typeof item !== "object" ||
-      item === null ||
-      typeof (item as Persona).id !== "number" ||
-      typeof (item as Persona).name !== "string" ||
-      typeof (item as Persona).query !== "string" ||
-      typeof (item as Persona).arcana !== "string"
+      typeof fields.id !== "number" ||
+      typeof fields.name !== "string" ||
+      typeof fields.query !== "string" ||
+      typeof fields.arcana !== "string"
     ) {
       throw new Error("Malformed personas.json: unexpected persona shape");
     }
@@ -64,6 +66,6 @@ export type StatKey = (typeof STAT_KEYS)[number];
 // stats are normalized to this cap when rendered as bars
 export const MAX_STAT = 99;
 
-// Fallback count shown before data loads; mirrors the row count in
-// frontend/data/compendium.tsv.
-export const PERSONA_COUNT = 213;
+// Fallback count shown before data loads; generated from
+// frontend/data/compendium.tsv so it cannot drift from the data.
+export { PERSONA_COUNT } from "./generated-meta";

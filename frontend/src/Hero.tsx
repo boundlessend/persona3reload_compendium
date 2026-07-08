@@ -1,5 +1,6 @@
 import type { Persona } from "./api";
 import { PERSONA_COUNT } from "./api";
+import { ARCANA_COUNT } from "./generated-meta";
 import { AFFINITIES } from "./constants";
 
 export function Hero({
@@ -39,7 +40,7 @@ export function Hero({
           {(
             [
               [count, "Personas"],
-              [arcanaCount || 22, "Arcana"],
+              [arcanaCount || ARCANA_COUNT, "Arcana"],
               [AFFINITIES.length, "Affinities"],
             ] as [number, string][]
           ).map(([value, label], index) => (
