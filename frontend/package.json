@@ -9,6 +9,7 @@
     "dev": "vite",
     "prebuild": "npm run generate:data",
     "build": "tsc --noEmit && vite build",
+    "postbuild": "node scripts/prerender-meta.mjs",
     "preview": "vite preview",
     "test:e2e": "playwright test"
   },

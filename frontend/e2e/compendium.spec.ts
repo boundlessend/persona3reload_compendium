@@ -36,6 +36,14 @@ test("deep link opens a persona directly", async ({ page }) => {
   await expect(page).toHaveTitle(/Izanagi/);
 });
 
+test("deep link with a trailing slash still opens the persona", async ({
+  page,
+}) => {
+  await page.goto("/persona/izanagi/");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page).toHaveTitle(/Izanagi/);
+});
+
 test("arcana filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();
@@ -103,10 +111,10 @@ test("no matches shows an empty state", async ({ page }) => {
   await expect(page.getByText("0 of 213 personas")).toBeVisible();
 });
 
-test("unknown deep link does not open a dialog", async ({ page }) => {
+test("unknown deep link shows the 404 page, not a dialog", async ({ page }) => {
   await page.goto("/persona/not-a-real-persona");
   await expect(
-    page.getByRole("heading", { name: "The compendium" }),
+    page.getByRole("heading", { name: "Lost to the Dark Hour" }),
   ).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });

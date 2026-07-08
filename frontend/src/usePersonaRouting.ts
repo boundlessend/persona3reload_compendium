@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Persona } from "./api";
 import { decodeQuery } from "./constants";
 
-const PERSONA_PATH = /^\/persona\/(.+)$/;
+// хвостовой слэш опционален: хосты часто редиректят /persona/x -> /persona/x/
+const PERSONA_PATH = /^\/persona\/(.+?)\/?$/;
 
 // роутинг через History API: deep-link /persona/<query>, popstate, синхронизация
 // document.title и определение неизвестного пути (soft-404)
@@ -16,6 +17,9 @@ export function usePersonaRouting(personas: Persona[]): {
   const [notFound, setNotFound] = useState(false);
   // did WE push a /persona/... entry? drives whether close pops or replaces
   const historyPushedRef = useRef(false);
+  // latest personas for the popstate listener, so it subscribes once
+  const personasRef = useRef(personas);
+  personasRef.current = personas;
 
   // после загрузки данных разобрать текущий путь: открыть персону или отметить 404
   useEffect(() => {
@@ -40,13 +44,13 @@ export function usePersonaRouting(personas: Persona[]): {
       const match = window.location.pathname.match(PERSONA_PATH);
       const query = match ? decodeQuery(match[1] ?? "") : null;
       const persona = query
-        ? personas.find((item) => item.query === query)
+        ? personasRef.current.find((item) => item.query === query)
         : undefined;
       setSelected(persona ?? null);
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, [personas]);
+  }, []);
 
   useEffect(() => {
     document.title = selected
