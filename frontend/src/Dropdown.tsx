@@ -89,7 +89,12 @@ export function Dropdown<T extends string>({
   };
 
   const onTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
-    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+    if (
+      event.key === "ArrowDown" ||
+      event.key === "ArrowUp" ||
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
       event.preventDefault();
       setOpen(true);
     }

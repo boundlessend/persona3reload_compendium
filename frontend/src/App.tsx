@@ -138,6 +138,7 @@ export default function App() {
             </div>
             <input
               type="search"
+              aria-label="Search by name"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by name…"

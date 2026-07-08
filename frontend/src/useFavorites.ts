@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // избранные персоны с персистом в localStorage; при недоступности storage
 // (private mode/quota) деградирует до in-memory
@@ -28,14 +28,14 @@ export function useFavorites(): {
     }
   }, [favorites]);
 
-  const toggleFavorite = (query: string): void => {
+  const toggleFavorite = useCallback((query: string): void => {
     setFavorites((prev) => {
       const next = new Set(prev);
       if (next.has(query)) next.delete(query);
       else next.add(query);
       return next;
     });
-  };
+  }, []);
 
   return { favorites, toggleFavorite };
 }

@@ -29,7 +29,7 @@ export function useDialog(
       }
       if (event.key !== "Tab" || !trapActive) return;
       const focusable = ref.current?.querySelectorAll<HTMLElement>(
-        'a[href], button, input, select, [tabindex]:not([tabindex="-1"])',
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])',
       );
       if (!focusable?.length) return;
       const first = focusable[0];
