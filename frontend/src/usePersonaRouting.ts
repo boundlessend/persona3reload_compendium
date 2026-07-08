@@ -60,10 +60,12 @@ export function usePersonaRouting(personas: Persona[]): {
 
   const openPersona = useCallback((persona: Persona) => {
     setSelected(persona);
+    // хвостовой слэш: так URL совпадает с prerender-файлом, который Render
+    // отдаёт по /persona/<query>/ (см. scripts/prerender-meta.mjs)
     window.history.pushState(
       null,
       "",
-      `/persona/${encodeURIComponent(persona.query)}`,
+      `/persona/${encodeURIComponent(persona.query)}/`,
     );
     historyPushedRef.current = true;
   }, []);

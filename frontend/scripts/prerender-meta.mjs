@@ -77,7 +77,9 @@ for (const persona of personas) {
       `${persona.name}: ${persona.arcana} arcana persona from Persona 3 Reload.`,
     180,
   );
-  const url = `${SITE}/persona/${encodeURIComponent(persona.query)}`;
+  // хвостовой слэш: Render отдаёт prerender-файл только по /persona/<query>/,
+  // поэтому canonical/og:url и приложение (pushState) используют слэш
+  const url = `${SITE}/persona/${encodeURIComponent(persona.query)}/`;
   const dir = resolve(DIST, "persona", persona.query);
   mkdirSync(dir, { recursive: true });
   writeFileSync(resolve(dir, "index.html"), personalise(shell, { title, description, url }));
