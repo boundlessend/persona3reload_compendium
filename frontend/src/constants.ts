@@ -75,3 +75,16 @@ export function decodeQuery(raw: string): string | null {
     return null;
   }
 }
+
+// персон по арканам в порядке первого появления в списке
+export function countByArcana(
+  personas: Persona[],
+): { arcana: string; count: number }[] {
+  const counts = new Map<string, number>();
+  const order: string[] = [];
+  for (const persona of personas) {
+    if (!counts.has(persona.arcana)) order.push(persona.arcana);
+    counts.set(persona.arcana, (counts.get(persona.arcana) ?? 0) + 1);
+  }
+  return order.map((arcana) => ({ arcana, count: counts.get(arcana) ?? 0 }));
+}

@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 // стихия/тип и цель. Данные из public/skills.json (см. scripts/generate-skills.mjs)
 export type Skill = { n: string; lv: number | null; el: string; tg: string };
 
-// загрузка каталога скиллов по персонам; это доп-слой, при сбое деградируем молча
-// в лог (скиллы - улучшение, а не критичный путь)
+// загрузка каталога скиллов по персонам; error поднимаем для страницы /skills,
+// где скиллы - основной контент. В PersonaModal это доп-слой: там error игнорят
 export function useSkills(): {
   skills: Record<string, Skill[]>;
   loading: boolean;
+  error: string | null;
 } {
   const [skills, setSkills] = useState<Record<string, Skill[]>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -26,7 +28,8 @@ export function useSkills(): {
         }
       })
       .catch((err: unknown) => {
-        if (!controller.signal.aborted) console.error("skills load failed", err);
+        if (controller.signal.aborted) return;
+        setError(err instanceof Error ? err.message : String(err));
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
@@ -34,5 +37,5 @@ export function useSkills(): {
     return () => controller.abort();
   }, []);
 
-  return { skills, loading };
+  return { skills, loading, error };
 }

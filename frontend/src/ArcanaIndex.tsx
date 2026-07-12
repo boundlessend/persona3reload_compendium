@@ -1,22 +1,15 @@
 import { useMemo } from "react";
 import { usePersonas } from "./usePersonas";
+import { countByArcana } from "./constants";
 import { ARCANA_GUIDE } from "./arcanaGuide";
+import { ErrorNote } from "./ErrorNote";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
 // страница /arcana/: все 22 арканы карточками со ссылкой на детальную страницу
 export function ArcanaIndex() {
-  const { personas } = usePersonas();
-
-  const arcana = useMemo(() => {
-    const counts = new Map<string, number>();
-    const order: string[] = [];
-    for (const persona of personas) {
-      if (!counts.has(persona.arcana)) order.push(persona.arcana);
-      counts.set(persona.arcana, (counts.get(persona.arcana) ?? 0) + 1);
-    }
-    return order.map((name) => ({ name, count: counts.get(name) ?? 0 }));
-  }, [personas]);
+  const { personas, loading, error } = usePersonas();
+  const arcanaCounts = useMemo(() => countByArcana(personas), [personas]);
 
   return (
     <div className="min-h-screen bg-paper">
@@ -34,28 +27,36 @@ export function ArcanaIndex() {
           its personas.
         </p>
 
-        <div className="mt-12 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
-          {arcana.map(({ name, count }) => {
-            const entry = ARCANA_GUIDE[name];
-            return (
-              <a
-                key={name}
-                href={`/arcana/${name.toLowerCase()}/`}
-                className="group flex flex-col border-b-2 border-r-2 border-ink bg-card p-6 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
-              >
-                <span className="font-display text-2xl uppercase leading-none">
-                  {name}
-                </span>
-                <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
-                  {entry?.confidant ?? "-"}
-                </span>
-                <span className="mt-6 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
-                  {count} personas
-                </span>
-              </a>
-            );
-          })}
-        </div>
+        {error ? (
+          <ErrorNote message={`Could not load personas: ${error}.`} />
+        ) : loading ? (
+          <p className="mt-12 font-mono text-xs uppercase tracking-wider text-mut">
+            Loading…
+          </p>
+        ) : (
+          <div className="mt-12 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
+            {arcanaCounts.map(({ arcana: name, count }) => {
+              const entry = ARCANA_GUIDE[name];
+              return (
+                <a
+                  key={name}
+                  href={`/arcana/${name.toLowerCase()}/`}
+                  className="group flex flex-col border-b-2 border-r-2 border-ink bg-card p-6 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+                >
+                  <span className="font-display text-2xl uppercase leading-none">
+                    {name}
+                  </span>
+                  <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
+                    {entry?.confidant ?? "-"}
+                  </span>
+                  <span className="mt-6 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
+                    {count} personas
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        )}
       </main>
       <Footer />
     </div>

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { STAT_KEYS, type Persona } from "./api";
-import { STAT_LABELS } from "./constants";
+import { STAT_LABELS, countByArcana } from "./constants";
 import { Bar } from "./Bar";
 
 const LEVEL_BANDS = [
@@ -22,13 +22,7 @@ export function StatsSection({
 }) {
   const stats = useMemo(() => {
     if (!personas.length) return null;
-    const counts = new Map<string, number>();
-    for (const persona of personas)
-      counts.set(persona.arcana, (counts.get(persona.arcana) ?? 0) + 1);
-    const perArcana = Array.from(counts, ([arcana, count]) => ({
-      arcana,
-      count,
-    })).sort((a, b) => b.count - a.count);
+    const perArcana = countByArcana(personas).sort((a, b) => b.count - a.count);
     const levelSpread = LEVEL_BANDS.map((band) => ({
       label: band.label,
       count: personas.filter((p) => p.level >= band.min && p.level <= band.max)

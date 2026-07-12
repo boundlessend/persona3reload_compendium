@@ -2,12 +2,13 @@ import { useMemo, useState } from "react";
 import { useSkills } from "./useSkills";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { ErrorNote } from "./ErrorNote";
 import { Chip } from "./Controls";
 
 // страница /skills: каталог всех скиллов (имя, стихия, цель, сколько персон учит),
 // с фильтром по стихии/типу. Клик по числу учащих не делаем - список велик
 export function SkillsBrowser() {
-  const { skills, loading } = useSkills();
+  const { skills, loading, error } = useSkills();
   const [element, setElement] = useState("All");
 
   const catalog = useMemo(() => {
@@ -62,6 +63,8 @@ export function SkillsBrowser() {
         <p className="mt-6 font-mono text-xs uppercase tracking-wider text-mut">
           {loading ? "Loading…" : `${visible.length} skills`}
         </p>
+
+        {error && <ErrorNote message={`Could not load skills: ${error}.`} />}
 
         <div className="mt-4 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((skill) => (

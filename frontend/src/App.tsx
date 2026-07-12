@@ -22,6 +22,7 @@ import { Hero } from "./Hero";
 import { PersonaOfTheDay } from "./PersonaOfTheDay";
 import { StatsSection } from "./StatsSection";
 import { Footer } from "./Footer";
+import { ErrorNote } from "./ErrorNote";
 import { NotFound } from "./NotFound";
 import { ArcanaIndex } from "./ArcanaIndex";
 import { ArcanaDetail } from "./ArcanaDetail";
@@ -424,11 +425,7 @@ function HomePage() {
             ))}
           </div>
 
-          {error && (
-            <p className="mt-10 border-2 border-blood bg-blood/10 p-5 font-mono text-sm text-blood">
-              Could not load personas: {error}. Try refreshing the page.
-            </p>
-          )}
+          {error && <ErrorNote message={`Could not load personas: ${error}.`} />}
 
           <div className="mt-10 grid grid-cols-2 border-l-2 border-t-2 border-ink sm:grid-cols-3 lg:grid-cols-4">
             {visible.map((persona) => (
