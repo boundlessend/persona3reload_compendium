@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PERSONA_COUNT, type Persona } from "./api";
 import { usePersonas } from "./usePersonas";
+import { useSkills } from "./useSkills";
 import {
   AFFINITY_FILTER_LABELS,
   AFFINITY_KEYS,
@@ -23,11 +24,13 @@ import { Footer } from "./Footer";
 import { NotFound } from "./NotFound";
 import { ArcanaIndex } from "./ArcanaIndex";
 import { ArcanaDetail } from "./ArcanaDetail";
+import { SkillsBrowser } from "./SkillsBrowser";
 import { useFavorites } from "./useFavorites";
 import { usePersonaRouting } from "./usePersonaRouting";
 
 function HomePage() {
   const { personas, loading, error } = usePersonas();
+  const { skills } = useSkills();
   const [search, setSearch] = useState("");
   const [arcana, setArcana] = useState("All");
   const [origin, setOrigin] = useState("All");
@@ -487,6 +490,7 @@ function HomePage() {
         <PersonaModal
           persona={selected}
           personas={personas}
+          skills={skills[selected.query] ?? null}
           onClose={closePersona}
           isFavorite={favorites.has(selected.query)}
           onToggleFavorite={toggleFavorite}
@@ -556,5 +560,6 @@ export default function App() {
     return <ArcanaDetail slug={decodeURIComponent(detail[1] ?? "").toLowerCase()} />;
   }
   if (/^\/arcana\/?$/.test(path)) return <ArcanaIndex />;
+  if (/^\/skills\/?$/.test(path)) return <SkillsBrowser />;
   return <HomePage />;
 }

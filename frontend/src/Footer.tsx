@@ -5,6 +5,7 @@ export function Footer() {
         <span>© boundlessend</span>
         <span>Fan project · not affiliated with Atlus/Sega</span>
         <span>Persona © Atlus/Sega</span>
+        <span>Fusion &amp; skill data · aqiu384 megaten-fusion-tool</span>
       </div>
     </footer>
   );

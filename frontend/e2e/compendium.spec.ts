@@ -109,6 +109,22 @@ test("comparing reflects the selection into the URL", async ({ page }) => {
   await expect(page).toHaveURL(/compare=/);
 });
 
+test("persona modal shows learned skills", async ({ page }) => {
+  await page.goto("/persona/orpheus/");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: "Skills" })).toBeVisible();
+  await expect(dialog.getByText("Agi", { exact: true })).toBeVisible();
+});
+
+test("skills browser lists skills with an element filter", async ({ page }) => {
+  await page.goto("/skills/");
+  await expect(
+    page.getByRole("heading", { name: "Skills", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Fire", exact: true }).click();
+  await expect(page.getByText("Agi", { exact: true }).first()).toBeVisible();
+});
+
 test("compare shows the normal fusion result", async ({ page }) => {
   await page.goto("/?compare=orpheus,pixie");
   const dialog = page.getByRole("dialog");

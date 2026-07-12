@@ -124,6 +124,21 @@ for (const arcana of arcanaOrder) {
   arcanaCount += 1;
 }
 
+// каталог скиллов /skills/
+const skillsDir = resolve(DIST, "skills");
+mkdirSync(skillsDir, { recursive: true });
+writeFileSync(
+  resolve(skillsDir, "index.html"),
+  personalise(shell, {
+    title: "Skills · Persona Compendium · Persona 3 Reload",
+    description: collapse(
+      "Every skill personas learn in Persona 3 Reload, with element and target.",
+      180,
+    ),
+    url: `${SITE}/skills/`,
+  }),
+);
+
 console.log(
-  `prerendered meta for ${count} persona routes + ${arcanaCount} arcana routes -> dist/`,
+  `prerendered meta for ${count} persona routes + ${arcanaCount} arcana routes + skills -> dist/`,
 );

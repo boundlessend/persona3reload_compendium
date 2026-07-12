@@ -5,16 +5,19 @@ import { PersonaImage } from "./PersonaImage";
 import { AffinityList, StatList } from "./PersonaDetails";
 import { useDialog } from "./useDialog";
 import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
+import type { Skill } from "./useSkills";
 
 export function PersonaModal({
   persona,
   personas,
+  skills,
   onClose,
   isFavorite,
   onToggleFavorite,
 }: {
   persona: Persona;
   personas: Persona[];
+  skills: Skill[] | null;
   onClose: () => void;
   isFavorite: boolean;
   onToggleFavorite: (query: string) => void;
@@ -132,6 +135,32 @@ export function PersonaModal({
             </div>
           </div>
         </div>
+
+        {skills && skills.length > 0 && (
+          <div className="mt-8">
+            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
+              Skills
+            </h3>
+            <div className="mt-4 space-y-1">
+              {skills.map((skill) => (
+                <div
+                  key={skill.n}
+                  className="flex items-baseline justify-between gap-3 border-b border-ink/20 py-1.5 font-mono text-xs uppercase tracking-wider"
+                >
+                  <span className="text-ink">{skill.n}</span>
+                  <span className="shrink-0 text-right text-mut">
+                    {skill.el} · {skill.tg}
+                    {skill.lv === 0
+                      ? " · Innate"
+                      : skill.lv
+                        ? ` · Lv ${skill.lv}`
+                        : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-8">
           <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
