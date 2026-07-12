@@ -58,6 +58,26 @@ test("deep link with a trailing slash still opens the persona", async ({
   await expect(page).toHaveTitle(/Izanagi/);
 });
 
+test("team mode analyzes defensive coverage", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Team", exact: true }).click();
+  await page
+    .getByRole("button", { name: /Orpheus/i })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: /Slime/i })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "Analyze" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: "Team" })).toBeVisible();
+  // Orpheus weak Electric/Dark + Slime weak Fire/Wind surface as weaknesses
+  await expect(dialog.getByText("Weaknesses")).toBeVisible();
+  await expect(dialog.getByText("Electric").first()).toBeVisible();
+});
+
 test("arcana filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();

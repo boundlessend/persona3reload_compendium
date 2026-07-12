@@ -8,18 +8,18 @@ export const PersonaCard = memo(function PersonaCard({
   onSelect,
   marked,
   isFavorite,
-  compareMode,
+  selecting,
 }: {
   persona: Persona;
   onSelect: (persona: Persona) => void;
   marked: boolean;
   isFavorite: boolean;
-  compareMode: boolean;
+  selecting: boolean;
 }) {
   return (
     <button
       onClick={() => onSelect(persona)}
-      aria-pressed={compareMode ? marked : undefined}
+      aria-pressed={selecting ? marked : undefined}
       className={`group relative flex flex-col [content-visibility:auto] [contain-intrinsic-size:auto_18rem] border-b-2 border-r-2 border-ink bg-card p-5 text-left transition-colors hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
         marked ? "outline outline-[3px] -outline-offset-[3px] outline-blood" : ""
       }`}

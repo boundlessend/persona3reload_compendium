@@ -12,6 +12,7 @@ import {
 import { PersonaCard } from "./PersonaCard";
 import { PersonaModal } from "./PersonaModal";
 import { CompareModal } from "./CompareModal";
+import { TeamModal } from "./TeamModal";
 import { Dropdown } from "./Dropdown";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
@@ -32,6 +33,9 @@ export default function App() {
   const [dlcFilter, setDlcFilter] = useState<DlcFilter>("all");
   const [compareMode, setCompareMode] = useState(false);
   const [compareList, setCompareList] = useState<Persona[]>([]);
+  const [teamMode, setTeamMode] = useState(false);
+  const [teamList, setTeamList] = useState<Persona[]>([]);
+  const [teamOpen, setTeamOpen] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   const { favorites, toggleFavorite } = useFavorites();
@@ -52,8 +56,19 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
+  // Compare и Team - взаимоисключающие режимы выбора карт
   const toggleCompareMode = () => {
     setCompareMode((on) => !on);
+    setCompareList([]);
+    setTeamMode(false);
+    setTeamList([]);
+  };
+
+  const toggleTeamMode = () => {
+    setTeamMode((on) => !on);
+    setTeamList([]);
+    setTeamOpen(false);
+    setCompareMode(false);
     setCompareList([]);
   };
 
@@ -69,12 +84,23 @@ export default function App() {
     });
   }, []);
 
+  const toggleTeam = useCallback((persona: Persona) => {
+    setTeamList((prev) => {
+      if (prev.some((item) => item.id === persona.id))
+        return prev.filter((item) => item.id !== persona.id);
+      // сверх 4 - выбрасываем самого старого, чтобы клик всегда что-то делал
+      if (prev.length >= 4) return [...prev.slice(1), persona];
+      return [...prev, persona];
+    });
+  }, []);
+
   const onCardClick = useCallback(
     (persona: Persona) => {
       if (compareMode) toggleCompare(persona);
+      else if (teamMode) toggleTeam(persona);
       else openPersona(persona);
     },
-    [compareMode, toggleCompare, openPersona],
+    [compareMode, teamMode, toggleCompare, toggleTeam, openPersona],
   );
 
   // Shuffle Time: открыть случайную персону из всех
@@ -249,6 +275,18 @@ export default function App() {
             </button>
 
             <button
+              onClick={toggleTeamMode}
+              aria-pressed={teamMode}
+              className={`border-2 px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
+                teamMode
+                  ? "border-blood bg-blood text-paper"
+                  : "border-ink text-ink hover:bg-ink hover:text-paper"
+              }`}
+            >
+              {teamMode ? "Team…" : "Team"}
+            </button>
+
+            <button
               onClick={shuffle}
               className="border-2 border-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
             >
@@ -259,6 +297,12 @@ export default function App() {
           {compareMode && (
             <p className="mt-3 font-mono text-xs uppercase tracking-wider text-blood">
               Pick two personas to compare ({compareList.length}/2).
+            </p>
+          )}
+
+          {teamMode && (
+            <p className="mt-3 font-mono text-xs uppercase tracking-wider text-blood">
+              Pick up to four for coverage ({teamList.length}/4).
             </p>
           )}
 
@@ -291,9 +335,12 @@ export default function App() {
                 key={persona.id}
                 persona={persona}
                 onSelect={onCardClick}
-                marked={compareList.some((item) => item.id === persona.id)}
+                marked={
+                  compareList.some((item) => item.id === persona.id) ||
+                  teamList.some((item) => item.id === persona.id)
+                }
                 isFavorite={favorites.has(persona.query)}
-                compareMode={compareMode}
+                selecting={compareMode || teamMode}
               />
             ))}
           </div>
@@ -329,6 +376,47 @@ export default function App() {
           b={compareB}
           onClose={() => setCompareList([])}
         />
+      )}
+
+      {teamMode && teamList.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-paper/95 backdrop-blur-sm">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-3">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-mut">
+              Team {teamList.length}/4
+            </span>
+            <div className="flex min-w-0 flex-wrap gap-2">
+              {teamList.map((persona) => (
+                <button
+                  key={persona.id}
+                  onClick={() => toggleTeam(persona)}
+                  aria-label={`Remove ${persona.name}`}
+                  className="border border-ink px-2 py-1 font-mono text-[11px] uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper"
+                >
+                  {persona.name} ✕
+                </button>
+              ))}
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => setTeamList([])}
+                className="border-2 border-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+              >
+                Clear
+              </button>
+              <button
+                onClick={() => setTeamOpen(true)}
+                disabled={teamList.length < 2}
+                className="border-2 border-blood bg-blood px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-ink hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Analyze
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {teamOpen && teamList.length >= 2 && !selected && (
+        <TeamModal team={teamList} onClose={() => setTeamOpen(false)} />
       )}
     </div>
   );
