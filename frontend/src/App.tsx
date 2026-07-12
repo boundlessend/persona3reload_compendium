@@ -30,6 +30,9 @@ import { SkillsBrowser } from "./SkillsBrowser";
 import { useFavorites } from "./useFavorites";
 import { usePersonaRouting } from "./usePersonaRouting";
 
+// сколько карточек показывать за раз; "Load more" догружает ещё столько же
+const PAGE_SIZE = 48;
+
 function HomePage() {
   const { personas, loading, error } = usePersonas();
   const { skills } = useSkills();
@@ -55,6 +58,7 @@ function HomePage() {
   const [skillFilter, setSkillFilter] = useState(
     () => new URLSearchParams(window.location.search).get("skill") ?? "",
   );
+  const [shown, setShown] = useState(PAGE_SIZE);
 
   const { favorites, toggleFavorite } = useFavorites();
   const { selected, notFound, openPersona, closePersona } =
@@ -244,6 +248,26 @@ function HomePage() {
     levelMin,
     levelMax,
     sort,
+  ]);
+
+  // при смене фильтра/поиска/сортировки снова показываем первую страницу
+  // (не завязано на favorites, чтобы лайк не схлопывал уже подгруженный список)
+  useEffect(() => {
+    setShown(PAGE_SIZE);
+  }, [
+    search,
+    arcana,
+    origin,
+    sort,
+    element,
+    affinityType,
+    element2,
+    affinityType2,
+    levelMin,
+    levelMax,
+    dlcFilter,
+    favoritesOnly,
+    skillFilter,
   ]);
 
   const [compareA, compareB] = compareList;
@@ -498,7 +522,7 @@ function HomePage() {
           {error && <ErrorNote message={`Could not load personas: ${error}.`} />}
 
           <div className="mt-10 grid grid-cols-2 border-l-2 border-t-2 border-ink sm:grid-cols-3 lg:grid-cols-4">
-            {visible.map((persona) => (
+            {visible.slice(0, shown).map((persona) => (
               <PersonaCard
                 key={persona.id}
                 persona={persona}
@@ -512,6 +536,17 @@ function HomePage() {
               />
             ))}
           </div>
+
+          {visible.length > shown && (
+            <div className="mt-10 flex justify-center">
+              <button
+                onClick={() => setShown((n) => n + PAGE_SIZE)}
+                className="border-2 border-ink px-8 py-3 font-mono text-xs uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+              >
+                Load more ({visible.length - shown} left)
+              </button>
+            </div>
+          )}
 
           {!loading && !error && !visible.length && (
             <p className="mt-10 text-center font-mono text-sm uppercase tracking-wider text-mut">
