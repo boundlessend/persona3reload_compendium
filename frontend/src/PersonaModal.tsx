@@ -210,10 +210,12 @@ export function PersonaModal({
             }
           }}
         >
-          <PersonaImage
-            persona={persona}
-            className="max-h-[90vh] max-w-[90vw] object-contain"
-          />
+          <div onClick={(event) => event.stopPropagation()}>
+            <PersonaImage
+              persona={persona}
+              className="max-h-[90vh] max-w-[90vw] object-contain"
+            />
+          </div>
           <button
             ref={zoomCloseRef}
             onClick={(event) => {

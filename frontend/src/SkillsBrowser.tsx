@@ -44,7 +44,7 @@ export function SkillsBrowser() {
         </h1>
         <p className="mt-4 max-w-2xl leading-relaxed text-mut">
           Every skill personas learn in Persona 3 Reload, with its element and
-          target. SP cost is omitted on purpose.
+          target. SP cost is not tracked here.
         </p>
 
         <div className="mt-10 flex flex-wrap gap-2">

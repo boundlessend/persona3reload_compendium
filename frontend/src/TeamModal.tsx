@@ -72,6 +72,9 @@ export function TeamModal({
             <p className="font-mono text-[11px] font-bold uppercase tracking-widest text-blood">
               Exposed · weak with no cover
             </p>
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-mut">
+              Nobody in the team resists these elements
+            </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {exposed.map((row) => (
                 <span
