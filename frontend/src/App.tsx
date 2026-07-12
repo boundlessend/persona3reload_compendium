@@ -486,6 +486,7 @@ function HomePage() {
       {selected && (
         <PersonaModal
           persona={selected}
+          personas={personas}
           onClose={closePersona}
           isFavorite={favorites.has(selected.query)}
           onToggleFavorite={toggleFavorite}
@@ -496,6 +497,7 @@ function HomePage() {
         <CompareModal
           a={compareA}
           b={compareB}
+          personas={personas}
           onClose={() => setCompareList([])}
         />
       )}

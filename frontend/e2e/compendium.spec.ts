@@ -109,6 +109,27 @@ test("comparing reflects the selection into the URL", async ({ page }) => {
   await expect(page).toHaveURL(/compare=/);
 });
 
+test("compare shows the normal fusion result", async ({ page }) => {
+  await page.goto("/?compare=orpheus,pixie");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("Normal fusion")).toBeVisible();
+  // Orpheus (Fool 1) + Pixie (Lovers 2) -> Justice arcana, lowest is Angel
+  await expect(dialog.getByText("Angel")).toBeVisible();
+});
+
+test("persona modal lists fusion recipes", async ({ page }) => {
+  await page.goto("/persona/forneus/");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText("Fusion recipes")).toBeVisible();
+});
+
+test("special persona shows its special recipe", async ({ page }) => {
+  await page.goto("/persona/shiva/");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText(/Rangda × Barong/)).toBeVisible();
+});
+
 test("arcana filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();

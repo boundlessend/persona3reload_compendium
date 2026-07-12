@@ -1,21 +1,32 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Persona } from "./api";
 import { idTag } from "./constants";
 import { PersonaImage } from "./PersonaImage";
 import { AffinityList, StatList } from "./PersonaDetails";
 import { useDialog } from "./useDialog";
+import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
 
 export function PersonaModal({
   persona,
+  personas,
   onClose,
   isFavorite,
   onToggleFavorite,
 }: {
   persona: Persona;
+  personas: Persona[];
   onClose: () => void;
   isFavorite: boolean;
   onToggleFavorite: (query: string) => void;
 }) {
+  const special = SPECIAL_RECIPES[persona.query];
+  const reverse = useMemo(
+    () =>
+      special || persona.dlc === 1
+        ? { recipes: [], total: 0 }
+        : reverseRecipes(persona, personas, 8),
+    [persona, personas, special],
+  );
   const [zoom, setZoom] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const enlargeRef = useRef<HTMLButtonElement>(null);
@@ -119,6 +130,42 @@ export function PersonaModal({
             <div className="mt-4">
               <AffinityList persona={persona} />
             </div>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
+            Fusion recipes
+          </h3>
+          <div className="mt-4">
+            {special ? (
+              <p className="font-mono text-sm text-ink">
+                Special: {special.join(" × ")}
+              </p>
+            ) : persona.dlc === 1 ? (
+              <p className="font-mono text-sm text-mut">
+                DLC persona - obtained via DLC, not by fusion.
+              </p>
+            ) : reverse.recipes.length ? (
+              <>
+                <ul className="space-y-1 font-mono text-sm text-ink">
+                  {reverse.recipes.map(({ a, b }) => (
+                    <li key={`${a.id}-${b.id}`}>
+                      {a.name} + {b.name}
+                    </li>
+                  ))}
+                </ul>
+                {reverse.total > reverse.recipes.length && (
+                  <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-mut">
+                    +{reverse.total - reverse.recipes.length} more recipes
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="font-mono text-sm text-mut">
+                No normal fusion recipe.
+              </p>
+            )}
           </div>
         </div>
       </div>
