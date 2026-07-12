@@ -15,6 +15,7 @@ import { PersonaCard } from "./PersonaCard";
 import { PersonaModal } from "./PersonaModal";
 import { CompareModal } from "./CompareModal";
 import { TeamModal } from "./TeamModal";
+import { ControlButton, Chip } from "./Controls";
 import { Dropdown } from "./Dropdown";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
@@ -379,48 +380,23 @@ function HomePage() {
               ))}
             </div>
 
-            <button
+            <ControlButton
+              pressed={favoritesOnly}
               onClick={() => setFavoritesOnly((on) => !on)}
-              aria-pressed={favoritesOnly}
-              className={`ml-auto border-2 px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                favoritesOnly
-                  ? "border-blood bg-blood text-paper"
-                  : "border-ink text-ink hover:bg-ink hover:text-paper"
-              }`}
+              className="ml-auto"
             >
               ★ Favorites
-            </button>
+            </ControlButton>
 
-            <button
-              onClick={toggleCompareMode}
-              aria-pressed={compareMode}
-              className={`border-2 px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                compareMode
-                  ? "border-blood bg-blood text-paper"
-                  : "border-ink text-ink hover:bg-ink hover:text-paper"
-              }`}
-            >
+            <ControlButton pressed={compareMode} onClick={toggleCompareMode}>
               {compareMode ? "Comparing…" : "Compare"}
-            </button>
+            </ControlButton>
 
-            <button
-              onClick={toggleTeamMode}
-              aria-pressed={teamMode}
-              className={`border-2 px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                teamMode
-                  ? "border-blood bg-blood text-paper"
-                  : "border-ink text-ink hover:bg-ink hover:text-paper"
-              }`}
-            >
+            <ControlButton pressed={teamMode} onClick={toggleTeamMode}>
               {teamMode ? "Team…" : "Team"}
-            </button>
+            </ControlButton>
 
-            <button
-              onClick={shuffle}
-              className="border-2 border-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
-            >
-              Shuffle
-            </button>
+            <ControlButton onClick={shuffle}>Shuffle</ControlButton>
           </div>
 
           {compareMode && (
@@ -437,18 +413,14 @@ function HomePage() {
 
           <div className="mt-4 flex flex-wrap gap-2">
             {arcanas.map((name) => (
-              <button
+              <Chip
                 key={name}
+                pressed={arcana === name}
                 onClick={() => setArcana(name)}
-                aria-pressed={arcana === name}
-                className={`border-2 border-ink px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                  arcana === name
-                    ? "bg-ink text-paper"
-                    : "text-ink hover:bg-ink hover:text-paper"
-                }`}
+                className="px-4 text-xs"
               >
                 {name}
-              </button>
+              </Chip>
             ))}
           </div>
 
@@ -525,12 +497,7 @@ function HomePage() {
               ))}
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <button
-                onClick={() => setTeamList([])}
-                className="border-2 border-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
-              >
-                Clear
-              </button>
+              <ControlButton onClick={() => setTeamList([])}>Clear</ControlButton>
               <button
                 onClick={() => setTeamOpen(true)}
                 disabled={teamList.length < 2}

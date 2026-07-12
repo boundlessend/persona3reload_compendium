@@ -3,6 +3,7 @@ import { usePersonas } from "./usePersonas";
 import { useSkills } from "./useSkills";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { Chip } from "./Controls";
 
 // страница /skills: каталог всех скиллов (имя, стихия, цель, сколько персон учит),
 // с фильтром по стихии/типу. Клик по числу учащих не делаем - список велик
@@ -49,18 +50,14 @@ export function SkillsBrowser() {
 
         <div className="mt-10 flex flex-wrap gap-2">
           {elements.map((name) => (
-            <button
+            <Chip
               key={name}
+              pressed={element === name}
               onClick={() => setElement(name)}
-              aria-pressed={element === name}
-              className={`border-2 border-ink px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                element === name
-                  ? "bg-ink text-paper"
-                  : "text-ink hover:bg-ink hover:text-paper"
-              }`}
+              className="px-3 text-[11px]"
             >
               {name}
-            </button>
+            </Chip>
           ))}
         </div>
 

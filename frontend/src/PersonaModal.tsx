@@ -6,6 +6,7 @@ import { AffinityList, StatList } from "./PersonaDetails";
 import { useDialog } from "./useDialog";
 import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
 import type { Skill } from "./useSkills";
+import { IconButton } from "./Controls";
 
 export function PersonaModal({
   persona,
@@ -91,27 +92,19 @@ export function PersonaModal({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <IconButton
+              pressed={isFavorite}
               onClick={() => onToggleFavorite(persona.query)}
-              aria-pressed={isFavorite}
-              aria-label={
+              ariaLabel={
                 isFavorite ? "Remove from favorites" : "Add to favorites"
               }
-              className={`grid h-9 w-9 place-items-center border-2 text-lg leading-none transition ${
-                isFavorite
-                  ? "border-blood bg-blood text-paper"
-                  : "border-ink text-ink hover:bg-ink hover:text-paper"
-              }`}
+              className="text-lg leading-none"
             >
               {isFavorite ? "★" : "☆"}
-            </button>
-            <button
-              onClick={onClose}
-              className="grid h-9 w-9 place-items-center border-2 border-ink text-ink transition hover:bg-ink hover:text-paper"
-              aria-label="Close"
-            >
+            </IconButton>
+            <IconButton onClick={onClose} ariaLabel="Close">
               ✕
-            </button>
+            </IconButton>
           </div>
         </div>
 

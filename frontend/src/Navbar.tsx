@@ -1,3 +1,10 @@
+const NAV_LINKS = [
+  { href: "/#browse", label: "Browse" },
+  { href: "/#stats", label: "Stats" },
+  { href: "/arcana/", label: "Arcana" },
+  { href: "/skills/", label: "Skills" },
+];
+
 export function Navbar() {
   return (
     <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
@@ -11,30 +18,15 @@ export function Navbar() {
           </span>
         </a>
         <div className="flex items-center gap-4 sm:gap-5 md:gap-7">
-          <a
-            href="/#browse"
-            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
-          >
-            Browse
-          </a>
-          <a
-            href="/#stats"
-            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
-          >
-            Stats
-          </a>
-          <a
-            href="/arcana/"
-            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
-          >
-            Arcana
-          </a>
-          <a
-            href="/skills/"
-            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
-          >
-            Skills
-          </a>
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
+            >
+              {link.label}
+            </a>
+          ))}
           <a
             href="https://github.com/boundlessend/persona3reload_compendium"
             className="bg-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood sm:px-5"

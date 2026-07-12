@@ -4,6 +4,7 @@ import { PersonaImage } from "./PersonaImage";
 import { AffinityList, StatList } from "./PersonaDetails";
 import { useDialog } from "./useDialog";
 import { fuseResult } from "./fusion";
+import { IconButton } from "./Controls";
 
 export function CompareModal({
   a,
@@ -37,13 +38,9 @@ export function CompareModal({
       >
         <div className="flex items-center justify-between border-b-2 border-ink pb-5">
           <h2 className="font-display text-3xl uppercase">Compare</h2>
-          <button
-            onClick={onClose}
-            className="grid h-9 w-9 place-items-center border-2 border-ink text-ink transition hover:bg-ink hover:text-paper"
-            aria-label="Close"
-          >
+          <IconButton onClick={onClose} ariaLabel="Close">
             ✕
-          </button>
+          </IconButton>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-6">

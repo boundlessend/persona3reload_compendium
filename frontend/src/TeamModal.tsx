@@ -3,6 +3,7 @@ import type { Persona } from "./api";
 import { PersonaImage } from "./PersonaImage";
 import { useDialog } from "./useDialog";
 import { teamCoverage } from "./teamCoverage";
+import { IconButton } from "./Controls";
 
 // защитный разбор команды из 2-4 персон: общие слабости, прикрытие, exposed
 export function TeamModal({
@@ -44,13 +45,9 @@ export function TeamModal({
               Defensive coverage · {team.length} personas
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="grid h-9 w-9 place-items-center border-2 border-ink text-ink transition hover:bg-ink hover:text-paper"
-            aria-label="Close"
-          >
+          <IconButton onClick={onClose} ariaLabel="Close">
             ✕
-          </button>
+          </IconButton>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
