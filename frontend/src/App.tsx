@@ -58,6 +58,9 @@ function HomePage() {
   // восстановить сравнение/команду из query при заходе по расшаренной ссылке
   useEffect(() => {
     if (!personas.length) return;
+    // восстанавливаем сравнение/команду только на главной; страница персоны
+    // (/persona/<q>/) владеет своим состоянием отдельно
+    if (window.location.pathname !== "/") return;
     const params = new URLSearchParams(window.location.search);
     const resolve = (slugs: string) =>
       slugs
@@ -182,6 +185,9 @@ function HomePage() {
 
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
+    // диапазон уровней устойчив к перевёрнутому вводу (min > max)
+    const lo = Math.min(levelMin, levelMax);
+    const hi = Math.max(levelMin, levelMax);
     const filtered = personas.filter((persona) => {
       if (arcana !== "All" && persona.arcana !== arcana) return false;
       if (origin !== "All" && persona.origin !== origin) return false;
@@ -193,7 +199,7 @@ function HomePage() {
         return false;
       if (element2 !== "All" && !persona[affinityType2].includes(element2))
         return false;
-      if (persona.level < levelMin || persona.level > levelMax) return false;
+      if (persona.level < lo || persona.level > hi) return false;
       return true;
     });
     return filtered.sort(SORTERS[sort]);
@@ -221,7 +227,7 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-paper">
       <Navbar />
-      <main>
+      <main className={teamMode && teamList.length > 0 ? "pb-28" : undefined}>
         <Hero personas={personas} arcanaCount={arcanas.length - 1} />
 
         {personas.length > 0 && (
