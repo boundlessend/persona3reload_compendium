@@ -30,6 +30,10 @@ export default function App() {
   const [sort, setSort] = useState<SortKey>("id");
   const [element, setElement] = useState("All");
   const [affinityType, setAffinityType] = useState<AffinityKey>("weak");
+  const [element2, setElement2] = useState("All");
+  const [affinityType2, setAffinityType2] = useState<AffinityKey>("resists");
+  const [levelMin, setLevelMin] = useState(1);
+  const [levelMax, setLevelMax] = useState(99);
   const [dlcFilter, setDlcFilter] = useState<DlcFilter>("all");
   const [compareMode, setCompareMode] = useState(false);
   const [compareList, setCompareList] = useState<Persona[]>([]);
@@ -186,6 +190,9 @@ export default function App() {
       if (favoritesOnly && !favorites.has(persona.query)) return false;
       if (element !== "All" && !persona[affinityType].includes(element))
         return false;
+      if (element2 !== "All" && !persona[affinityType2].includes(element2))
+        return false;
+      if (persona.level < levelMin || persona.level > levelMax) return false;
       return true;
     });
     return filtered.sort(SORTERS[sort]);
@@ -198,6 +205,10 @@ export default function App() {
     favorites,
     element,
     affinityType,
+    element2,
+    affinityType2,
+    levelMin,
+    levelMax,
     sort,
   ]);
 
@@ -272,7 +283,59 @@ export default function App() {
                 onChange={setElement}
                 ariaLabel="Element"
               />
+              <span className="font-mono text-[11px] text-mut" aria-hidden="true">
+                +
+              </span>
+              <Dropdown
+                value={affinityType2}
+                options={AFFINITY_KEYS.map((key) => ({
+                  value: key,
+                  label: AFFINITY_FILTER_LABELS[key],
+                }))}
+                onChange={setAffinityType2}
+                ariaLabel="Second affinity type"
+              />
+              <Dropdown
+                value={element2}
+                options={elements.map((name) => ({
+                  value: name,
+                  label: name === "All" ? "Any element" : name,
+                }))}
+                onChange={setElement2}
+                ariaLabel="Second element"
+              />
             </div>
+
+            <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
+              Lv
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={levelMin}
+                onChange={(event) =>
+                  setLevelMin(
+                    Math.max(1, Math.min(99, Number(event.target.value) || 1)),
+                  )
+                }
+                aria-label="Minimum level"
+                className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center text-ink outline-none transition focus:border-blood"
+              />
+              <span aria-hidden="true">-</span>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={levelMax}
+                onChange={(event) =>
+                  setLevelMax(
+                    Math.max(1, Math.min(99, Number(event.target.value) || 99)),
+                  )
+                }
+                aria-label="Maximum level"
+                className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center text-ink outline-none transition focus:border-blood"
+              />
+            </label>
 
             <div
               className="flex border-2 border-ink"

@@ -155,7 +155,24 @@ test("DLC filter narrows the catalog", async ({ page }) => {
 test("element affinity filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();
-  await page.getByRole("button", { name: "Element" }).click();
+  await page.getByRole("button", { name: "Element", exact: true }).click();
+  await page.getByRole("option", { name: "Fire", exact: true }).click();
+  await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
+});
+
+test("level range filter narrows the catalog", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByLabel("Minimum level").fill("90");
+  await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
+});
+
+test("second affinity condition narrows the catalog further", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: "Second element" }).click();
   await page.getByRole("option", { name: "Fire", exact: true }).click();
   await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
 });
