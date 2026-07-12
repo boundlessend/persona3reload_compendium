@@ -282,18 +282,21 @@ test("arcana detail shows the confidant and its personas", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText(/Social Link/i)).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /Orpheus/i }).first(),
+    page.getByRole("button", { name: /Orpheus/i }).first(),
   ).toBeVisible();
 });
 
-test("arcana detail links through to a persona", async ({ page }) => {
+test("arcana detail opens a persona modal in place", async ({ page }) => {
   await page.goto("/arcana/fool/");
   await page
-    .getByRole("link", { name: /Orpheus/i })
+    .getByRole("button", { name: /Orpheus/i })
     .first()
     .click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page).toHaveTitle(/Orpheus/);
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: /Orpheus/i })).toBeVisible();
+  // opens in place: no navigation away from the arcana page
+  await expect(page).toHaveURL(/\/arcana\/fool\//);
 });
 
 test("unknown arcana slug shows the 404 page", async ({ page }) => {
