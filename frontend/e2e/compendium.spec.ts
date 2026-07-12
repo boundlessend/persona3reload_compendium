@@ -185,6 +185,7 @@ test("compare mode opens a side-by-side dialog", async ({ page }) => {
 test("DLC filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: /Advanced/ }).click();
   await page.getByRole("button", { name: "DLC", exact: true }).click();
   await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
 });
@@ -192,6 +193,7 @@ test("DLC filter narrows the catalog", async ({ page }) => {
 test("element affinity filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: /Advanced/ }).click();
   await page.getByRole("button", { name: "Element", exact: true }).click();
   await page.getByRole("option", { name: "Fire", exact: true }).click();
   await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
@@ -200,6 +202,7 @@ test("element affinity filter narrows the catalog", async ({ page }) => {
 test("origin filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: /Advanced/ }).click();
   await page.getByRole("button", { name: "Origin" }).click();
   await page.getByRole("option", { name: "Greek", exact: true }).click();
   await expect(page.getByText("26 of 213 personas")).toBeVisible();
@@ -208,6 +211,7 @@ test("origin filter narrows the catalog", async ({ page }) => {
 test("level range filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: /Advanced/ }).click();
   await page.getByLabel("Minimum level").fill("90");
   await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
 });
@@ -217,6 +221,7 @@ test("second affinity condition narrows the catalog further", async ({
 }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: /Advanced/ }).click();
   await page.getByRole("button", { name: "Second element" }).click();
   await page.getByRole("option", { name: "Fire", exact: true }).click();
   await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
