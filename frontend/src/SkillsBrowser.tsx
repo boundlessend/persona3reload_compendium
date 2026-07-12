@@ -68,20 +68,21 @@ export function SkillsBrowser() {
 
         <div className="mt-4 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((skill) => (
-            <div
+            <a
               key={skill.name}
-              className="flex flex-col border-b-2 border-r-2 border-ink bg-card p-4"
+              href={`/?skill=${encodeURIComponent(skill.name)}#browse`}
+              className="group flex flex-col border-b-2 border-r-2 border-ink bg-card p-4 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
             >
               <span className="font-display text-lg uppercase leading-none break-words">
                 {skill.name}
               </span>
-              <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood">
+              <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
                 {skill.el} · {skill.tg}
               </span>
-              <span className="mt-3 font-mono text-[11px] uppercase tracking-wider text-mut">
-                {skill.count} {skill.count === 1 ? "persona" : "personas"}
+              <span className="mt-3 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
+                {skill.count} {skill.count === 1 ? "persona" : "personas"} →
               </span>
-            </div>
+            </a>
           ))}
         </div>
       </main>

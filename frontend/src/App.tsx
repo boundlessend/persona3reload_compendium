@@ -51,6 +51,10 @@ function HomePage() {
   const [teamOpen, setTeamOpen] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // приходит с /skills по ссылке ?skill=<name>: фильтр по учащим этот скилл
+  const [skillFilter, setSkillFilter] = useState(
+    () => new URLSearchParams(window.location.search).get("skill") ?? "",
+  );
 
   const { favorites, toggleFavorite } = useFavorites();
   const { selected, notFound, openPersona, closePersona } =
@@ -166,6 +170,15 @@ function HomePage() {
     if (pick) openPersona(pick);
   }, [personas, openPersona]);
 
+  // сбросить skill-фильтр и убрать ?skill из URL, не трогая остальные параметры
+  const clearSkill = () => {
+    setSkillFilter("");
+    const params = new URLSearchParams(window.location.search);
+    params.delete("skill");
+    const qs = params.toString();
+    window.history.replaceState(null, "", qs ? `/?${qs}` : "/");
+  };
+
   const arcanas = useMemo(
     () => ["All", ...Array.from(new Set(personas.map((p) => p.arcana))).sort()],
     [personas],
@@ -184,6 +197,16 @@ function HomePage() {
     return ["All", ...Array.from(set).sort()];
   }, [personas]);
 
+  // персоны, учащие выбранный скилл (?skill=); null - фильтр выкл или данные не готовы
+  const skillMatches = useMemo(() => {
+    if (!skillFilter || !Object.keys(skills).length) return null;
+    const set = new Set<string>();
+    for (const [query, list] of Object.entries(skills)) {
+      if (list.some((skill) => skill.n === skillFilter)) set.add(query);
+    }
+    return set;
+  }, [skillFilter, skills]);
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
     // диапазон уровней устойчив к перевёрнутому вводу (min > max)
@@ -196,6 +219,7 @@ function HomePage() {
       if (dlcFilter === "base" && persona.dlc !== 0) return false;
       if (dlcFilter === "dlc" && persona.dlc !== 1) return false;
       if (favoritesOnly && !favorites.has(persona.query)) return false;
+      if (skillMatches && !skillMatches.has(persona.query)) return false;
       if (element !== "All" && !persona[affinityType].includes(element))
         return false;
       if (element2 !== "All" && !persona[affinityType2].includes(element2))
@@ -212,6 +236,7 @@ function HomePage() {
     dlcFilter,
     favoritesOnly,
     favorites,
+    skillMatches,
     element,
     affinityType,
     element2,
@@ -454,6 +479,21 @@ function HomePage() {
               </Chip>
             ))}
           </div>
+
+          {skillFilter && (
+            <div className="mt-4 flex items-center gap-2">
+              <span className="font-mono text-[11px] uppercase tracking-wider text-mut">
+                Learns
+              </span>
+              <button
+                onClick={clearSkill}
+                aria-label={`Clear skill filter: ${skillFilter}`}
+                className="flex items-center gap-2 border-2 border-blood bg-blood/10 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-blood transition hover:bg-blood hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+              >
+                {skillFilter} ✕
+              </button>
+            </div>
+          )}
 
           {error && <ErrorNote message={`Could not load personas: ${error}.`} />}
 
