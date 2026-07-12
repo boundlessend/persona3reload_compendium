@@ -1,3 +1,4 @@
+import { STAT_KEYS } from "./api";
 import type { Persona, StatKey } from "./api";
 
 export type AffinityKey =
@@ -35,13 +36,23 @@ export const AFFINITY_FILTER_LABELS: Record<AffinityKey, string> = {
   nullifies: "Nullifies",
 };
 
-export type SortKey = "id" | "level" | "name" | "arcana";
+export type SortKey = "id" | "level" | "name" | "arcana" | StatKey;
+
+// сортировки по статам генерятся из STAT_KEYS (по убыванию: сильнейшие сверху)
+const STAT_SORT_LABELS = Object.fromEntries(
+  STAT_KEYS.map((key) => [key, `${STAT_LABELS[key]} ↓`]),
+) as Record<StatKey, string>;
+
+const STAT_SORTERS = Object.fromEntries(
+  STAT_KEYS.map((key) => [key, (a: Persona, b: Persona) => b[key] - a[key]]),
+) as Record<StatKey, (a: Persona, b: Persona) => number>;
 
 export const SORT_LABELS: Record<SortKey, string> = {
   id: "Default",
   level: "Level",
   name: "Name",
   arcana: "Arcana",
+  ...STAT_SORT_LABELS,
 };
 
 export const SORTERS: Record<SortKey, (a: Persona, b: Persona) => number> = {
@@ -49,6 +60,7 @@ export const SORTERS: Record<SortKey, (a: Persona, b: Persona) => number> = {
   level: (a, b) => a.level - b.level,
   name: (a, b) => a.name.localeCompare(b.name),
   arcana: (a, b) => a.arcana.localeCompare(b.arcana) || a.level - b.level,
+  ...STAT_SORTERS,
 };
 
 export type DlcFilter = "all" | "base" | "dlc";

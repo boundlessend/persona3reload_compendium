@@ -15,6 +15,7 @@ import { CompareModal } from "./CompareModal";
 import { Dropdown } from "./Dropdown";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
+import { PersonaOfTheDay } from "./PersonaOfTheDay";
 import { NotFound } from "./NotFound";
 import { useFavorites } from "./useFavorites";
 import { usePersonaRouting } from "./usePersonaRouting";
@@ -76,6 +77,13 @@ export default function App() {
     [compareMode, toggleCompare, openPersona],
   );
 
+  // Shuffle Time: открыть случайную персону из всех
+  const shuffle = useCallback(() => {
+    if (!personas.length) return;
+    const pick = personas[Math.floor(Math.random() * personas.length)];
+    if (pick) openPersona(pick);
+  }, [personas, openPersona]);
+
   const arcanas = useMemo(
     () => ["All", ...Array.from(new Set(personas.map((p) => p.arcana))).sort()],
     [personas],
@@ -123,6 +131,12 @@ export default function App() {
       <Navbar />
       <main>
         <Hero personas={personas} arcanaCount={arcanas.length - 1} />
+
+        {personas.length > 0 && (
+          <div className="mx-auto max-w-6xl px-6 pt-16">
+            <PersonaOfTheDay personas={personas} onSelect={openPersona} />
+          </div>
+        )}
 
         <section id="browse" className="mx-auto max-w-6xl px-6 py-16">
           <div className="flex flex-col gap-6 border-b-2 border-ink pb-6 md:flex-row md:items-end md:justify-between">
@@ -232,6 +246,13 @@ export default function App() {
               }`}
             >
               {compareMode ? "Comparing…" : "Compare"}
+            </button>
+
+            <button
+              onClick={shuffle}
+              className="border-2 border-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+            >
+              Shuffle
             </button>
           </div>
 

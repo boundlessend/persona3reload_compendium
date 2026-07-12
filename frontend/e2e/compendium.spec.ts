@@ -30,6 +30,20 @@ test("opens a persona modal from a card", async ({ page }) => {
   await expect(dialog.getByRole("heading", { name: "Izanagi" })).toBeVisible();
 });
 
+test("shuffle opens a random persona dialog", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Shuffle" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
+test("persona of the day opens the featured persona", async ({ page }) => {
+  await page.goto("/");
+  const featured = page.getByRole("link", { name: /Persona of the day/i });
+  await expect(featured).toBeVisible();
+  await featured.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
 test("deep link opens a persona directly", async ({ page }) => {
   await page.goto("/persona/izanagi");
   await expect(page.getByRole("dialog")).toBeVisible();
