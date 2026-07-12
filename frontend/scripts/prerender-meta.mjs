@@ -86,4 +86,44 @@ for (const persona of personas) {
   count += 1;
 }
 
-console.log(`prerendered meta for ${count} persona routes -> dist/persona/<query>/index.html`);
+// арканы: /arcana/ (индекс) и /arcana/<slug>/ - мета из personas.json (список и
+// счётчики), тело страниц рисует клиент из src/arcanaGuide.ts
+const arcanaCounts = new Map();
+const arcanaOrder = [];
+for (const persona of personas) {
+  if (!arcanaCounts.has(persona.arcana)) arcanaOrder.push(persona.arcana);
+  arcanaCounts.set(persona.arcana, (arcanaCounts.get(persona.arcana) ?? 0) + 1);
+}
+
+const arcanaIndexDir = resolve(DIST, "arcana");
+mkdirSync(arcanaIndexDir, { recursive: true });
+writeFileSync(
+  resolve(arcanaIndexDir, "index.html"),
+  personalise(shell, {
+    title: "The Arcana · Persona Compendium · Persona 3 Reload",
+    description: collapse(
+      `All ${arcanaOrder.length} arcana of Persona 3 Reload, each with its Social Link and personas.`,
+      180,
+    ),
+    url: `${SITE}/arcana/`,
+  }),
+);
+
+let arcanaCount = 0;
+for (const arcana of arcanaOrder) {
+  const slug = arcana.toLowerCase();
+  const title = `${arcana} Arcana · Persona Compendium · Persona 3 Reload`;
+  const description = collapse(
+    `The ${arcana} arcana in Persona 3 Reload: ${arcanaCounts.get(arcana)} personas with stats and elemental affinities.`,
+    180,
+  );
+  const url = `${SITE}/arcana/${encodeURIComponent(slug)}/`;
+  const dir = resolve(arcanaIndexDir, slug);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(resolve(dir, "index.html"), personalise(shell, { title, description, url }));
+  arcanaCount += 1;
+}
+
+console.log(
+  `prerendered meta for ${count} persona routes + ${arcanaCount} arcana routes -> dist/`,
+);

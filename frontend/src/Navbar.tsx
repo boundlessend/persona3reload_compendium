@@ -2,7 +2,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <a href="#top" className="flex items-center gap-2 sm:gap-3">
+        <a href="/#top" className="flex items-center gap-2 sm:gap-3">
           <span className="font-display text-lg uppercase tracking-tight sm:text-2xl">
             Compendium
           </span>
@@ -12,16 +12,22 @@ export function Navbar() {
         </a>
         <div className="flex items-center gap-4 sm:gap-5 md:gap-7">
           <a
-            href="#browse"
+            href="/#browse"
             className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
           >
             Browse
           </a>
           <a
-            href="#stats"
+            href="/#stats"
             className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
           >
             Stats
+          </a>
+          <a
+            href="/arcana/"
+            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
+          >
+            Arcana
           </a>
           <a
             href="https://github.com/boundlessend/persona3reload_compendium"

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { fetchPersonas, PERSONA_COUNT, type Persona } from "./api";
+import { PERSONA_COUNT, type Persona } from "./api";
+import { usePersonas } from "./usePersonas";
 import {
   AFFINITY_FILTER_LABELS,
   AFFINITY_KEYS,
@@ -18,14 +19,15 @@ import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { PersonaOfTheDay } from "./PersonaOfTheDay";
 import { StatsSection } from "./StatsSection";
+import { Footer } from "./Footer";
 import { NotFound } from "./NotFound";
+import { ArcanaIndex } from "./ArcanaIndex";
+import { ArcanaDetail } from "./ArcanaDetail";
 import { useFavorites } from "./useFavorites";
 import { usePersonaRouting } from "./usePersonaRouting";
 
-export default function App() {
-  const [personas, setPersonas] = useState<Persona[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function HomePage() {
+  const { personas, loading, error } = usePersonas();
   const [search, setSearch] = useState("");
   const [arcana, setArcana] = useState("All");
   const [sort, setSort] = useState<SortKey>("id");
@@ -46,20 +48,6 @@ export default function App() {
   const { favorites, toggleFavorite } = useFavorites();
   const { selected, notFound, openPersona, closePersona } =
     usePersonaRouting(personas);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetchPersonas(controller.signal)
-      .then(setPersonas)
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : String(err));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
 
   // восстановить сравнение/команду из query при заходе по расшаренной ссылке
   useEffect(() => {
@@ -472,13 +460,7 @@ export default function App() {
         <StatsSection personas={personas} onSelect={openPersona} />
       </main>
 
-      <footer className="border-t-2 border-ink px-6 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-1 text-center font-mono text-xs uppercase tracking-wider text-mut">
-          <span>© boundlessend</span>
-          <span>Fan project · not affiliated with Atlus/Sega</span>
-          <span>Persona © Atlus/Sega</span>
-        </div>
-      </footer>
+      <Footer />
 
       {selected && (
         <PersonaModal
@@ -539,4 +521,17 @@ export default function App() {
       )}
     </div>
   );
+}
+
+// тонкий роутер верхнего уровня: /arcana/* - отдельные страницы, всё остальное
+// (включая /persona/<q>/) обслуживает HomePage. Межстраничные переходы идут
+// обычной навигацией по ссылкам, поэтому pathname читается один раз при загрузке
+export default function App() {
+  const path = window.location.pathname;
+  const detail = path.match(/^\/arcana\/([^/]+)\/?$/);
+  if (detail) {
+    return <ArcanaDetail slug={decodeURIComponent(detail[1] ?? "").toLowerCase()} />;
+  }
+  if (/^\/arcana\/?$/.test(path)) return <ArcanaIndex />;
+  return <HomePage />;
 }

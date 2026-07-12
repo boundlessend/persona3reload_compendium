@@ -9,6 +9,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const TSV_PATH = resolve(here, "../data/compendium.tsv");
 const OUT_PATH = resolve(here, "../public/personas.json");
 const META_PATH = resolve(here, "../src/generated-meta.ts");
+const SITEMAP_PATH = resolve(here, "../public/sitemap.xml");
+const SITE = "https://persona-compendium-1zox.onrender.com";
 
 const INT_FIELDS = new Set([
   "id",
@@ -79,6 +81,25 @@ export const PERSONA_COUNT = ${personas.length};
 export const ARCANA_COUNT = ${arcanaCount};
 `;
 writeFileSync(META_PATH, meta);
+
+// sitemap собирается из тех же данных: главная, индекс аркан, страницы аркан и
+// персон - все с хвостовым слэшем (так их отдаёт Render, см. prerender-meta.mjs)
+const arcanaSlugs = [...new Set(personas.map((row) => row.arcana))].map((name) =>
+  name.toLowerCase(),
+);
+const urls = [
+  `${SITE}/`,
+  `${SITE}/arcana/`,
+  ...arcanaSlugs.map((slug) => `${SITE}/arcana/${slug}/`),
+  ...personas.map((row) => `${SITE}/persona/${row.query}/`),
+];
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((url) => `  <url>\n    <loc>${url}</loc>\n  </url>`).join("\n")}
+</urlset>
+`;
+writeFileSync(SITEMAP_PATH, sitemap);
+
 console.log(
-  `generated ${personas.length} personas (${arcanaCount} arcana) -> public/personas.json + src/generated-meta.ts`,
+  `generated ${personas.length} personas (${arcanaCount} arcana) -> public/personas.json + src/generated-meta.ts + public/sitemap.xml (${urls.length} urls)`,
 );

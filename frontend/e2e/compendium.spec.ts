@@ -221,6 +221,43 @@ test("stat leader opens the persona", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeVisible();
 });
 
+test("navbar opens the arcana index", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Arcana", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "The Arcana", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /Fool/i }).first()).toBeVisible();
+});
+
+test("arcana detail shows the confidant and its personas", async ({ page }) => {
+  await page.goto("/arcana/fool/");
+  await expect(
+    page.getByRole("heading", { name: "Fool", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/Social Link/i)).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Orpheus/i }).first(),
+  ).toBeVisible();
+});
+
+test("arcana detail links through to a persona", async ({ page }) => {
+  await page.goto("/arcana/fool/");
+  await page
+    .getByRole("link", { name: /Orpheus/i })
+    .first()
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page).toHaveTitle(/Orpheus/);
+});
+
+test("unknown arcana slug shows the 404 page", async ({ page }) => {
+  await page.goto("/arcana/not-an-arcana/");
+  await expect(
+    page.getByRole("heading", { name: "Lost to the Dark Hour" }),
+  ).toBeVisible();
+});
+
 test("favorites persist across a reload", async ({ page }) => {
   await page.goto("/persona/izanagi");
   const dialog = page.getByRole("dialog");
