@@ -17,6 +17,7 @@ import { Dropdown } from "./Dropdown";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { PersonaOfTheDay } from "./PersonaOfTheDay";
+import { StatsSection } from "./StatsSection";
 import { NotFound } from "./NotFound";
 import { useFavorites } from "./useFavorites";
 import { usePersonaRouting } from "./usePersonaRouting";
@@ -467,6 +468,8 @@ export default function App() {
             </p>
           )}
         </section>
+
+        <StatsSection personas={personas} onSelect={openPersona} />
       </main>
 
       <footer className="border-t-2 border-ink px-6 py-8">

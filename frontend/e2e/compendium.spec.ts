@@ -201,6 +201,26 @@ test("unknown deep link shows the 404 page, not a dialog", async ({ page }) => {
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("stats section shows arcana distribution", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Stats" }).click();
+  await expect(
+    page.getByRole("heading", { name: "By the numbers" }),
+  ).toBeVisible();
+  await expect(page.getByText("Personas per arcana")).toBeVisible();
+  await expect(page.getByText("Stat leaders")).toBeVisible();
+});
+
+test("stat leader opens the persona", async ({ page }) => {
+  await page.goto("/#stats");
+  // scope to #stats: "Strength" is also an arcana chip in the browse section
+  await page
+    .locator("#stats")
+    .getByRole("button", { name: /Strength/i })
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
 test("favorites persist across a reload", async ({ page }) => {
   await page.goto("/persona/izanagi");
   const dialog = page.getByRole("dialog");

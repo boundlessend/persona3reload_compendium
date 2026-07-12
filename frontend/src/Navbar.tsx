@@ -18,6 +18,12 @@ export function Navbar() {
             Browse
           </a>
           <a
+            href="#stats"
+            className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
+          >
+            Stats
+          </a>
+          <a
             href="https://github.com/boundlessend/persona3reload_compendium"
             className="bg-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood sm:px-5"
           >
