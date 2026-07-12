@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { usePersonas } from "./usePersonas";
 import { useSkills } from "./useSkills";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
@@ -9,7 +8,6 @@ import { Chip } from "./Controls";
 // с фильтром по стихии/типу. Клик по числу учащих не делаем - список велик
 export function SkillsBrowser() {
   const { skills, loading } = useSkills();
-  usePersonas();
   const [element, setElement] = useState("All");
 
   const catalog = useMemo(() => {

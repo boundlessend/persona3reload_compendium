@@ -12,8 +12,10 @@ import { dirname, resolve } from "node:path";
 const here = dirname(fileURLToPath(import.meta.url));
 const PERSONAS_PATH = resolve(here, "../public/personas.json");
 const OUT_PATH = resolve(here, "../public/skills.json");
-const BASE =
-  "https://raw.githubusercontent.com/aqiu384/megaten-fusion-tool/master/src/app/p3r/data";
+// запиннено на конкретный commit, чтобы билд не зависел от смены upstream;
+// обновлять данные -> подставить свежий SHA ветки master вручную
+const UPSTREAM_SHA = "629e89515fefe58f9e83f7d78d33883c92fa3c60";
+const BASE = `https://raw.githubusercontent.com/aqiu384/megaten-fusion-tool/${UPSTREAM_SHA}/src/app/p3r/data`;
 
 const ELEM = {
   sla: "Slash", str: "Strike", pie: "Pierce", fir: "Fire", ice: "Ice",

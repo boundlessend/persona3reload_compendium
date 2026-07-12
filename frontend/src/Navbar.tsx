@@ -29,6 +29,7 @@ export function Navbar() {
           ))}
           <a
             href="https://github.com/boundlessend/persona3reload_compendium"
+            rel="noopener noreferrer"
             className="bg-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood sm:px-5"
           >
             Source ↗
