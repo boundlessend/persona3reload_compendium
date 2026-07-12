@@ -1,14 +1,23 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import type { Persona } from "./api";
 import { usePersonas } from "./usePersonas";
+import { useSkills } from "./useSkills";
+import { useFavorites } from "./useFavorites";
 import { ARCANA_GUIDE } from "./arcanaGuide";
 import { idTag } from "./constants";
+import { PersonaImage } from "./PersonaImage";
+import { PersonaModal } from "./PersonaModal";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { NotFound } from "./NotFound";
 
-// страница /arcana/<slug>/: тема арканы, её Social Link и список персон
+// страница /arcana/<slug>/: тема арканы, её Social Link и список персон.
+// клик по персоне открывает ту же модалку, что и на главной, прямо здесь
 export function ArcanaDetail({ slug }: { slug: string }) {
   const { personas, loading } = usePersonas();
+  const { skills } = useSkills();
+  const { favorites, toggleFavorite } = useFavorites();
+  const [selected, setSelected] = useState<Persona | null>(null);
 
   const arcanaName = useMemo(() => {
     for (const persona of personas)
@@ -75,12 +84,16 @@ export function ArcanaDetail({ slug }: { slug: string }) {
         </h2>
         <div className="mt-6 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
           {members.map((persona) => (
-            <a
+            <button
               key={persona.id}
-              href={`/persona/${encodeURIComponent(persona.query)}/`}
-              className="group flex items-center justify-between gap-3 border-b-2 border-r-2 border-ink bg-card p-4 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+              onClick={() => setSelected(persona)}
+              className="group flex items-center gap-3 border-b-2 border-r-2 border-ink bg-card p-4 text-left transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
             >
-              <span className="min-w-0">
+              <PersonaImage
+                persona={persona}
+                className="h-12 w-12 shrink-0 object-contain mix-blend-multiply group-hover:mix-blend-normal"
+              />
+              <span className="min-w-0 flex-1">
                 <span className="block font-display text-lg uppercase leading-none break-words">
                   {persona.name}
                 </span>
@@ -91,11 +104,22 @@ export function ArcanaDetail({ slug }: { slug: string }) {
               <span className="shrink-0 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
                 Lv {persona.level}
               </span>
-            </a>
+            </button>
           ))}
         </div>
       </main>
       <Footer />
+
+      {selected && (
+        <PersonaModal
+          persona={selected}
+          personas={personas}
+          skills={skills[selected.query] ?? null}
+          onClose={() => setSelected(null)}
+          isFavorite={favorites.has(selected.query)}
+          onToggleFavorite={toggleFavorite}
+        />
+      )}
     </div>
   );
 }
