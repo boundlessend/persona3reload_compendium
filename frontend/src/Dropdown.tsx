@@ -110,7 +110,7 @@ export function Dropdown<T extends string>({
         aria-label={ariaLabel}
         onPointerDown={() => setOpen((prev) => !prev)}
         onKeyDown={onTriggerKeyDown}
-        className="flex items-center gap-2 border-2 border-ink bg-transparent px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+        className="flex items-center gap-2 border-2 border-ink bg-transparent px-3 py-3 font-mono text-xs uppercase tracking-wider text-ink outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood sm:py-2"
       >
         {selected?.label}
         <span

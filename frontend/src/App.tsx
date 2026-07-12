@@ -50,6 +50,7 @@ function HomePage() {
   const [teamList, setTeamList] = useState<Persona[]>([]);
   const [teamOpen, setTeamOpen] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { favorites, toggleFavorite } = useFavorites();
   const { selected, notFound, openPersona, closePersona } =
@@ -272,119 +273,142 @@ function HomePage() {
               />
             </label>
 
-            <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
-              Origin
-              <Dropdown
-                value={origin}
-                options={origins.map((name) => ({
-                  value: name,
-                  label: name === "All" ? "Any origin" : name,
-                }))}
-                onChange={setOrigin}
-                ariaLabel="Origin"
-              />
-            </label>
-
-            <div className="flex items-center gap-2">
-              <Dropdown
-                value={affinityType}
-                options={AFFINITY_KEYS.map((key) => ({
-                  value: key,
-                  label: AFFINITY_FILTER_LABELS[key],
-                }))}
-                onChange={setAffinityType}
-                ariaLabel="Affinity type"
-              />
-              <Dropdown
-                value={element}
-                options={elements.map((name) => ({
-                  value: name,
-                  label: name === "All" ? "Any element" : name,
-                }))}
-                onChange={setElement}
-                ariaLabel="Element"
-              />
-              <span className="font-mono text-[11px] text-mut" aria-hidden="true">
-                +
-              </span>
-              <Dropdown
-                value={affinityType2}
-                options={AFFINITY_KEYS.map((key) => ({
-                  value: key,
-                  label: AFFINITY_FILTER_LABELS[key],
-                }))}
-                onChange={setAffinityType2}
-                ariaLabel="Second affinity type"
-              />
-              <Dropdown
-                value={element2}
-                options={elements.map((name) => ({
-                  value: name,
-                  label: name === "All" ? "Any element" : name,
-                }))}
-                onChange={setElement2}
-                ariaLabel="Second element"
-              />
-            </div>
-
-            <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
-              Lv
-              <input
-                type="number"
-                min={1}
-                max={99}
-                value={levelMin}
-                onChange={(event) =>
-                  setLevelMin(
-                    Math.max(1, Math.min(99, Number(event.target.value) || 1)),
-                  )
-                }
-                aria-label="Minimum level"
-                className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center text-ink outline-none transition focus:border-blood"
-              />
-              <span aria-hidden="true">-</span>
-              <input
-                type="number"
-                min={1}
-                max={99}
-                value={levelMax}
-                onChange={(event) =>
-                  setLevelMax(
-                    Math.max(1, Math.min(99, Number(event.target.value) || 99)),
-                  )
-                }
-                aria-label="Maximum level"
-                className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center text-ink outline-none transition focus:border-blood"
-              />
-            </label>
-
-            <div
-              className="flex border-2 border-ink"
-              role="group"
-              aria-label="Filter by DLC"
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((prev) => !prev)}
+              aria-expanded={filtersOpen}
+              aria-controls="filter-panel"
+              className="border-2 border-ink px-3 py-3 font-mono text-[11px] uppercase tracking-wider text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood sm:hidden"
             >
-              {(
-                [
-                  ["all", "All"],
-                  ["base", "Base"],
-                  ["dlc", "DLC"],
-                ] as [DlcFilter, string][]
-              ).map(([value, label], index) => (
-                <button
-                  key={value}
-                  onClick={() => setDlcFilter(value)}
-                  aria-pressed={dlcFilter === value}
-                  className={`px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                    index < 2 ? "border-r-2 border-ink" : ""
-                  } ${
-                    dlcFilter === value
-                      ? "bg-ink text-paper"
-                      : "text-ink hover:bg-ink/10"
-                  }`}
+              Filters {filtersOpen ? "▴" : "▾"}
+            </button>
+
+            {/* вторичные фильтры: на мобильном сворачиваются под кнопку Filters,
+                на десктопе (sm:contents) втекают в общий ряд как раньше */}
+            <div
+              id="filter-panel"
+              className={`${filtersOpen ? "contents" : "hidden"} sm:contents`}
+            >
+              <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
+                Origin
+                <Dropdown
+                  value={origin}
+                  options={origins.map((name) => ({
+                    value: name,
+                    label: name === "All" ? "Any origin" : name,
+                  }))}
+                  onChange={setOrigin}
+                  ariaLabel="Origin"
+                />
+              </label>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-mut">
+                  Affinity
+                </span>
+                <Dropdown
+                  value={affinityType}
+                  options={AFFINITY_KEYS.map((key) => ({
+                    value: key,
+                    label: AFFINITY_FILTER_LABELS[key],
+                  }))}
+                  onChange={setAffinityType}
+                  ariaLabel="Affinity type"
+                />
+                <Dropdown
+                  value={element}
+                  options={elements.map((name) => ({
+                    value: name,
+                    label: name === "All" ? "Any element" : name,
+                  }))}
+                  onChange={setElement}
+                  ariaLabel="Element"
+                />
+                <span
+                  className="font-mono text-[11px] uppercase tracking-wider text-mut"
+                  aria-hidden="true"
                 >
-                  {label}
-                </button>
-              ))}
+                  and
+                </span>
+                <Dropdown
+                  value={affinityType2}
+                  options={AFFINITY_KEYS.map((key) => ({
+                    value: key,
+                    label: AFFINITY_FILTER_LABELS[key],
+                  }))}
+                  onChange={setAffinityType2}
+                  ariaLabel="Second affinity type"
+                />
+                <Dropdown
+                  value={element2}
+                  options={elements.map((name) => ({
+                    value: name,
+                    label: name === "All" ? "Any element" : name,
+                  }))}
+                  onChange={setElement2}
+                  ariaLabel="Second element"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
+                Lv
+                <input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={levelMin}
+                  onChange={(event) =>
+                    setLevelMin(
+                      Math.max(1, Math.min(99, Number(event.target.value) || 1)),
+                    )
+                  }
+                  aria-label="Minimum level"
+                  className="w-14 border-2 border-ink bg-transparent px-2 py-3 text-center text-ink outline-none transition focus:border-blood sm:py-2"
+                />
+                <span aria-hidden="true">-</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={levelMax}
+                  onChange={(event) =>
+                    setLevelMax(
+                      Math.max(1, Math.min(99, Number(event.target.value) || 99)),
+                    )
+                  }
+                  aria-label="Maximum level"
+                  className="w-14 border-2 border-ink bg-transparent px-2 py-3 text-center text-ink outline-none transition focus:border-blood sm:py-2"
+                />
+              </label>
+
+              <div
+                className="flex border-2 border-ink"
+                role="group"
+                aria-label="Filter by DLC"
+              >
+                {(
+                  [
+                    ["all", "All"],
+                    ["base", "Base"],
+                    ["dlc", "DLC"],
+                  ] as [DlcFilter, string][]
+                ).map(([value, label], index) => (
+                  <button
+                    key={value}
+                    onClick={() => setDlcFilter(value)}
+                    aria-pressed={dlcFilter === value}
+                    className={`px-3 py-3 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood sm:py-2 ${
+                      index < 2 ? "border-r-2 border-ink" : ""
+                    } ${
+                      dlcFilter === value
+                        ? "bg-ink text-paper"
+                        : "text-ink hover:bg-ink/10"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <ControlButton
