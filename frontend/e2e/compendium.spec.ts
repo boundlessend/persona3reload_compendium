@@ -78,6 +78,37 @@ test("team mode analyzes defensive coverage", async ({ page }) => {
   await expect(dialog.getByText("Electric").first()).toBeVisible();
 });
 
+test("shared compare URL restores the comparison", async ({ page }) => {
+  await page.goto("/?compare=orpheus,slime");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: "Compare" })).toBeVisible();
+  await expect(dialog.getByText("Orpheus")).toBeVisible();
+  await expect(dialog.getByText("Slime")).toBeVisible();
+});
+
+test("shared team URL restores the coverage panel", async ({ page }) => {
+  await page.goto("/?team=orpheus,slime,pixie");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: "Team" })).toBeVisible();
+});
+
+test("comparing reflects the selection into the URL", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Compare", exact: true }).click();
+  await page
+    .getByRole("button", { name: /Izanagi/i })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: /Orpheus/i })
+    .first()
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page).toHaveURL(/compare=/);
+});
+
 test("arcana filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchPersonas, PERSONA_COUNT, type Persona } from "./api";
 import {
   AFFINITY_FILTER_LABELS,
@@ -55,6 +55,59 @@ export default function App() {
       });
     return () => controller.abort();
   }, []);
+
+  // восстановить сравнение/команду из query при заходе по расшаренной ссылке
+  useEffect(() => {
+    if (!personas.length) return;
+    const params = new URLSearchParams(window.location.search);
+    const resolve = (slugs: string) =>
+      slugs
+        .split(",")
+        .map((slug) => personas.find((p) => p.query === slug))
+        .filter((p): p is Persona => Boolean(p));
+    const compareParam = params.get("compare");
+    const teamParam = params.get("team");
+    if (compareParam) {
+      const picks = resolve(compareParam);
+      if (picks.length >= 2) {
+        setCompareMode(true);
+        setCompareList(picks.slice(0, 2));
+      }
+    } else if (teamParam) {
+      const picks = resolve(teamParam);
+      if (picks.length >= 2) {
+        setTeamMode(true);
+        setTeamList(picks.slice(0, 4));
+        setTeamOpen(true);
+      }
+    }
+  }, [personas]);
+
+  // последний share-URL, что МЫ записали: чтобы убирать query только за собой,
+  // не затирая ?compare/?team из входящей ссылки до того, как её прочтёт restore
+  const sharedUrlRef = useRef<string | null>(null);
+
+  // отразить открытое сравнение/команду в URL (replaceState: без новых записей
+  // истории). Персона-модалка владеет своим путём отдельно, поэтому пропускаем
+  useEffect(() => {
+    if (selected) return;
+    const a = compareList[0];
+    const b = compareList[1];
+    let next: string | null = null;
+    if (a && b) next = `/?compare=${a.query},${b.query}`;
+    else if (teamOpen && teamList.length >= 2)
+      next = `/?team=${teamList.map((p) => p.query).join(",")}`;
+    if (next) {
+      if (next !== sharedUrlRef.current) {
+        window.history.replaceState(null, "", next);
+        sharedUrlRef.current = next;
+      }
+    } else if (sharedUrlRef.current) {
+      // сравнение/команду закрыли - убрать наши query, не трогая путь
+      window.history.replaceState(null, "", window.location.pathname);
+      sharedUrlRef.current = null;
+    }
+  }, [compareList, teamOpen, teamList, selected]);
 
   // Compare и Team - взаимоисключающие режимы выбора карт
   const toggleCompareMode = () => {
