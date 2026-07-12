@@ -430,7 +430,7 @@ function HomePage() {
                         )
                       }
                       aria-label="Minimum level"
-                      className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center text-ink outline-none transition focus:border-blood"
+                      className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center font-mono text-ink outline-none transition focus:border-blood"
                     />
                     <span aria-hidden="true">-</span>
                     <input
@@ -447,7 +447,7 @@ function HomePage() {
                         )
                       }
                       aria-label="Maximum level"
-                      className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center text-ink outline-none transition focus:border-blood"
+                      className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center font-mono text-ink outline-none transition focus:border-blood"
                     />
                   </div>
                 </div>
