@@ -160,6 +160,14 @@ test("element affinity filter narrows the catalog", async ({ page }) => {
   await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
 });
 
+test("origin filter narrows the catalog", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: "Origin" }).click();
+  await page.getByRole("option", { name: "Greek", exact: true }).click();
+  await expect(page.getByText("26 of 213 personas")).toBeVisible();
+});
+
 test("level range filter narrows the catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("213 of 213 personas")).toBeVisible();

@@ -68,7 +68,8 @@ export function PersonaModal({
             </button>
             <div className="min-w-0">
               <p className="font-mono text-xs uppercase tracking-wider text-blood">
-                {idTag(persona.id)} · {persona.arcana} · Lv {persona.level}
+                {idTag(persona.id)} · {persona.arcana} · Lv {persona.level} ·{" "}
+                {persona.origin}
               </p>
               <h2 className="mt-1 font-display text-4xl uppercase leading-none break-words sm:text-5xl">
                 {persona.name}

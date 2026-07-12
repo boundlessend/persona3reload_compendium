@@ -30,6 +30,7 @@ function HomePage() {
   const { personas, loading, error } = usePersonas();
   const [search, setSearch] = useState("");
   const [arcana, setArcana] = useState("All");
+  const [origin, setOrigin] = useState("All");
   const [sort, setSort] = useState<SortKey>("id");
   const [element, setElement] = useState("All");
   const [affinityType, setAffinityType] = useState<AffinityKey>("weak");
@@ -161,6 +162,11 @@ function HomePage() {
     [personas],
   );
 
+  const origins = useMemo(
+    () => ["All", ...Array.from(new Set(personas.map((p) => p.origin))).sort()],
+    [personas],
+  );
+
   const elements = useMemo(() => {
     const set = new Set<string>();
     for (const persona of personas)
@@ -173,6 +179,7 @@ function HomePage() {
     const term = search.trim().toLowerCase();
     const filtered = personas.filter((persona) => {
       if (arcana !== "All" && persona.arcana !== arcana) return false;
+      if (origin !== "All" && persona.origin !== origin) return false;
       if (term && !persona.name.toLowerCase().includes(term)) return false;
       if (dlcFilter === "base" && persona.dlc !== 0) return false;
       if (dlcFilter === "dlc" && persona.dlc !== 1) return false;
@@ -189,6 +196,7 @@ function HomePage() {
     personas,
     search,
     arcana,
+    origin,
     dlcFilter,
     favoritesOnly,
     favorites,
@@ -250,6 +258,19 @@ function HomePage() {
                 }))}
                 onChange={setSort}
                 ariaLabel="Sort"
+              />
+            </label>
+
+            <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
+              Origin
+              <Dropdown
+                value={origin}
+                options={origins.map((name) => ({
+                  value: name,
+                  label: name === "All" ? "Any origin" : name,
+                }))}
+                onChange={setOrigin}
+                ariaLabel="Origin"
               />
             </label>
 

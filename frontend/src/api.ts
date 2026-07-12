@@ -17,6 +17,7 @@ export type Persona = {
   nullifies: string[];
   dlc: number;
   query: string;
+  origin: string;
 };
 
 // узкая проверка формы данных на границе доверия: personas.json генерится на
@@ -34,7 +35,8 @@ function assertPersonas(data: unknown): asserts data is Persona[] {
       typeof fields.id !== "number" ||
       typeof fields.name !== "string" ||
       typeof fields.query !== "string" ||
-      typeof fields.arcana !== "string"
+      typeof fields.arcana !== "string" ||
+      typeof fields.origin !== "string"
     ) {
       throw new Error("Malformed personas.json: unexpected persona shape");
     }
