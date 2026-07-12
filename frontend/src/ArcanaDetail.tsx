@@ -62,21 +62,26 @@ export function ArcanaDetail({ slug }: { slug: string }) {
         >
           ← All arcana
         </a>
-        <p className="mt-8 font-mono text-sm tracking-[0.1em] text-blood">
-          ARCANA
-        </p>
-        <h1 className="mt-3 font-display text-[clamp(2.5rem,12vw,4rem)] uppercase leading-none tracking-tight">
-          {arcanaName}
-        </h1>
+        <div className="mt-8 flex items-start gap-6">
+          <img
+            src={`/arcana-cards/${slug}.webp`}
+            alt={`${arcanaName} arcana card`}
+            className="hidden h-40 w-auto shrink-0 object-contain mix-blend-multiply sm:block"
+          />
+          <div className="min-w-0">
+            <p className="font-mono text-sm tracking-[0.1em] text-blood">ARCANA</p>
+            <h1 className="mt-3 font-display text-[clamp(2.5rem,12vw,4rem)] uppercase leading-none tracking-tight">
+              {arcanaName}
+            </h1>
+            {entry && (
+              <p className="mt-4 font-mono text-xs uppercase tracking-wider text-blood">
+                Social Link · {entry.confidant}
+              </p>
+            )}
+          </div>
+        </div>
         {entry && (
-          <>
-            <p className="mt-4 font-mono text-xs uppercase tracking-wider text-blood">
-              Social Link · {entry.confidant}
-            </p>
-            <p className="mt-4 max-w-2xl leading-relaxed text-mut">
-              {entry.blurb}
-            </p>
-          </>
+          <p className="mt-6 max-w-2xl leading-relaxed text-mut">{entry.blurb}</p>
         )}
 
         <h2 className="mt-12 border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">

@@ -41,16 +41,25 @@ export function ArcanaIndex() {
                 <a
                   key={name}
                   href={`/arcana/${name.toLowerCase()}/`}
-                  className="group flex flex-col border-b-2 border-r-2 border-ink bg-card p-6 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+                  className="group flex items-center gap-4 border-b-2 border-r-2 border-ink bg-card p-6 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
                 >
-                  <span className="font-display text-2xl uppercase leading-none">
-                    {name}
-                  </span>
-                  <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
-                    {entry?.confidant ?? "-"}
-                  </span>
-                  <span className="mt-6 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
-                    {count} personas
+                  <img
+                    src={`/arcana-cards/${name.toLowerCase()}.webp`}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    className="h-24 w-auto shrink-0 object-contain mix-blend-multiply group-hover:mix-blend-normal"
+                  />
+                  <span className="flex min-w-0 flex-col">
+                    <span className="font-display text-2xl uppercase leading-none break-words">
+                      {name}
+                    </span>
+                    <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
+                      {entry?.confidant ?? "-"}
+                    </span>
+                    <span className="mt-4 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
+                      {count} personas
+                    </span>
                   </span>
                 </a>
               );
