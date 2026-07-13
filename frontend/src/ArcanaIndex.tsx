@@ -3,6 +3,8 @@ import { usePersonas } from "./usePersonas";
 import { countByArcana } from "./constants";
 import { ARCANA_GUIDE } from "./arcanaGuide";
 import { ErrorNote } from "./ErrorNote";
+import { FusionMatrix } from "./FusionMatrix";
+import { SpecialFusions } from "./SpecialFusions";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
@@ -66,6 +68,9 @@ export function ArcanaIndex() {
             })}
           </div>
         )}
+
+        <FusionMatrix />
+        {personas.length > 0 && <SpecialFusions personas={personas} />}
       </main>
       <Footer />
     </div>

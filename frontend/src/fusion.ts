@@ -3,7 +3,9 @@ import type { Persona } from "./api";
 // Таблица слияния аркан Persona 3 Reload (нижнетреугольная 22x22). Источник:
 // aqiu384/megaten-fusion-tool (данные самого используемого P3R-калькулятора).
 // result(a,b) = TABLE[max(i,j)][min(i,j)]; "-" вне диагонали = слияния нет.
-const RACES = [
+// канонический порядок аркан P3R (совпадает с треугольной TABLE ниже);
+// экспортируется для матрицы слияния на /arcana
+export const RACES = [
   "Fool", "Magician", "Priestess", "Empress", "Emperor", "Hierophant",
   "Lovers", "Chariot", "Justice", "Hermit", "Fortune", "Strength", "Hanged",
   "Death", "Temperance", "Devil", "Tower", "Star", "Moon", "Sun", "Judgement",
@@ -63,6 +65,11 @@ export const SPECIAL_RECIPES: Record<string, string[]> = {
 };
 
 const SPECIAL_ONLY = new Set(Object.keys(SPECIAL_RECIPES));
+
+// делается ли персона только особым рецептом (обычное слияние её пропускает)
+export function isSpecialFusion(query: string): boolean {
+  return SPECIAL_ONLY.has(query);
+}
 
 // результирующая аркана пары (null = слияния нет; для одинаковой арканы см. fuse)
 export function resultArcana(a: string, b: string): string | null {
