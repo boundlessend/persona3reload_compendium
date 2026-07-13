@@ -23,9 +23,6 @@ backend.
 
 ## 3. Non-goals
 
-- No multi-step fusion path finder. Forward fusion (Compare), a 22x22 arcana
-  matrix, special recipes and Theurgy pairs are provided; chaining a recipe to
-  an arbitrary target persona is out of scope.
 - No accounts, authentication or server-side state; client-side persistence is
   limited to favorites, the collection tracker and the theme in localStorage.
 - No live data source; the compendium is a static TSV/JSON compiled at build
@@ -55,8 +52,10 @@ backend.
 
 ### Persona detail
 - Modal with description, five stats (bars normalized to 99), grouped
-  affinities, learned skills (name, element icon, target, learn level) and
-  fusion recipes (special recipe, reverse recipes, or a DLC note).
+  affinities, learned skills (name, element icon, effect, target, learn level)
+  and fusion recipes (special recipe, reverse recipes, or a DLC note).
+- Expandable multi-step fusion chain to build the persona: cheapest path, or
+  a "from my collection" mode that backtracks to owned personas and marks gaps.
 - Theurgy line for the 14 personas in a fusion-spell pair, linking the partner.
 - Favorite and collected toggles, persisted in localStorage.
 - Artwork zoom overlay; inline SVG placeholder when an image is missing.
@@ -65,14 +64,21 @@ backend.
 ### Fusion & arcana
 - Compare mode: two personas side by side plus their forward fusion result,
   clickable through to that persona.
+- Multi-step recipe finder (in the persona modal, see above).
 - `/arcana` index with a 22x22 arcana fusion matrix, a special-recipe list and
   the seven protagonist Theurgy fusion spells.
 - Per-arcana pages (`/arcana/<slug>`) with the confidant / Social Link, the
   arcana's personas, and its ultimate persona plus how it unlocks.
 
 ### Skills
-- `/skills` catalog of skills with owners, element icons, and a modal guide to
-  how skills are learned and named.
+- `/skills` catalog of skills with owners, element icons, effects, and a modal
+  guide to how skills are learned and named.
+
+### Bosses & requests
+- `/bosses`: the 57 story bosses with weaknesses / resistances (filter by
+  weakness); each weakness links to `/skills` filtered by that element.
+- `/requests`: all 101 Elizabeth's Requests with rewards, filterable by reward
+  type and by deadline / missable.
 
 ### Team
 - Team mode: pick a party and see its defensive coverage (shared weaknesses /
@@ -165,8 +171,9 @@ absorbs[], nullifies[], dlc, query`.
 
 - Frontend: React 19, TypeScript 6, Vite 8, Tailwind CSS v4.
 - Build tooling: Node 22+, `generate-personas.mjs` (TSV -> JSON),
-  `generate-skills.mjs` (skills JSON), `prerender-meta.mjs` (per-route meta and
-  JSON-LD, postbuild).
+  `generate-skills.mjs` (skills JSON), `generate-bosses.mjs` (boss JSON),
+  `prerender-meta.mjs` (per-route meta and JSON-LD, postbuild). `requests.json`
+  is curated (no machine-readable upstream), committed directly.
 - Testing: Playwright (e2e).
 - Hosting / CI: static hosting (Render via `render.yaml`; Vercel / Netlify /
   Cloudflare Pages compatible), GitHub Actions CI (frontend typecheck + build,
