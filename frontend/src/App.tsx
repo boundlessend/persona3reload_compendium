@@ -651,6 +651,7 @@ export default function App() {
     return <ArcanaDetail slug={decodeURIComponent(detail[1] ?? "").toLowerCase()} />;
   }
   if (/^\/arcana\/?$/.test(path)) return <ArcanaIndex />;
-  if (/^\/skills\/?$/.test(path)) return <SkillsBrowser />;
+  if (/^\/skills\/guide\/?$/.test(path)) return <SkillsBrowser initialGuideOpen={true} />;
+  if (/^\/skills\/?$/.test(path)) return <SkillsBrowser initialGuideOpen={false} />;
   return <HomePage />;
 }

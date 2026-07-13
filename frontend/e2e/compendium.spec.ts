@@ -125,6 +125,37 @@ test("skills browser lists skills with an element filter", async ({ page }) => {
   await expect(page.getByText("Agi", { exact: true }).first()).toBeVisible();
 });
 
+test("skills guide opens as a modal over the browser", async ({ page }) => {
+  await page.goto("/skills/");
+  await page.getByRole("link", { name: /How skills are named/ }).click();
+  const guide = page.getByRole("dialog", { name: "How skills work" });
+  await expect(guide).toBeVisible();
+  await expect(guide.getByText("Agidyne", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/skills\/guide\/?$/);
+  // Escape closes it and returns to /skills
+  await page.keyboard.press("Escape");
+  await expect(guide).toBeHidden();
+  await expect(page).toHaveURL(/\/skills\/?$/);
+});
+
+test("skills guide deep link opens the modal directly", async ({ page }) => {
+  await page.goto("/skills/guide/");
+  await expect(
+    page.getByRole("dialog", { name: "How skills work" }),
+  ).toBeVisible();
+});
+
+test("clicking a skill reveals its personas and opens one in place", async ({
+  page,
+}) => {
+  await page.goto("/skills/");
+  await page.getByRole("button", { name: "Ice", exact: true }).click();
+  await page.getByRole("button", { name: /^Bufula/i }).click();
+  await expect(page.getByText(/personas learn Bufula/i)).toBeVisible();
+  await page.getByRole("button", { name: /High Pixie/i }).click();
+  await expect(page.getByRole("dialog", { name: "High Pixie" })).toBeVisible();
+});
+
 test("compare shows the normal fusion result", async ({ page }) => {
   await page.goto("/?compare=orpheus,pixie");
   const dialog = page.getByRole("dialog");

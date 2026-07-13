@@ -1,16 +1,64 @@
-import { useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import type { Persona } from "./api";
 import { useSkills } from "./useSkills";
+import { usePersonas } from "./usePersonas";
+import { useFavorites } from "./useFavorites";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { ErrorNote } from "./ErrorNote";
 import { Chip } from "./Controls";
 import { SkillIcon, SkillIconDefs } from "./SkillIcon";
+import { SkillGuideModal } from "./SkillsGuide";
+import { PersonaImage } from "./PersonaImage";
+import { usePersonaModal } from "./usePersonaModal";
+
+const GUIDE_PATH = /^\/skills\/guide\/?$/;
 
 // страница /skills: каталог всех скиллов (имя, стихия, цель, сколько персон учит),
-// с фильтром по стихии/типу. Клик по числу учащих не делаем - список велик
-export function SkillsBrowser() {
+// с фильтром по стихии/типу. Клик по скиллу раскрывает под плиткой персон, которые
+// его учат; клик по персоне открывает её модалку с блюром прямо здесь.
+// гайд по именованию открывается модалкой с блюром (deep-link /skills/guide/)
+export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean }) {
   const { skills, loading, error } = useSkills();
+  const { personas } = usePersonas();
+  const { favorites, toggleFavorite } = useFavorites();
+  const { open: openPersona, modal: personaModal } = usePersonaModal(
+    personas,
+    skills,
+    favorites,
+    toggleFavorite,
+  );
   const [element, setElement] = useState("All");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [guideOpen, setGuideOpen] = useState(initialGuideOpen);
+  // мы ли положили запись /skills/guide/ в историю: решает, back или replace на закрытии
+  const guidePushedRef = useRef(false);
+
+  useEffect(() => {
+    const onPop = () => {
+      guidePushedRef.current = false;
+      setGuideOpen(GUIDE_PATH.test(window.location.pathname));
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  const openGuide = () => {
+    setGuideOpen(true);
+    window.history.pushState(null, "", "/skills/guide/");
+    guidePushedRef.current = true;
+  };
+  const closeGuide = () => {
+    setGuideOpen(false);
+    // снять свою запись, чтобы Back не открыл модалку снова; на прямом заходе
+    // (нашей записи нет) заменяем на /skills/, чтобы не уйти с сайта
+    if (guidePushedRef.current) {
+      guidePushedRef.current = false;
+      window.history.back();
+    } else if (window.location.pathname !== "/skills/") {
+      window.history.replaceState(null, "", "/skills/");
+    }
+  };
 
   const catalog = useMemo(() => {
     const map = new Map<string, { el: string; tg: string; count: number }>();
@@ -31,6 +79,23 @@ export function SkillsBrowser() {
     [catalog],
   );
 
+  // обратная карта: имя скилла -> персоны, которые его учат (по возрастанию уровня)
+  const ownersBySkill = useMemo(() => {
+    const byQuery = new Map(personas.map((persona) => [persona.query, persona]));
+    const map = new Map<string, Persona[]>();
+    for (const [query, list] of Object.entries(skills)) {
+      const persona = byQuery.get(query);
+      if (!persona) continue;
+      for (const skill of list) {
+        const arr = map.get(skill.n);
+        if (arr) arr.push(persona);
+        else map.set(skill.n, [persona]);
+      }
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.level - b.level);
+    return map;
+  }, [personas, skills]);
+
   const visible = catalog.filter((s) => element === "All" || s.el === element);
 
   return (
@@ -47,6 +112,21 @@ export function SkillsBrowser() {
           Every skill personas learn in Persona 3 Reload, with its element and
           target. SP cost is not tracked here.
         </p>
+
+        <a
+          href="/skills/guide/"
+          onClick={(event) => {
+            // обычный клик открывает модалку; ctrl/cmd/middle-click ведут по href
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
+              return;
+            }
+            event.preventDefault();
+            openGuide();
+          }}
+          className="mt-6 inline-flex items-center gap-2 border-2 border-ink bg-card px-4 py-2 font-mono text-xs uppercase tracking-wider transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+        >
+          How skills are named →
+        </a>
 
         <div className="mt-10 flex flex-wrap gap-2">
           {elements.map((name) => (
@@ -68,31 +148,74 @@ export function SkillsBrowser() {
         {error && <ErrorNote message={`Could not load skills: ${error}.`} />}
 
         <SkillIconDefs />
-        <div className="mt-4 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((skill) => (
-            <a
-              key={skill.name}
-              href={`/?skill=${encodeURIComponent(skill.name)}#browse`}
-              className="group flex flex-col border-b-2 border-r-2 border-ink bg-card p-4 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
-            >
-              <span className="flex items-center gap-2 font-display text-lg uppercase leading-none break-words">
-                <SkillIcon
-                  el={skill.el}
-                  className="h-5 w-5 shrink-0 group-hover:text-paper!"
-                />
-                {skill.name}
-              </span>
-              <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
-                {skill.el} · {skill.tg}
-              </span>
-              <span className="mt-3 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
-                {skill.count} {skill.count === 1 ? "persona" : "personas"} →
-              </span>
-            </a>
-          ))}
+        <div className="mt-4 grid grid-flow-row-dense border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((skill) => {
+            const isOpen = expanded === skill.name;
+            const owners = isOpen ? (ownersBySkill.get(skill.name) ?? []) : [];
+            return (
+              <Fragment key={skill.name}>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setExpanded(isOpen ? null : skill.name)}
+                  className={`group flex flex-col border-b-2 border-r-2 border-ink bg-card p-4 text-left transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${isOpen ? "outline outline-2 -outline-offset-2 outline-blood" : ""}`}
+                >
+                  <span className="flex items-center gap-2 font-display text-lg uppercase leading-none break-words">
+                    <SkillIcon
+                      el={skill.el}
+                      className="h-5 w-5 shrink-0 group-hover:text-paper!"
+                    />
+                    {skill.name}
+                  </span>
+                  <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
+                    {skill.el} · {skill.tg}
+                  </span>
+                  <span className="mt-3 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
+                    {skill.count} {skill.count === 1 ? "persona" : "personas"}{" "}
+                    {isOpen ? "▾" : "→"}
+                  </span>
+                </button>
+
+                {isOpen && (
+                  <div className="col-span-full border-b-2 border-r-2 border-ink bg-paper2 p-5">
+                    <p className="font-mono text-[11px] uppercase tracking-widest text-mut">
+                      {owners.length}{" "}
+                      {owners.length === 1 ? "persona learns" : "personas learn"}{" "}
+                      {skill.name}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-5">
+                      {owners.map((persona) => (
+                        <button
+                          key={persona.id}
+                          type="button"
+                          onClick={() => openPersona(persona)}
+                          className="flex w-20 flex-col items-center gap-1.5 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+                        >
+                          <PersonaImage
+                            persona={persona}
+                            className="h-16 w-16 object-contain mix-blend-multiply transition hover:scale-105"
+                          />
+                          <span className="font-mono text-[10px] uppercase leading-tight text-ink">
+                            {persona.name}
+                          </span>
+                          <span className="font-mono text-[9px] uppercase tracking-wider text-blood">
+                            Lv {persona.level}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Fragment>
+            );
+          })}
         </div>
       </main>
       <Footer />
+
+      {guideOpen && <SkillGuideModal onClose={closeGuide} />}
+
+      {personaModal}
     </div>
   );
 }

@@ -139,6 +139,21 @@ writeFileSync(
   }),
 );
 
+// гайд по именованию скиллов /skills/guide/
+const skillsGuideDir = resolve(skillsDir, "guide");
+mkdirSync(skillsGuideDir, { recursive: true });
+writeFileSync(
+  resolve(skillsGuideDir, "index.html"),
+  personalise(shell, {
+    title: "How skills work · Persona Compendium · Persona 3 Reload",
+    description: collapse(
+      "How Persona 3 Reload skill names are built: element roots, the Ma- prefix, power tiers, buffs, debuffs and recovery.",
+      180,
+    ),
+    url: `${SITE}/skills/guide/`,
+  }),
+);
+
 console.log(
-  `prerendered meta for ${count} persona routes + ${arcanaCount} arcana routes + skills -> dist/`,
+  `prerendered meta for ${count} persona routes + ${arcanaCount} arcana routes + skills + guide -> dist/`,
 );
