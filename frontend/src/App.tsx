@@ -315,7 +315,7 @@ function HomePage() {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
+            <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
               Sort
               <Dropdown
                 value={sort}
@@ -326,7 +326,7 @@ function HomePage() {
                 onChange={setSort}
                 ariaLabel="Sort"
               />
-            </label>
+            </span>
 
             <ControlButton
               pressed={advancedOpen}
