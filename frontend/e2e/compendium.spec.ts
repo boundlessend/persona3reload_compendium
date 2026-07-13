@@ -346,6 +346,19 @@ test("navbar opens the arcana index", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Fool/i }).first()).toBeVisible();
 });
 
+test("theme toggle switches to dark and persists across reload", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const html = page.locator("html");
+  await expect(html).not.toHaveClass(/theme-dark/);
+  await page.getByRole("button", { name: "Switch to dark theme" }).click();
+  await expect(html).toHaveClass(/theme-dark/);
+  // /theme-init.js must re-apply the stored theme before render on reload
+  await page.reload();
+  await expect(page.locator("html")).toHaveClass(/theme-dark/);
+});
+
 test("arcana detail shows the confidant and its personas", async ({ page }) => {
   await page.goto("/arcana/fool/");
   await expect(

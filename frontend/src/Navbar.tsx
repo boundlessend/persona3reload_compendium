@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTheme } from "./useTheme";
 
 const NAV_LINKS = [
   { href: "/#browse", label: "Browse" },
@@ -12,6 +13,7 @@ const SOURCE_HREF = "https://github.com/boundlessend/persona3reload_compendium";
 export function Navbar() {
   // на мобильном ссылки прячутся за бургер; на десктопе видны в строку
   const [open, setOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
@@ -42,6 +44,18 @@ export function Navbar() {
           >
             Source ↗
           </a>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={
+              theme === "dark" ? "Switch to light theme" : "Switch to dark theme"
+            }
+            className="grid h-10 w-10 place-items-center border-2 border-ink text-ink transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+          >
+            <span aria-hidden="true" className="text-base leading-none">
+              {theme === "dark" ? "☀" : "☾"}
+            </span>
+          </button>
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}

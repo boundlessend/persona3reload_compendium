@@ -24,6 +24,35 @@ body {
   background: var(--color-paper);
 }
 
+/* тёмная тема «Dark Hour»: зеленовато-чёрная ночь, костяной текст, кровь-акцент.
+   применяется по системной теме, либо по явному override .theme-dark из Navbar.
+   .theme-light (тоже из Navbar) отключает системный dark через :not() ниже */
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) {
+    --color-paper: #0c0e0a;
+    --color-paper2: #11140d;
+    --color-card: #181c13;
+    --color-ink: #e8e2d2;
+    --color-blood: #e0324a;
+    --color-mut: #9b937f;
+  }
+  :root:not(.theme-light) .mix-blend-multiply {
+    mix-blend-mode: normal;
+  }
+}
+html.theme-dark {
+  --color-paper: #0c0e0a;
+  --color-paper2: #11140d;
+  --color-card: #181c13;
+  --color-ink: #e8e2d2;
+  --color-blood: #e0324a;
+  --color-mut: #9b937f;
+}
+/* артворк прозрачный: на тёмном фоне multiply давит его в чёрное - показываем как есть */
+html.theme-dark .mix-blend-multiply {
+  mix-blend-mode: normal;
+}
+
 /* трекер компендиума: нативный <progress> в брутализм-стиле (ширину даёт сам
    элемент - без инлайн-стилей, которые режет CSP style-src 'self') */
 progress.collected-bar {
@@ -56,7 +85,7 @@ input[type="number"]::-webkit-outer-spin-button {
 .el-slash,
 .el-strike,
 .el-pierce {
-  color: #4f463a;
+  color: var(--color-mut);
 }
 .el-fire {
   color: #c8102e;
@@ -78,7 +107,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 .el-almighty,
 .el-special {
-  color: #16130d;
+  color: var(--color-ink);
 }
 .el-ailment {
   color: #805ad5;
