@@ -6,11 +6,13 @@ import { AffinityList, StatList } from "./PersonaDetails";
 import { useDialog } from "./useDialog";
 import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
 import { theurgyFor } from "./theurgy";
+import { buildRecipeTree, allOwned } from "./recipeTree";
 import type { Skill } from "./useSkills";
 import { IconButton } from "./Controls";
 import { SkillIcon, SkillIconDefs } from "./SkillIcon";
 import { ModalShell } from "./ModalShell";
 import { SectionHeading } from "./SectionHeading";
+import { RecipeTree } from "./RecipeTreeView";
 
 export function PersonaModal({
   persona,
@@ -21,6 +23,7 @@ export function PersonaModal({
   onToggleFavorite,
   isRegistered,
   onToggleRegistered,
+  registered,
 }: {
   persona: Persona;
   personas: Persona[];
@@ -30,6 +33,7 @@ export function PersonaModal({
   onToggleFavorite: (query: string) => void;
   isRegistered: boolean;
   onToggleRegistered: (query: string) => void;
+  registered: Set<string>;
 }) {
   const special = SPECIAL_RECIPES[persona.query];
   const theurgy = theurgyFor(persona.query);
@@ -44,6 +48,17 @@ export function PersonaModal({
     [persona, personas, special],
   );
   const [zoom, setZoom] = useState(false);
+  const [showChain, setShowChain] = useState(false);
+  const [chainOwned, setChainOwned] = useState(false);
+  // многошаговое дерево слияния (считаем только при раскрытии); chainOwned -
+  // собирать из отмеченных в коллекции, иначе cheapest снизу вверх
+  const chain = useMemo(
+    () =>
+      showChain
+        ? buildRecipeTree(persona, personas, chainOwned ? registered : null)
+        : null,
+    [showChain, chainOwned, persona, personas, registered],
+  );
   const panelRef = useRef<HTMLDivElement>(null);
   const enlargeRef = useRef<HTMLButtonElement>(null);
   const zoomCloseRef = useRef<HTMLButtonElement>(null);
@@ -210,6 +225,51 @@ export function PersonaModal({
                   <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-mut">
                     +{reverse.total - reverse.recipes.length} more recipes
                   </p>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowChain((value) => !value)}
+                    aria-expanded={showChain}
+                    className="border-2 border-ink px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+                  >
+                    {showChain ? "▴ Hide full chain" : "▸ Show full chain"}
+                  </button>
+                  {showChain && (
+                    <button
+                      type="button"
+                      onClick={() => setChainOwned((value) => !value)}
+                      aria-pressed={chainOwned}
+                      className={`border-2 border-ink px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
+                        chainOwned
+                          ? "bg-ink text-paper"
+                          : "hover:bg-ink hover:text-paper"
+                      }`}
+                    >
+                      From my collection
+                    </button>
+                  )}
+                </div>
+
+                {chain && (
+                  <div className="mt-3">
+                    {chainOwned && (
+                      <p className="mb-2 font-mono text-[11px] uppercase tracking-wider">
+                        {allOwned(chain) ? (
+                          <span className="text-ink">
+                            ✓ Buildable from your collection
+                          </span>
+                        ) : (
+                          <span className="text-blood">
+                            Not fully buildable - red personas aren&apos;t
+                            collected yet
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    <RecipeTree node={chain} />
+                  </div>
                 )}
               </>
             ) : (

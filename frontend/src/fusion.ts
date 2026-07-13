@@ -152,3 +152,38 @@ export function reverseRecipes(
   out.sort((x, y) => x.a.level + x.b.level - (y.a.level + y.b.level));
   return { recipes: out.slice(0, limit), total: out.length };
 }
+
+// обратный индекс за один проход O(n^2): result.id -> все обычные рецепты,
+// отсортированные по сумме уровней (дешёвые сверху). для многошагового
+// recipe-finder, чтобы не пересчитывать reverseRecipes на каждый узел дерева
+export function reverseIndex(personas: Persona[]): Map<number, Recipe[]> {
+  const ctx = buildCtx(personas);
+  const pool: Persona[] = [];
+  for (const list of ctx.byArcana.values()) pool.push(...list);
+  const index = new Map<number, Recipe[]>();
+  for (let i = 0; i < pool.length; i += 1) {
+    const a = pool[i];
+    if (!a) continue;
+    for (let j = i + 1; j < pool.length; j += 1) {
+      const b = pool[j];
+      if (!b) continue;
+      const result = fuseCtx(a, b, ctx);
+      if (!result) continue;
+      const list = index.get(result.id);
+      if (list) list.push({ a, b });
+      else index.set(result.id, [{ a, b }]);
+    }
+  }
+  // сортируем по МАКС уровню ингредиента (потом по сумме): балансные пары выше
+  // перекошенных, чтобы цепочка строилась снизу вверх и не гоняла через персону
+  // выше цели (напр. Thoth 40 из двух ~39, а не из Futsunushi 74 + Angel 4)
+  for (const list of index.values())
+    list.sort((x, y) => {
+      const byMax =
+        Math.max(x.a.level, x.b.level) - Math.max(y.a.level, y.b.level);
+      return byMax !== 0
+        ? byMax
+        : x.a.level + x.b.level - (y.a.level + y.b.level);
+    });
+  return index;
+}

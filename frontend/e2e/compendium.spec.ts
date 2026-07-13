@@ -181,6 +181,15 @@ test("theurgy persona shows its fusion spell and partner link", async ({
   await expect(page).toHaveURL(/\/persona\/apsaras\//);
 });
 
+test("full fusion chain expands in the persona modal", async ({ page }) => {
+  await page.goto("/persona/cybele/");
+  const dialog = page.getByRole("dialog");
+  // a deep tree node is not shown until the chain is expanded
+  await expect(dialog.getByText("Okuninushi")).toHaveCount(0);
+  await dialog.getByRole("button", { name: /Show full chain/ }).click();
+  await expect(dialog.getByText("Okuninushi").first()).toBeVisible();
+});
+
 test("persona modal lists fusion recipes", async ({ page }) => {
   await page.goto("/persona/forneus/");
   const dialog = page.getByRole("dialog");

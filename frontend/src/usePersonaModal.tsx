@@ -25,6 +25,7 @@ export function usePersonaModal(
       onToggleFavorite={toggleFavorite}
       isRegistered={registered.has(selected.query)}
       onToggleRegistered={toggleRegistered}
+      registered={registered}
     />
   ) : null;
   return { open: setSelected, modal };

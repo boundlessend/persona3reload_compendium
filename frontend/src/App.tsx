@@ -590,6 +590,7 @@ function HomePage() {
           onToggleFavorite={toggleFavorite}
           isRegistered={registered.has(selected.query)}
           onToggleRegistered={toggleRegistered}
+          registered={registered}
         />
       )}
 
