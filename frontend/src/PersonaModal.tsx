@@ -4,7 +4,7 @@ import { idTag } from "./constants";
 import { PersonaImage } from "./PersonaImage";
 import { AffinityList, StatList } from "./PersonaDetails";
 import { useDialog } from "./useDialog";
-import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
+import { reverseIndex, SPECIAL_RECIPES } from "./fusion";
 import { theurgyFor } from "./theurgy";
 import { buildRecipeTree, allOwned } from "./recipeTree";
 import type { Skill } from "./useSkills";
@@ -40,13 +40,18 @@ export function PersonaModal({
   const theurgyPartner = theurgy
     ? personas.find((item) => item.query === theurgy.partner)
     : undefined;
-  const reverse = useMemo(
-    () =>
-      special || persona.dlc === 1
-        ? { recipes: [], total: 0 }
-        : reverseRecipes(persona, personas, 8),
-    [persona, personas, special],
-  );
+  // общий обратный индекс (один O(n^2) проход): и плоский список рецептов, и
+  // многошаговое дерево читают его, а не пересчитывают пары дважды
+  const index = useMemo(() => reverseIndex(personas), [personas]);
+  const reverse = useMemo(() => {
+    if (special || persona.dlc === 1) return { recipes: [], total: 0 };
+    const all = index.get(persona.id) ?? [];
+    // плоский список - самые дешёвые по сумме уровней (индекс отсортирован иначе)
+    const cheapest = [...all].sort(
+      (x, y) => x.a.level + x.b.level - (y.a.level + y.b.level),
+    );
+    return { recipes: cheapest.slice(0, 8), total: all.length };
+  }, [persona, index, special]);
   const [zoom, setZoom] = useState(false);
   const [showChain, setShowChain] = useState(false);
   const [chainOwned, setChainOwned] = useState(false);
@@ -55,9 +60,9 @@ export function PersonaModal({
   const chain = useMemo(
     () =>
       showChain
-        ? buildRecipeTree(persona, personas, chainOwned ? registered : null)
+        ? buildRecipeTree(persona, index, chainOwned ? registered : null)
         : null,
-    [showChain, chainOwned, persona, personas, registered],
+    [showChain, chainOwned, persona, index, registered],
   );
   const panelRef = useRef<HTMLDivElement>(null);
   const enlargeRef = useRef<HTMLButtonElement>(null);

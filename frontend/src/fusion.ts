@@ -126,34 +126,9 @@ export function fuseResult(
 
 export type Recipe = { a: Persona; b: Persona };
 
-// reverse: пары обычного пула, дающие target. Для спец-персон рецепта здесь нет
-// (у них особый рецепт, см. SPECIAL_RECIPES), поэтому вернётся пусто
-export function reverseRecipes(
-  target: Persona,
-  personas: Persona[],
-  limit: number,
-): { recipes: Recipe[]; total: number } {
-  const ctx = buildCtx(personas);
-  const pool: Persona[] = [];
-  for (const list of ctx.byArcana.values()) pool.push(...list);
-  const out: Recipe[] = [];
-  for (let i = 0; i < pool.length; i += 1) {
-    const a = pool[i];
-    if (!a) continue;
-    for (let j = i + 1; j < pool.length; j += 1) {
-      const b = pool[j];
-      if (!b) continue;
-      const result = fuseCtx(a, b, ctx);
-      if (result && result.id === target.id) out.push({ a, b });
-    }
-  }
-  out.sort((x, y) => x.a.level + x.b.level - (y.a.level + y.b.level));
-  return { recipes: out.slice(0, limit), total: out.length };
-}
-
-// обратный индекс за один проход O(n^2): result.id -> все обычные рецепты,
-// отсортированные по сумме уровней (дешёвые сверху). для многошагового
-// recipe-finder, чтобы не пересчитывать reverseRecipes на каждый узел дерева
+// обратный индекс за один проход O(n^2): result.id -> все обычные рецепты.
+// единый источник рецептов: и плоский список в модалке, и многошаговое дерево
+// читают его, чтобы не гонять O(n^2) на каждый узел/повторно
 export function reverseIndex(personas: Persona[]): Map<number, Recipe[]> {
   const ctx = buildCtx(personas);
   const pool: Persona[] = [];
