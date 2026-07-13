@@ -5,7 +5,7 @@ import { useFavorites } from "./useFavorites";
 import { useRegistered } from "./useRegistered";
 import { usePersonaModal } from "./usePersonaModal";
 import { SectionHeading } from "./SectionHeading";
-import { ARCANA_GUIDE } from "./arcanaGuide";
+import { ARCANA_GUIDE, ultimateUnlock } from "./arcanaGuide";
 import { idTag } from "./constants";
 import { PersonaImage } from "./PersonaImage";
 import { Navbar } from "./Navbar";
@@ -42,6 +42,13 @@ export function ArcanaDetail({ slug }: { slug: string }) {
             .sort((a, b) => a.level - b.level)
         : [],
     [personas, arcanaName],
+  );
+
+  // ultimate-персона Social Link = топ-персона арканы без DLC (members
+  // отсортированы по возрастанию, поэтому последняя base - самая высокая)
+  const ultimate = useMemo(
+    () => members.filter((persona) => persona.dlc === 0).at(-1) ?? null,
+    [members],
   );
 
   if (loading) {
@@ -91,6 +98,31 @@ export function ArcanaDetail({ slug }: { slug: string }) {
         </div>
         {entry && (
           <p className="mt-6 max-w-2xl leading-relaxed text-mut">{entry.blurb}</p>
+        )}
+
+        {ultimate && entry && (
+          <div className="mt-8 max-w-2xl border-2 border-ink bg-card p-5">
+            <p className="font-mono text-[11px] uppercase tracking-wider text-blood">
+              Ultimate persona
+            </p>
+            <div className="mt-3 flex items-center gap-4">
+              <PersonaImage
+                persona={ultimate}
+                className="h-14 w-14 shrink-0 object-contain mix-blend-multiply"
+              />
+              <div className="min-w-0">
+                <button
+                  onClick={() => open(ultimate)}
+                  className="text-left font-display text-2xl uppercase leading-none break-words transition hover:text-blood focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+                >
+                  {ultimate.name}
+                </button>
+                <p className="mt-1.5 font-mono text-[11px] uppercase tracking-wider text-mut">
+                  Lv {ultimate.level} · {ultimateUnlock(arcanaName, entry.confidant)}
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         <SectionHeading as="h2" className="mt-12">

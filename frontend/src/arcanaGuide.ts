@@ -115,3 +115,18 @@ export const ARCANA_GUIDE: Record<string, ArcanaEntry> = {
       "Arcana of awakening and new cycles. Bonded through Aigis, the anti-Shadow android (added in the Episode Aigis expansion).",
   },
 };
+
+// арканы, чья ultimate-персона открывается по сюжету, а не Rank 10 конфиданта
+// (сверено 2+ источника). Саму ultimate-персону выводим как топ-персону арканы
+// без DLC - для P3R это совпадает с проверенным списком по всем 22 арканам
+const STORY_ULTIMATE: Record<string, string> = {
+  Fool: "Unlocked through the story, after maxing every Social Link.",
+  Death: "Unlocked automatically through the story.",
+  Judgement: "Unlocked through the story, on the true-ending route.",
+  Aeon: "Added in the Episode Aigis expansion.",
+};
+
+// как открывается ultimate-персона арканы
+export function ultimateUnlock(arcana: string, confidant: string): string {
+  return STORY_ULTIMATE[arcana] ?? `Reach Rank 10 with ${confidant}.`;
+}

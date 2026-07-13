@@ -351,10 +351,21 @@ test("arcana detail shows the confidant and its personas", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Fool", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText(/Social Link/i)).toBeVisible();
+  await expect(page.getByText(/Social Link ·/i)).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Orpheus/i }).first(),
   ).toBeVisible();
+});
+
+test("arcana detail shows the ultimate persona and its unlock", async ({
+  page,
+}) => {
+  await page.goto("/arcana/magician/");
+  await expect(page.getByText("Ultimate persona")).toBeVisible();
+  await expect(page.getByText(/Reach Rank 10 with Kenji Tomochika/)).toBeVisible();
+  // story-based arcana shows a story unlock instead of a rank
+  await page.goto("/arcana/fool/");
+  await expect(page.getByText(/Unlocked through the story/)).toBeVisible();
 });
 
 test("arcana detail opens a persona modal in place", async ({ page }) => {
