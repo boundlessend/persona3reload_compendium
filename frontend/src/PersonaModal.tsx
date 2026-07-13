@@ -8,6 +8,8 @@ import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
 import type { Skill } from "./useSkills";
 import { IconButton } from "./Controls";
 import { SkillIcon, SkillIconDefs } from "./SkillIcon";
+import { ModalShell } from "./ModalShell";
+import { SectionHeading } from "./SectionHeading";
 
 export function PersonaModal({
   persona,
@@ -51,19 +53,13 @@ export function PersonaModal({
   }, [zoom]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-      onClick={onClose}
-    >
-      <div
-        ref={panelRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-label={persona.name}
-        aria-hidden={zoom || undefined}
-        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto border-2 border-ink bg-paper p-8 outline-none sm:shadow-[8px_8px_0_0_#16130d]"
-        onClick={(event) => event.stopPropagation()}
+    <>
+      <ModalShell
+        label={persona.name}
+        onClose={onClose}
+        panelRef={panelRef}
+        ariaHidden={zoom || undefined}
+        className="max-w-2xl p-8"
       >
         <div className="flex items-start justify-between gap-4 border-b-2 border-ink pb-6 sm:gap-6">
           <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
@@ -113,17 +109,13 @@ export function PersonaModal({
 
         <div className="mt-8 grid gap-8 sm:grid-cols-2">
           <div>
-            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
-              Stats
-            </h3>
+            <SectionHeading>Stats</SectionHeading>
             <div className="mt-4">
               <StatList persona={persona} />
             </div>
           </div>
           <div>
-            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
-              Affinities
-            </h3>
+            <SectionHeading>Affinities</SectionHeading>
             <div className="mt-4">
               <AffinityList persona={persona} />
             </div>
@@ -132,9 +124,7 @@ export function PersonaModal({
 
         {skills && skills.length > 0 && (
           <div className="mt-8">
-            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
-              Skills
-            </h3>
+            <SectionHeading>Skills</SectionHeading>
             <SkillIconDefs />
             <div className="mt-4 space-y-1">
               {skills.map((skill) => (
@@ -161,9 +151,7 @@ export function PersonaModal({
         )}
 
         <div className="mt-8">
-          <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
-            Fusion recipes
-          </h3>
+          <SectionHeading>Fusion recipes</SectionHeading>
           <div className="mt-4">
             {special ? (
               <p className="font-mono text-sm text-ink">
@@ -195,7 +183,7 @@ export function PersonaModal({
             )}
           </div>
         </div>
-      </div>
+      </ModalShell>
 
       {zoom && (
         <div
@@ -234,6 +222,6 @@ export function PersonaModal({
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }

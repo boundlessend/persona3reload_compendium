@@ -4,6 +4,8 @@ import { PersonaImage } from "./PersonaImage";
 import { useDialog } from "./useDialog";
 import { teamCoverage } from "./teamCoverage";
 import { IconButton } from "./Controls";
+import { ModalShell } from "./ModalShell";
+import { SectionHeading } from "./SectionHeading";
 
 // защитный разбор команды из 2-4 персон: общие слабости, прикрытие, exposed
 export function TeamModal({
@@ -25,20 +27,13 @@ export function TeamModal({
   const exposed = weaknesses.filter((row) => row.covered.length === 0);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Team coverage"
+    <ModalShell
+      label="Team coverage"
+      onClose={onClose}
+      panelRef={panelRef}
+      className="max-w-3xl p-5 sm:p-8"
     >
-      <div
-        ref={panelRef}
-        tabIndex={-1}
-        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto border-2 border-ink bg-paper p-5 outline-none sm:p-8 sm:shadow-[8px_8px_0_0_#16130d]"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b-2 border-ink pb-5">
+      <div className="flex items-center justify-between border-b-2 border-ink pb-5">
           <div>
             <h2 className="font-display text-3xl uppercase">Team</h2>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-mut">
@@ -90,9 +85,7 @@ export function TeamModal({
 
         <div className="mt-8 grid gap-8 sm:grid-cols-2">
           <section>
-            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
-              Weaknesses
-            </h3>
+            <SectionHeading>Weaknesses</SectionHeading>
             <div className="mt-4 space-y-2">
               {weaknesses.length ? (
                 weaknesses.map((row) => (
@@ -124,9 +117,7 @@ export function TeamModal({
           </section>
 
           <section>
-            <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
-              Resistances
-            </h3>
+            <SectionHeading>Resistances</SectionHeading>
             <div className="mt-4 space-y-2">
               {resistances.length ? (
                 resistances.map((row) => (
@@ -148,7 +139,6 @@ export function TeamModal({
             </div>
           </section>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 }

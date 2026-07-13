@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
-import type { Persona } from "./api";
+import { useMemo } from "react";
 import { usePersonas } from "./usePersonas";
 import { useSkills } from "./useSkills";
 import { useFavorites } from "./useFavorites";
+import { usePersonaModal } from "./usePersonaModal";
+import { SectionHeading } from "./SectionHeading";
 import { ARCANA_GUIDE } from "./arcanaGuide";
 import { idTag } from "./constants";
 import { PersonaImage } from "./PersonaImage";
-import { PersonaModal } from "./PersonaModal";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { NotFound } from "./NotFound";
@@ -17,7 +17,12 @@ export function ArcanaDetail({ slug }: { slug: string }) {
   const { personas, loading } = usePersonas();
   const { skills } = useSkills();
   const { favorites, toggleFavorite } = useFavorites();
-  const [selected, setSelected] = useState<Persona | null>(null);
+  const { open, modal } = usePersonaModal(
+    personas,
+    skills,
+    favorites,
+    toggleFavorite,
+  );
 
   const arcanaName = useMemo(() => {
     for (const persona of personas)
@@ -84,14 +89,14 @@ export function ArcanaDetail({ slug }: { slug: string }) {
           <p className="mt-6 max-w-2xl leading-relaxed text-mut">{entry.blurb}</p>
         )}
 
-        <h2 className="mt-12 border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
+        <SectionHeading as="h2" className="mt-12">
           {members.length} personas
-        </h2>
+        </SectionHeading>
         <div className="mt-6 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
           {members.map((persona) => (
             <button
               key={persona.id}
-              onClick={() => setSelected(persona)}
+              onClick={() => open(persona)}
               className="group flex items-center gap-3 border-b-2 border-r-2 border-ink bg-card p-4 text-left transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
             >
               <PersonaImage
@@ -115,16 +120,7 @@ export function ArcanaDetail({ slug }: { slug: string }) {
       </main>
       <Footer />
 
-      {selected && (
-        <PersonaModal
-          persona={selected}
-          personas={personas}
-          skills={skills[selected.query] ?? null}
-          onClose={() => setSelected(null)}
-          isFavorite={favorites.has(selected.query)}
-          onToggleFavorite={toggleFavorite}
-        />
-      )}
+      {modal}
     </div>
   );
 }
