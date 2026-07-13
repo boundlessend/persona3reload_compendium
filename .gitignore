@@ -18,3 +18,5 @@ frontend/playwright-report/
 
 # os
 .DS_Store
+
+.playwright-mcp/
