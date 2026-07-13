@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useRequests } from "./useRequests";
 import type { RequestType } from "./useRequests";
 import { ErrorNote } from "./ErrorNote";
+import { Chip } from "./Controls";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
@@ -67,18 +68,17 @@ export function RequestsBrowser() {
           <>
             <div className="mt-10 flex flex-wrap items-center gap-2">
               {TYPES.map(({ key, label }) => (
-                <button
+                <Chip
                   key={key}
-                  type="button"
+                  pressed={type === key}
                   onClick={() => setType(key)}
-                  aria-pressed={type === key}
-                  className={`border-2 border-ink px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                    type === key ? "bg-ink text-paper" : "hover:bg-ink hover:text-paper"
-                  }`}
+                  className="px-3 text-xs"
                 >
                   {label}
-                </button>
+                </Chip>
               ))}
+              {/* ponytail: сырая кнопка, а не Chip - у неё blood-акцент при нажатии
+                  (в тон deadline/missable-бейджам ниже), которого Chip не даёт */}
               <button
                 type="button"
                 onClick={() => setMissableOnly((on) => !on)}

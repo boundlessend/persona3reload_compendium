@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useBosses } from "./useBosses";
 import { AFFINITIES } from "./constants";
 import { ErrorNote } from "./ErrorNote";
+import { Chip } from "./Controls";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
@@ -55,19 +56,14 @@ export function BossBrowser() {
               </span>
               <div className="flex flex-wrap gap-2">
                 {["All", ...weaknessElements].map((element) => (
-                  <button
+                  <Chip
                     key={element}
-                    type="button"
+                    pressed={weakTo === element}
                     onClick={() => setWeakTo(element)}
-                    aria-pressed={weakTo === element}
-                    className={`border-2 border-ink px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                      weakTo === element
-                        ? "bg-ink text-paper"
-                        : "hover:bg-ink hover:text-paper"
-                    }`}
+                    className="px-3 text-xs"
                   >
                     {element}
-                  </button>
+                  </Chip>
                 ))}
               </div>
             </div>
