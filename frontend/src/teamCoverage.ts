@@ -1,4 +1,38 @@
 import type { Persona } from "./api";
+import type { Skill } from "./useSkills";
+
+// стихии, наносящие урон (по ним считаем наступательное покрытие); Support /
+// Recovery / Passive / Ailment - не урон
+const DAMAGE_ELEMENTS = [
+  "Slash",
+  "Strike",
+  "Pierce",
+  "Fire",
+  "Ice",
+  "Elec",
+  "Wind",
+  "Light",
+  "Dark",
+  "Almighty",
+] as const;
+
+export type OffenseRow = { element: string; by: string[] };
+
+// наступательный разбор: для каждой урон-стихии - кто из команды умеет ей бить.
+// пустой by = дыра в покрытии (команда не может ударить по этой слабости)
+export function teamOffense(
+  team: Persona[],
+  skills: Record<string, Skill[]>,
+): OffenseRow[] {
+  return DAMAGE_ELEMENTS.map((element) => ({
+    element,
+    by: team
+      .filter((persona) =>
+        (skills[persona.query] ?? []).some((skill) => skill.el === element),
+      )
+      .map((persona) => persona.name),
+  }));
+}
 
 // affinity-статусы, снимающие урон (в отличие от weak); reflects/absorbs даже
 // обращают его в пользу, но для защитного разбора все четыре = "прикрыто"

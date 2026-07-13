@@ -24,6 +24,23 @@ body {
   background: var(--color-paper);
 }
 
+/* трекер компендиума: нативный <progress> в брутализм-стиле (ширину даёт сам
+   элемент - без инлайн-стилей, которые режет CSP style-src 'self') */
+progress.collected-bar {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--color-paper2);
+}
+progress.collected-bar::-webkit-progress-bar {
+  background: var(--color-paper2);
+}
+progress.collected-bar::-webkit-progress-value {
+  background: var(--color-ink);
+}
+progress.collected-bar::-moz-progress-bar {
+  background: var(--color-ink);
+}
+
 /* числовые поля без нативных стрелок: значение вводится вручную */
 input[type="number"] {
   appearance: textfield;

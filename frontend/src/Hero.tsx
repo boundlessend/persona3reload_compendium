@@ -6,11 +6,22 @@ import { AFFINITIES } from "./constants";
 export function Hero({
   personas,
   arcanaCount,
+  registered,
 }: {
   personas: Persona[];
   arcanaCount: number;
+  registered: Set<string>;
 }) {
   const count = personas.length || PERSONA_COUNT;
+  // прогресс компендиума: base (без DLC) как основной знаменатель + total с DLC
+  const baseTotal = personas.filter((p) => p.dlc === 0).length;
+  const baseCollected = personas.filter(
+    (p) => p.dlc === 0 && registered.has(p.query),
+  ).length;
+  const totalCollected = personas.reduce(
+    (n, p) => n + (registered.has(p.query) ? 1 : 0),
+    0,
+  );
   return (
     <section id="top" className="border-b-2 border-ink">
       <div className="mx-auto max-w-6xl px-6">
@@ -57,6 +68,22 @@ export function Hero({
             </div>
           ))}
         </div>
+        {personas.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t-2 border-ink py-5">
+            <span className="font-mono text-[11px] uppercase tracking-widest text-blood">
+              Collected
+            </span>
+            <progress
+              className="collected-bar h-2 min-w-[8rem] flex-1 border border-ink"
+              value={baseCollected}
+              max={baseTotal}
+            />
+            <span className="font-mono text-[11px] uppercase tracking-wider text-mut">
+              {baseCollected} / {baseTotal} base · {totalCollected} / {count}{" "}
+              with DLC
+            </span>
+          </div>
+        )}
       </div>
     </section>
   );

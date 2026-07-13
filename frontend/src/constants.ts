@@ -63,7 +63,7 @@ export const SORTERS: Record<SortKey, (a: Persona, b: Persona) => number> = {
   ...STAT_SORTERS,
 };
 
-export type DlcFilter = "all" | "base" | "dlc";
+export type DlcFilter = "all" | "base" | "dlc" | "special";
 
 export const idTag = (id: number): string => `№${String(id).padStart(3, "0")}`;
 

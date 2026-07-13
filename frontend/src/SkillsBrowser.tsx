@@ -3,6 +3,7 @@ import type { Persona } from "./api";
 import { useSkills } from "./useSkills";
 import { usePersonas } from "./usePersonas";
 import { useFavorites } from "./useFavorites";
+import { useRegistered } from "./useRegistered";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { ErrorNote } from "./ErrorNote";
@@ -22,11 +23,14 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
   const { skills, loading, error } = useSkills();
   const { personas } = usePersonas();
   const { favorites, toggleFavorite } = useFavorites();
+  const { registered, toggleRegistered } = useRegistered();
   const { open: openPersona, modal: personaModal } = usePersonaModal(
     personas,
     skills,
     favorites,
     toggleFavorite,
+    registered,
+    toggleRegistered,
   );
   const [element, setElement] = useState("All");
   const [expanded, setExpanded] = useState<string | null>(null);

@@ -28,6 +28,8 @@ import { ArcanaIndex } from "./ArcanaIndex";
 import { ArcanaDetail } from "./ArcanaDetail";
 import { SkillsBrowser } from "./SkillsBrowser";
 import { useFavorites } from "./useFavorites";
+import { useRegistered } from "./useRegistered";
+import { isSpecialFusion } from "./fusion";
 import { usePersonaRouting } from "./usePersonaRouting";
 
 // сколько карточек показывать за раз; "Load more" догружает ещё столько же
@@ -53,10 +55,13 @@ function HomePage() {
   const [teamList, setTeamList] = useState<Persona[]>([]);
   const [teamOpen, setTeamOpen] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [noWeakness, setNoWeakness] = useState(false);
+  const [missingOnly, setMissingOnly] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [shown, setShown] = useState(PAGE_SIZE);
 
   const { favorites, toggleFavorite } = useFavorites();
+  const { registered, toggleRegistered } = useRegistered();
   const { selected, notFound, openPersona, closePersona } =
     usePersonaRouting(personas);
 
@@ -199,7 +204,11 @@ function HomePage() {
       if (term && !persona.name.toLowerCase().includes(term)) return false;
       if (dlcFilter === "base" && persona.dlc !== 0) return false;
       if (dlcFilter === "dlc" && persona.dlc !== 1) return false;
+      if (dlcFilter === "special" && !isSpecialFusion(persona.query))
+        return false;
       if (favoritesOnly && !favorites.has(persona.query)) return false;
+      if (noWeakness && persona.weak.length > 0) return false;
+      if (missingOnly && registered.has(persona.query)) return false;
       if (element !== "All" && !persona[affinityType].includes(element))
         return false;
       if (element2 !== "All" && !persona[affinityType2].includes(element2))
@@ -215,7 +224,10 @@ function HomePage() {
     origin,
     dlcFilter,
     favoritesOnly,
+    noWeakness,
+    missingOnly,
     favorites,
+    registered,
     element,
     affinityType,
     element2,
@@ -242,6 +254,8 @@ function HomePage() {
     levelMax,
     dlcFilter,
     favoritesOnly,
+    noWeakness,
+    missingOnly,
   ]);
 
   const [compareA, compareB] = compareList;
@@ -261,7 +275,11 @@ function HomePage() {
     <div className="min-h-screen bg-paper">
       <Navbar />
       <main className={teamMode && teamList.length > 0 ? "pb-28" : undefined}>
-        <Hero personas={personas} arcanaCount={arcanas.length - 1} />
+        <Hero
+          personas={personas}
+          arcanaCount={arcanas.length - 1}
+          registered={registered}
+        />
 
         {personas.length > 0 && (
           <div className="mx-auto max-w-6xl px-6 pt-16">
@@ -317,11 +335,25 @@ function HomePage() {
             </ControlButton>
 
             <ControlButton
-              pressed={favoritesOnly}
-              onClick={() => setFavoritesOnly((on) => !on)}
+              pressed={noWeakness}
+              onClick={() => setNoWeakness((on) => !on)}
               className="ml-auto"
             >
+              No weakness
+            </ControlButton>
+
+            <ControlButton
+              pressed={favoritesOnly}
+              onClick={() => setFavoritesOnly((on) => !on)}
+            >
               ★ Favorites
+            </ControlButton>
+
+            <ControlButton
+              pressed={missingOnly}
+              onClick={() => setMissingOnly((on) => !on)}
+            >
+              Missing
             </ControlButton>
 
             <ControlButton pressed={compareMode} onClick={toggleCompareMode}>
@@ -446,18 +478,19 @@ function HomePage() {
 
                 <div className="flex flex-col gap-2">
                   <span className="font-mono text-[11px] uppercase tracking-wider text-blood">
-                    DLC
+                    Source
                   </span>
                   <div
                     className="flex border-2 border-ink"
                     role="group"
-                    aria-label="Filter by DLC"
+                    aria-label="Filter by source"
                   >
                     {(
                       [
                         ["all", "All"],
                         ["base", "Base"],
                         ["dlc", "DLC"],
+                        ["special", "Special"],
                       ] as [DlcFilter, string][]
                     ).map(([value, label], index) => (
                       <button
@@ -465,7 +498,7 @@ function HomePage() {
                         onClick={() => setDlcFilter(value)}
                         aria-pressed={dlcFilter === value}
                         className={`px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                          index < 2 ? "border-r-2 border-ink" : ""
+                          index < 3 ? "border-r-2 border-ink" : ""
                         } ${
                           dlcFilter === value
                             ? "bg-ink text-paper"
@@ -519,6 +552,9 @@ function HomePage() {
                   teamList.some((item) => item.id === persona.id)
                 }
                 isFavorite={favorites.has(persona.query)}
+                registered={registered.has(persona.query)}
+                onToggleRegistered={toggleRegistered}
+                special={isSpecialFusion(persona.query)}
                 selecting={compareMode || teamMode}
               />
             ))}
@@ -552,6 +588,8 @@ function HomePage() {
           onClose={closePersona}
           isFavorite={favorites.has(selected.query)}
           onToggleFavorite={toggleFavorite}
+          isRegistered={registered.has(selected.query)}
+          onToggleRegistered={toggleRegistered}
         />
       )}
 
@@ -597,7 +635,11 @@ function HomePage() {
       )}
 
       {teamOpen && teamList.length >= 2 && !selected && (
-        <TeamModal team={teamList} onClose={() => setTeamOpen(false)} />
+        <TeamModal
+          team={teamList}
+          skills={skills}
+          onClose={() => setTeamOpen(false)}
+        />
       )}
     </div>
   );

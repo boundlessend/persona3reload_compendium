@@ -184,6 +184,25 @@ test("arcana filter narrows the catalog", async ({ page }) => {
   await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
 });
 
+test("no weakness filter narrows the catalog", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: "No weakness", exact: true }).click();
+  await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
+});
+
+test("marking a persona collected hides it under the Missing filter", async ({
+  page,
+}) => {
+  await page.goto("/persona/pixie/");
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Mark as collected" }).click();
+  await dialog.getByRole("button", { name: "Close" }).click();
+  await expect(page.getByText("213 of 213 personas")).toBeVisible();
+  await page.getByRole("button", { name: "Missing", exact: true }).click();
+  await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
+});
+
 test("favoriting persists and filters", async ({ page }) => {
   await page.goto("/persona/izanagi");
   const dialog = page.getByRole("dialog");

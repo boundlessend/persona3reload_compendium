@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { usePersonas } from "./usePersonas";
 import { useSkills } from "./useSkills";
 import { useFavorites } from "./useFavorites";
+import { useRegistered } from "./useRegistered";
 import { usePersonaModal } from "./usePersonaModal";
 import { SectionHeading } from "./SectionHeading";
 import { ARCANA_GUIDE } from "./arcanaGuide";
@@ -17,11 +18,14 @@ export function ArcanaDetail({ slug }: { slug: string }) {
   const { personas, loading } = usePersonas();
   const { skills } = useSkills();
   const { favorites, toggleFavorite } = useFavorites();
+  const { registered, toggleRegistered } = useRegistered();
   const { open, modal } = usePersonaModal(
     personas,
     skills,
     favorites,
     toggleFavorite,
+    registered,
+    toggleRegistered,
   );
 
   const arcanaName = useMemo(() => {

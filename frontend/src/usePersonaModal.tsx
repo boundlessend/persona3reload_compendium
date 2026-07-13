@@ -11,6 +11,8 @@ export function usePersonaModal(
   skills: Record<string, Skill[]>,
   favorites: Set<string>,
   toggleFavorite: (query: string) => void,
+  registered: Set<string>,
+  toggleRegistered: (query: string) => void,
 ): { open: (persona: Persona) => void; modal: ReactNode } {
   const [selected, setSelected] = useState<Persona | null>(null);
   const modal = selected ? (
@@ -21,6 +23,8 @@ export function usePersonaModal(
       onClose={() => setSelected(null)}
       isFavorite={favorites.has(selected.query)}
       onToggleFavorite={toggleFavorite}
+      isRegistered={registered.has(selected.query)}
+      onToggleRegistered={toggleRegistered}
     />
   ) : null;
   return { open: setSelected, modal };

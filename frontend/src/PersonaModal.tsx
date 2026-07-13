@@ -18,6 +18,8 @@ export function PersonaModal({
   onClose,
   isFavorite,
   onToggleFavorite,
+  isRegistered,
+  onToggleRegistered,
 }: {
   persona: Persona;
   personas: Persona[];
@@ -25,6 +27,8 @@ export function PersonaModal({
   onClose: () => void;
   isFavorite: boolean;
   onToggleFavorite: (query: string) => void;
+  isRegistered: boolean;
+  onToggleRegistered: (query: string) => void;
 }) {
   const special = SPECIAL_RECIPES[persona.query];
   const reverse = useMemo(
@@ -89,6 +93,16 @@ export function PersonaModal({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <IconButton
+              pressed={isRegistered}
+              onClick={() => onToggleRegistered(persona.query)}
+              ariaLabel={
+                isRegistered ? "Mark as not collected" : "Mark as collected"
+              }
+              className="text-base leading-none"
+            >
+              ✓
+            </IconButton>
             <IconButton
               pressed={isFavorite}
               onClick={() => onToggleFavorite(persona.query)}

@@ -1,23 +1,29 @@
 import { useRef } from "react";
 import type { Persona } from "./api";
+import type { Skill } from "./useSkills";
 import { PersonaImage } from "./PersonaImage";
 import { useDialog } from "./useDialog";
-import { teamCoverage } from "./teamCoverage";
+import { teamCoverage, teamOffense } from "./teamCoverage";
 import { IconButton } from "./Controls";
 import { ModalShell } from "./ModalShell";
 import { SectionHeading } from "./SectionHeading";
 
-// защитный разбор команды из 2-4 персон: общие слабости, прикрытие, exposed
+// разбор команды из 2-4 персон: чем бьёт (offense) и по каким стихиям слаба/
+// прикрыта (defense), плюс exposed - слабость без прикрытия
 export function TeamModal({
   team,
+  skills,
   onClose,
 }: {
   team: Persona[];
+  skills: Record<string, Skill[]>;
   onClose: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   useDialog(panelRef, onClose, true);
 
+  const offense = teamOffense(team, skills);
+  const offenseGaps = offense.filter((row) => row.by.length === 0);
   const rows = teamCoverage(team);
   const weaknesses = rows
     .filter((row) => row.weak.length > 0)
@@ -37,7 +43,7 @@ export function TeamModal({
           <div>
             <h2 className="font-display text-3xl uppercase">Team</h2>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-mut">
-              Defensive coverage · {team.length} personas
+              Offense & defense · {team.length} personas
             </p>
           </div>
           <IconButton onClick={onClose} ariaLabel="Close">
@@ -60,6 +66,41 @@ export function TeamModal({
               </p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8">
+          <SectionHeading>Offense</SectionHeading>
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-mut">
+            Damage types this team can deal
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {offense.map((row) => {
+              const covered = row.by.length > 0;
+              return (
+                <span
+                  key={row.element}
+                  title={
+                    covered
+                      ? `Dealt by ${row.by.join(", ")}`
+                      : "No source in this team"
+                  }
+                  className={`border px-2 py-1 font-mono text-[10px] uppercase tracking-wide ${
+                    covered
+                      ? "border-ink bg-ink text-paper"
+                      : "border-dashed border-mut text-mut"
+                  }`}
+                >
+                  {row.element}
+                  {covered && ` ·${row.by.length}`}
+                </span>
+              );
+            })}
+          </div>
+          {offenseGaps.length > 0 && (
+            <p className="mt-3 font-mono text-[10px] uppercase tracking-wider text-mut">
+              No source for: {offenseGaps.map((r) => r.element).join(", ")}
+            </p>
+          )}
         </div>
 
         {exposed.length > 0 && (
