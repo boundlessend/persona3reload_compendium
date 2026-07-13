@@ -10,6 +10,7 @@ const PRECACHE = [
   "/personas.json",
   "/skills.json",
   "/bosses.json",
+  "/requests.json",
   "/site.webmanifest",
   "/favicon.svg",
   "/icon-192.png",

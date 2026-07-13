@@ -373,6 +373,13 @@ test("boss weakness filter narrows the list", async ({ page }) => {
   await expect(page.getByText("57 of 57 bosses")).toHaveCount(0);
 });
 
+test("requests page lists all 101 and filters by deadline", async ({ page }) => {
+  await page.goto("/requests/");
+  await expect(page.getByText("101 of 101 requests")).toBeVisible();
+  await page.getByRole("button", { name: "Deadline / missable" }).click();
+  await expect(page.getByText("14 of 101 requests")).toBeVisible();
+});
+
 test("navbar opens the arcana index", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Arcana", exact: true }).click();

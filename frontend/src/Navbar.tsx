@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { href: "/arcana/", label: "Arcana" },
   { href: "/skills/", label: "Skills" },
   { href: "/bosses/", label: "Bosses" },
+  { href: "/requests/", label: "Requests" },
 ];
 
 const SOURCE_HREF = "https://github.com/boundlessend/persona3reload_compendium";
