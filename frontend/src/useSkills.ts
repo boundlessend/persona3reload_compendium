@@ -30,9 +30,10 @@ export function useSkills(): {
         return response.json();
       })
       .then((data: unknown) => {
-        if (data && typeof data === "object") {
-          setSkills(data as Record<string, Skill[]>);
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+          throw new Error("malformed skills.json: expected an object");
         }
+        setSkills(data as Record<string, Skill[]>);
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;

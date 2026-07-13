@@ -32,7 +32,10 @@ export function useRequests(): {
         return response.json();
       })
       .then((data: unknown) => {
-        if (Array.isArray(data)) setRequests(data as EliRequest[]);
+        if (!Array.isArray(data)) {
+          throw new Error("malformed requests.json: expected an array");
+        }
+        setRequests(data as EliRequest[]);
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;

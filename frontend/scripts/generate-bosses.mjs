@@ -31,6 +31,11 @@ const [enemyData, compConfig] = await Promise.all([
   fetchJson("comp-config.json"),
 ]);
 const elemOrder = compConfig.resistElems;
+if (!Array.isArray(elemOrder) || elemOrder.length < 8) {
+  throw new Error(
+    `comp-config.resistElems malformed: ${JSON.stringify(elemOrder)} - upstream schema drift?`,
+  );
+}
 const codeCat = Object.fromEntries(
   Object.entries(compConfig.resistCodes).map(([code, value]) => [
     code,
@@ -62,6 +67,12 @@ const bosses = Object.entries(enemyData)
     };
   })
   .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+
+if (bosses.length < 40) {
+  throw new Error(
+    `only ${bosses.length} bosses matched the race suffix - enemy-data schema drift?`,
+  );
+}
 
 writeFileSync(OUT_PATH, JSON.stringify(bosses));
 console.log(`generated ${bosses.length} bosses -> public/bosses.json`);

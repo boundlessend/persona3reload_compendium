@@ -36,6 +36,11 @@ const headers = lines[0].split("\t");
 
 const personas = lines.slice(1).map((line) => {
   const cells = line.split("\t");
+  if (cells.length !== headers.length) {
+    throw new Error(
+      `row has ${cells.length} cells, expected ${headers.length}: ${line.slice(0, 40)}`,
+    );
+  }
   const row = {};
   headers.forEach((header, index) => {
     const value = (cells[index] ?? "").trim();

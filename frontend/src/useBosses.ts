@@ -26,7 +26,10 @@ export function useBosses(): {
         return response.json();
       })
       .then((data: unknown) => {
-        if (Array.isArray(data)) setBosses(data as Boss[]);
+        if (!Array.isArray(data)) {
+          throw new Error("malformed bosses.json: expected an array");
+        }
+        setBosses(data as Boss[]);
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;

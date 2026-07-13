@@ -114,6 +114,14 @@ for (const persona of personas) {
     .sort((a, b) => (a.lv ?? 999) - (b.lv ?? 999));
 }
 
+// схема upstream закреплена по SHA; если имена/структура уедут, matched рухнет.
+// порог 0.8 ловит обвал, но пропускает легит-пробел по DLC-персонам (нет в base)
+if (matched < personas.length * 0.8) {
+  throw new Error(
+    `only ${matched}/${personas.length} personas matched demon-data - upstream schema drift?`,
+  );
+}
+
 writeFileSync(OUT_PATH, JSON.stringify(out));
 console.log(
   `generated skills for ${matched}/${personas.length} personas -> public/skills.json`,
