@@ -44,7 +44,6 @@ export const SPECIAL_RECIPES: Record<string, string[]> = {
   messiah: ["Orpheus", "Thanatos"],
   fortuna: ["Angel", "Silky", "Unicorn"],
   "pale-rider": ["Berith", "Gurulu", "Matador"],
-  arsene: ["Tam Lin", "Jack-o'-Lantern", "Neko Shogun"],
   flauros: ["Forneus", "Berith", "Eligor"],
   "black-frost": ["Jack Frost", "Jack-o'-Lantern", "King Frost"],
   parvati: ["Sati", "Sarasvati", "Dakini"],
@@ -61,7 +60,6 @@ export const SPECIAL_RECIPES: Record<string, string[]> = {
   metatron: ["Uriel", "Raphael", "Gabriel", "Michael"],
   lucifer: ["Samael", "Abaddon", "Beelzebub", "Satan", "Helel"],
   "orpheus-telos": ["Thanatos", "Asura", "Chi You", "Metatron", "Helel", "Messiah"],
-  satanael: ["Orpheus", "Michael", "Thanatos", "Satan", "Helel", "Lucifer"],
 };
 
 const SPECIAL_ONLY = new Set(Object.keys(SPECIAL_RECIPES));
