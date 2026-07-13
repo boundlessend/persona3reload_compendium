@@ -32,7 +32,10 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
     registered,
     toggleRegistered,
   );
-  const [element, setElement] = useState("All");
+  // начальная стихия из ?element= (сюда ведут counter-ссылки со страницы /bosses)
+  const [element, setElement] = useState(
+    () => new URLSearchParams(window.location.search).get("element") ?? "All",
+  );
   const [expanded, setExpanded] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(initialGuideOpen);
   // мы ли положили запись /skills/guide/ в историю: решает, back или replace на закрытии

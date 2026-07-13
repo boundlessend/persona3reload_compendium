@@ -27,6 +27,7 @@ import { NotFound } from "./NotFound";
 import { ArcanaIndex } from "./ArcanaIndex";
 import { ArcanaDetail } from "./ArcanaDetail";
 import { SkillsBrowser } from "./SkillsBrowser";
+import { BossBrowser } from "./BossBrowser";
 import { useFavorites } from "./useFavorites";
 import { useRegistered } from "./useRegistered";
 import { isSpecialFusion } from "./fusion";
@@ -659,5 +660,6 @@ export default function App() {
   if (/^\/arcana\/?$/.test(path)) return <ArcanaIndex />;
   if (/^\/skills\/guide\/?$/.test(path)) return <SkillsBrowser initialGuideOpen={true} />;
   if (/^\/skills\/?$/.test(path)) return <SkillsBrowser initialGuideOpen={false} />;
+  if (/^\/bosses\/?$/.test(path)) return <BossBrowser />;
   return <HomePage />;
 }

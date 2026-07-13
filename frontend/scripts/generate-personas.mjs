@@ -91,6 +91,7 @@ const urls = [
   `${SITE}/`,
   `${SITE}/skills/`,
   `${SITE}/skills/guide/`,
+  `${SITE}/bosses/`,
   `${SITE}/arcana/`,
   ...arcanaSlugs.map((slug) => `${SITE}/arcana/${slug}/`),
   ...personas.map((row) => `${SITE}/persona/${row.query}/`),

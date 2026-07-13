@@ -9,6 +9,7 @@ const PRECACHE = [
   "/theme-init.js",
   "/personas.json",
   "/skills.json",
+  "/bosses.json",
   "/site.webmanifest",
   "/favicon.svg",
   "/icon-192.png",

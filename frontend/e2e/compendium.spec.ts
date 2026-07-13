@@ -352,6 +352,27 @@ test("stat leader opens the persona", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeVisible();
 });
 
+test("bosses page lists bosses and links a weakness to its counters", async ({
+  page,
+}) => {
+  await page.goto("/bosses/");
+  await expect(page.getByText("57 of 57 bosses")).toBeVisible();
+  // Emperor A is weak to Electric; the weakness links to the Elec skills
+  await page.getByRole("link", { name: "Electric", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/skills\?element=Elec/);
+  await expect(page.getByRole("button", { name: "Elec", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
+test("boss weakness filter narrows the list", async ({ page }) => {
+  await page.goto("/bosses/");
+  await expect(page.getByText("57 of 57 bosses")).toBeVisible();
+  await page.getByRole("button", { name: "Fire", exact: true }).click();
+  await expect(page.getByText("57 of 57 bosses")).toHaveCount(0);
+});
+
 test("navbar opens the arcana index", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Arcana", exact: true }).click();
