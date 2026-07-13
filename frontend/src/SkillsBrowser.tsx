@@ -4,6 +4,7 @@ import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { ErrorNote } from "./ErrorNote";
 import { Chip } from "./Controls";
+import { SkillIcon, SkillIconDefs } from "./SkillIcon";
 
 // страница /skills: каталог всех скиллов (имя, стихия, цель, сколько персон учит),
 // с фильтром по стихии/типу. Клик по числу учащих не делаем - список велик
@@ -66,6 +67,7 @@ export function SkillsBrowser() {
 
         {error && <ErrorNote message={`Could not load skills: ${error}.`} />}
 
+        <SkillIconDefs />
         <div className="mt-4 grid border-l-2 border-t-2 border-ink sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((skill) => (
             <a
@@ -73,7 +75,11 @@ export function SkillsBrowser() {
               href={`/?skill=${encodeURIComponent(skill.name)}#browse`}
               className="group flex flex-col border-b-2 border-r-2 border-ink bg-card p-4 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
             >
-              <span className="font-display text-lg uppercase leading-none break-words">
+              <span className="flex items-center gap-2 font-display text-lg uppercase leading-none break-words">
+                <SkillIcon
+                  el={skill.el}
+                  className="h-5 w-5 shrink-0 group-hover:text-paper!"
+                />
                 {skill.name}
               </span>
               <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">

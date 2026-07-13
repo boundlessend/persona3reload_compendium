@@ -7,6 +7,7 @@ import { useDialog } from "./useDialog";
 import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
 import type { Skill } from "./useSkills";
 import { IconButton } from "./Controls";
+import { SkillIcon, SkillIconDefs } from "./SkillIcon";
 
 export function PersonaModal({
   persona,
@@ -134,13 +135,17 @@ export function PersonaModal({
             <h3 className="border-b-2 border-ink pb-2 font-mono text-xs font-bold uppercase tracking-widest text-blood">
               Skills
             </h3>
+            <SkillIconDefs />
             <div className="mt-4 space-y-1">
               {skills.map((skill) => (
                 <div
                   key={skill.n}
                   className="flex items-baseline justify-between gap-3 border-b border-ink/20 py-1.5 font-mono text-xs uppercase tracking-wider"
                 >
-                  <span className="text-ink">{skill.n}</span>
+                  <span className="flex items-center gap-2 text-ink">
+                    <SkillIcon el={skill.el} className="h-3.5 w-3.5 shrink-0" />
+                    {skill.n}
+                  </span>
                   <span className="shrink-0 text-right text-mut">
                     {skill.el} · {skill.tg}
                     {skill.lv === 0

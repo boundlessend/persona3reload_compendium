@@ -34,6 +34,48 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+/* цвет иконки скилла по стихии: символ красится через fill="currentColor".
+   классом, а не инлайн-стилем - CSP style-src 'self' блокирует style="" */
+.el-slash,
+.el-strike,
+.el-pierce {
+  color: #4f463a;
+}
+.el-fire {
+  color: #c8102e;
+}
+.el-ice {
+  color: #2b6cb0;
+}
+.el-elec {
+  color: #b8860b;
+}
+.el-wind {
+  color: #2f855a;
+}
+.el-light {
+  color: #a9791c;
+}
+.el-dark {
+  color: #6b46c1;
+}
+.el-almighty,
+.el-special {
+  color: #16130d;
+}
+.el-ailment {
+  color: #805ad5;
+}
+.el-recovery {
+  color: #2f855a;
+}
+.el-support {
+  color: #2b6cb0;
+}
+.el-passive {
+  color: #7a6f5c;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
