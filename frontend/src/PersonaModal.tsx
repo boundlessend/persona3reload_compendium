@@ -181,11 +181,21 @@ export function PersonaModal({
               {skills.map((skill) => (
                 <div
                   key={skill.n}
-                  className="flex items-baseline justify-between gap-3 border-b border-ink/20 py-1.5 font-mono text-xs uppercase tracking-wider"
+                  className="flex items-start justify-between gap-3 border-b border-ink/20 py-1.5 font-mono text-xs uppercase tracking-wider"
                 >
-                  <span className="flex items-center gap-2 text-ink">
-                    <SkillIcon el={skill.el} className="h-3.5 w-3.5 shrink-0" />
-                    {skill.n}
+                  <span className="flex min-w-0 items-start gap-2 text-ink">
+                    <SkillIcon
+                      el={skill.el}
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                    />
+                    <span className="flex min-w-0 flex-col">
+                      <span>{skill.n}</span>
+                      {skill.e && (
+                        <span className="mt-0.5 normal-case tracking-normal text-mut">
+                          {skill.e}
+                        </span>
+                      )}
+                    </span>
                   </span>
                   <span className="shrink-0 text-right text-mut">
                     {skill.el} · {skill.tg}

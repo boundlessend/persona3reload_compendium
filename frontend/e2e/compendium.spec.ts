@@ -196,6 +196,12 @@ test("persona modal lists fusion recipes", async ({ page }) => {
   await expect(dialog.getByText("Fusion recipes")).toBeVisible();
 });
 
+test("skill effects show in the persona modal", async ({ page }) => {
+  await page.goto("/persona/pixie/");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText("60% Confuse")).toBeVisible();
+});
+
 test("special persona shows its special recipe", async ({ page }) => {
   await page.goto("/persona/shiva/");
   const dialog = page.getByRole("dialog");

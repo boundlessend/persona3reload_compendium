@@ -43,10 +43,51 @@ const norm = (text) =>
 const skillData = await fetchJson("skill-data.json");
 const demonData = await fetchJson("demon-data.json");
 
+// шаблоны формата эффектов лежат в общей папке compendium, не в p3r/data
+const EFFECTS_URL = `https://raw.githubusercontent.com/aqiu384/megaten-fusion-tool/${UPSTREAM_SHA}/src/app/compendium/data/skill-effects.json`;
+const effectsResponse = await fetch(EFFECTS_URL);
+if (!effectsResponse.ok) {
+  throw new Error(`failed to fetch skill-effects.json: ${effectsResponse.status}`);
+}
+const skillEffects = await effectsResponse.json();
+
+// порт skillRowToEffect из upstream (pq2/models/skill-importer): собирает
+// читаемый эффект из чисел (power/hits/acc/crit) и FMT-шаблонов cond -> ровно то,
+// что показывает сам калькулятор. P3R: power без sqrt. SP/HP-стоимость опускаем
+// (закодирована costTypes-суффиксом и вне effect-строки)
+function skillRowToEffect(nums, descs) {
+  const [, , power, minHits, maxHits, acc, crit, mod] = nums;
+  const [effect, cond] = descs;
+  const condStr = cond.startsWith("FMT") ? skillEffects[cond.substring(3)] : cond;
+  const baseMod = parseInt(mod, 10);
+  const powerStr = power === 0 ? "" : `${power} pwr`;
+  const hitStr =
+    minHits !== maxHits
+      ? `${minHits}-${maxHits} hits`
+      : maxHits < 2
+        ? ""
+        : `${maxHits} hits`;
+  const critStr = crit <= 5 ? "" : `${crit}% crit`;
+  const accStr = acc === 0 || (acc >= 90 && acc <= 110) ? "" : `${acc}% acc`;
+  const modStr = `${baseMod < 1000 ? mod : (baseMod - 1000) / 100}`;
+  const effectStr =
+    cond === "-" ? "" : condStr.replace("$1", modStr).replace("$2", effect);
+  const full = [powerStr, hitStr, accStr, critStr, effectStr]
+    .filter((s) => s !== "")
+    .join(", ");
+  return full.charAt(0) === "x"
+    ? full
+    : full.charAt(0).toUpperCase() + full.slice(1);
+}
+
 const skillDef = {};
 for (const entry of Object.values(skillData)) {
   const [name, elem, target] = entry.a;
-  skillDef[name] = { el: ELEM[elem] ?? elem, tg: target };
+  skillDef[name] = {
+    el: ELEM[elem] ?? elem,
+    tg: target,
+    effect: skillRowToEffect(entry.b, entry.c),
+  };
 }
 
 const demonByNorm = {};
@@ -63,10 +104,12 @@ for (const persona of personas) {
   matched += 1;
   out[persona.query] = Object.entries(demon.skills)
     .map(([name, value]) => {
-      const def = skillDef[name] ?? { el: "-", tg: "-" };
+      const def = skillDef[name] ?? { el: "-", tg: "-", effect: "" };
       // <1 - врождённый (стартовый); 1..99 - уровень; иначе неизвестно
       const lv = value < 1 ? 0 : value <= 99 ? value : null;
-      return { n: name, lv, el: def.el, tg: def.tg };
+      const skill = { n: name, lv, el: def.el, tg: def.tg };
+      if (def.effect) skill.e = def.effect;
+      return skill;
     })
     .sort((a, b) => (a.lv ?? 999) - (b.lv ?? 999));
 }

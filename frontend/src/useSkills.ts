@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 
 // выученный скилл персоны: имя, уровень изучения (0 = врождённый, null = особый),
-// стихия/тип и цель. Данные из public/skills.json (см. scripts/generate-skills.mjs)
-export type Skill = { n: string; lv: number | null; el: string; tg: string };
+// стихия/тип, цель и эффект (порт из upstream, см. scripts/generate-skills.mjs).
+// e опционален - у пары скиллов эффект-строка пустая
+export type Skill = {
+  n: string;
+  lv: number | null;
+  el: string;
+  tg: string;
+  e?: string;
+};
 
 // загрузка каталога скиллов по персонам; error поднимаем для страницы /skills,
 // где скиллы - основной контент. В PersonaModal это доп-слой: там error игнорят

@@ -71,12 +71,15 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
   };
 
   const catalog = useMemo(() => {
-    const map = new Map<string, { el: string; tg: string; count: number }>();
+    const map = new Map<
+      string,
+      { el: string; tg: string; e?: string; count: number }
+    >();
     for (const list of Object.values(skills)) {
       for (const skill of list) {
         const entry = map.get(skill.n);
         if (entry) entry.count += 1;
-        else map.set(skill.n, { el: skill.el, tg: skill.tg, count: 1 });
+        else map.set(skill.n, { el: skill.el, tg: skill.tg, e: skill.e, count: 1 });
       }
     }
     return Array.from(map, ([name, value]) => ({ name, ...value })).sort(
@@ -189,6 +192,11 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
                   <span className="mt-2 font-mono text-[11px] uppercase tracking-wider text-blood group-hover:text-[#ff8a9b]">
                     {skill.el} · {skill.tg}
                   </span>
+                  {skill.e && (
+                    <span className="mt-1 font-mono text-[11px] text-mut group-hover:text-paper2">
+                      {skill.e}
+                    </span>
+                  )}
                   <span className="mt-3 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
                     {isOpen ? "Hide" : "Show"} {skill.count}{" "}
                     {skill.count === 1 ? "persona" : "personas"}{" "}
