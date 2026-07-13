@@ -39,6 +39,9 @@ services:
       - path: /*
         name: Cross-Origin-Opener-Policy
         value: same-origin
+      - path: /*
+        name: Cross-Origin-Resource-Policy
+        value: same-origin
       # fingerprinted assets are immutable: cache hard in the browser so repeat
       # visits skip revalidation (HTML stays uncached to pick up new bundles)
       - path: /assets/*

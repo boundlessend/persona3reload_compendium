@@ -17,6 +17,14 @@ const PRECACHE = [
   "/icon-512.png",
 ];
 
+// данные со стабильным URL: отдаём из кэша, в фоне обновляем (stale-while-revalidate)
+const SWR_PATHS = new Set([
+  "/personas.json",
+  "/skills.json",
+  "/bosses.json",
+  "/requests.json",
+]);
+
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
   self.skipWaiting();
@@ -68,7 +76,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname === "/personas.json" || url.pathname === "/skills.json") {
+  if (SWR_PATHS.has(url.pathname)) {
     event.respondWith(staleWhileRevalidate(request));
     return;
   }

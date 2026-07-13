@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.2.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "generate:data": "node scripts/generate-personas.mjs",
     "predev": "npm run generate:data",
