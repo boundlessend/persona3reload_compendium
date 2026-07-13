@@ -155,18 +155,22 @@ absorbs[], nullifies[], dlc, query`.
 - **Security**: no server means no runtime attack surface. CSP and hardening
   headers (`Content-Security-Policy`, `X-Content-Type-Options: nosniff`,
   `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`,
-  `Permissions-Policy`, `Strict-Transport-Security`) are set by the static host
-  per `render.yaml`, not by a runtime process.
+  `Permissions-Policy`, `Strict-Transport-Security`,
+  `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`) are set by the
+  static host per `render.yaml`, not by a runtime process.
 - **Performance**: the dataset is generated once at build time into a static
   JSON served from a CDN; images are lazy-loaded with async decode.
 - **Reliability**: no runtime process to crash; the deployed site is static
   files on a CDN with an SPA-fallback rewrite.
-- **Data integrity**: `generate-personas.mjs` raises on a row with an empty
-  `query` and on a duplicate `query`, so a bad dataset fails the build.
+- **Data integrity**: the generators raise so a bad dataset fails the build:
+  an empty or duplicate `query`, a wrong TSV column count, or upstream schema
+  drift (skill / boss match counts out of range). At runtime the data hooks
+  throw on a malformed JSON payload instead of rendering an empty page.
 - **Testing**: Playwright e2e smoke tests (catalog load, search, all filters,
-  modal, deep links, fusion, Theurgy, arcana ultimate, skills, team, tracker,
-  favorites, theme toggle) run in CI against the static production build served
-  by `vite preview`.
+  modal, deep links, fusion, Theurgy, arcana ultimate, skills, bosses, requests,
+  team, tracker, favorites, theme toggle) run in CI against the static
+  production build served by `vite preview`. ESLint (`typescript-eslint`,
+  `react-hooks`, `jsx-a11y`) runs in CI too.
 
 ## 9. Tech stack
 
@@ -175,10 +179,11 @@ absorbs[], nullifies[], dlc, query`.
   `generate-skills.mjs` (skills JSON), `generate-bosses.mjs` (boss JSON),
   `prerender-meta.mjs` (per-route meta and JSON-LD, postbuild). `requests.json`
   is curated (no machine-readable upstream), committed directly.
-- Testing: Playwright (e2e).
+- Testing / linting: Playwright (e2e); ESLint (typescript-eslint, react-hooks,
+  jsx-a11y).
 - Hosting / CI: static hosting (Render via `render.yaml`; Vercel / Netlify /
-  Cloudflare Pages compatible), GitHub Actions CI (frontend typecheck + build,
-  Playwright e2e).
+  Cloudflare Pages compatible), GitHub Actions CI (frontend typecheck + lint +
+  build, Playwright e2e).
 
 ## 10. Data
 

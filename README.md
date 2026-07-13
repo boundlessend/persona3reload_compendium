@@ -106,9 +106,11 @@ cd frontend
 npm run test:e2e
 ```
 
-CI (GitHub Actions) runs two jobs: `frontend` (typecheck + build) and `e2e`.
-Data integrity is enforced at generation time: `generate-personas.mjs` fails the
-build on a duplicate or empty `query`.
+Lint (ESLint with `typescript-eslint`, `react-hooks` and `jsx-a11y`) runs on
+`npm run lint`. CI (GitHub Actions) runs two jobs: `frontend` (typecheck + lint +
+build) and `e2e`. Data integrity is enforced at generation time: the generators
+fail the build on a duplicate or empty `query`, a bad TSV column count, or
+upstream schema drift (skill / boss match counts out of range).
 
 ## Deploy
 
@@ -119,8 +121,9 @@ Render:
 - publish: `frontend/dist`
 - SPA-fallback rewrite of `/*` to `/index.html`
 - security headers: `Content-Security-Policy`, `Cross-Origin-Opener-Policy`,
-  `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
-  `Referrer-Policy: no-referrer`, `Permissions-Policy`, `Strict-Transport-Security`
+  `Cross-Origin-Resource-Policy`, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`,
+  `Permissions-Policy`, `Strict-Transport-Security`
 
 The same build and publish settings work on Vercel, Netlify or Cloudflare Pages;
 each needs an equivalent SPA rewrite and the same security headers.
