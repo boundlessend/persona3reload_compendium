@@ -165,6 +165,12 @@ test("compare shows the normal fusion result", async ({ page }) => {
   await expect(dialog.getByText("Angel")).toBeVisible();
 });
 
+test("clicking the fusion result opens that persona", async ({ page }) => {
+  await page.goto("/?compare=orpheus,pixie");
+  await page.getByRole("dialog").getByText(/Angel/).click();
+  await expect(page).toHaveURL(/\/persona\/angel\//);
+});
+
 test("persona modal lists fusion recipes", async ({ page }) => {
   await page.goto("/persona/forneus/");
   const dialog = page.getByRole("dialog");

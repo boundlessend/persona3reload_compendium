@@ -598,6 +598,7 @@ function HomePage() {
           a={compareA}
           b={compareB}
           personas={personas}
+          onSelect={openPersona}
           onClose={() => setCompareList([])}
         />
       )}

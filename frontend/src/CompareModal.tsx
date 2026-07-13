@@ -10,11 +10,13 @@ export function CompareModal({
   a,
   b,
   personas,
+  onSelect,
   onClose,
 }: {
   a: Persona;
   b: Persona;
   personas: Persona[];
+  onSelect: (persona: Persona) => void;
   onClose: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -69,20 +71,24 @@ export function CompareModal({
             Normal fusion
           </p>
           {fused ? (
-            <div className="mt-3 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => onSelect(fused)}
+              className="group mx-auto mt-3 flex items-center justify-center gap-3 border-2 border-ink bg-card px-4 py-2 transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+            >
               <PersonaImage
                 persona={fused}
-                className="h-14 object-contain mix-blend-multiply"
+                className="h-14 object-contain mix-blend-multiply group-hover:mix-blend-normal"
               />
               <div className="text-left">
                 <p className="font-display text-xl uppercase leading-none break-words">
                   {fused.name}
                 </p>
-                <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-mut">
-                  {fused.arcana} · Lv {fused.level}
+                <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
+                  {fused.arcana} · Lv {fused.level} · View →
                 </p>
               </div>
-            </div>
+            </button>
           ) : (
             <p className="mt-3 font-mono text-sm text-mut">
               No standard fusion result.
