@@ -359,7 +359,7 @@ test("bosses page lists bosses and links a weakness to its counters", async ({
   await expect(page.getByText("57 of 57 bosses")).toBeVisible();
   // Emperor A is weak to Electric; the weakness links to the Elec skills
   await page.getByRole("link", { name: "Electric", exact: true }).first().click();
-  await expect(page).toHaveURL(/\/skills\?element=Elec/);
+  await expect(page).toHaveURL(/\/skills\/\?element=Elec/);
   await expect(page.getByRole("button", { name: "Elec", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",

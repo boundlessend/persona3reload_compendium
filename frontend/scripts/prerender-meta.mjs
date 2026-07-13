@@ -246,6 +246,42 @@ writeFileSync(
   ),
 );
 
+// справочник боссов /bosses/
+const bossesDir = resolve(DIST, "bosses");
+mkdirSync(bossesDir, { recursive: true });
+writeFileSync(
+  resolve(bossesDir, "index.html"),
+  injectLd(
+    personalise(shellWithLd, {
+      title: "Bosses · Persona Compendium · Persona 3 Reload",
+      description: collapse(
+        "Story bosses of Persona 3 Reload with their elemental weaknesses and resistances.",
+        180,
+      ),
+      url: `${SITE}/bosses/`,
+    }),
+    [breadcrumbLd([HOME, { name: "Bosses", url: `${SITE}/bosses/` }])],
+  ),
+);
+
+// запросы Элизабет /requests/
+const requestsDir = resolve(DIST, "requests");
+mkdirSync(requestsDir, { recursive: true });
+writeFileSync(
+  resolve(requestsDir, "index.html"),
+  injectLd(
+    personalise(shellWithLd, {
+      title: "Elizabeth's Requests · Persona Compendium · Persona 3 Reload",
+      description: collapse(
+        "All 101 of Elizabeth's Requests in Persona 3 Reload, with rewards, deadlines and missable flags.",
+        180,
+      ),
+      url: `${SITE}/requests/`,
+    }),
+    [breadcrumbLd([HOME, { name: "Elizabeth's Requests", url: `${SITE}/requests/` }])],
+  ),
+);
+
 console.log(
-  `prerendered meta for ${count} persona routes + ${arcanaCount} arcana routes + skills + guide -> dist/`,
+  `prerendered meta for ${count} persona routes + ${arcanaCount} arcana routes + skills + guide + bosses + requests -> dist/`,
 );

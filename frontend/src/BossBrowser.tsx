@@ -103,7 +103,7 @@ export function BossBrowser() {
                               key === "weak" ? (
                                 <a
                                   key={element}
-                                  href={`/skills?element=${skillElement(element)}`}
+                                  href={`/skills/?element=${skillElement(element)}`}
                                   className={`px-2 py-1 font-mono text-[10px] uppercase tracking-wide underline decoration-paper/40 underline-offset-2 transition hover:decoration-paper ${tone}`}
                                 >
                                   {element}
