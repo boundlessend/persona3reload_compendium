@@ -65,8 +65,9 @@ backend.
 - Compare mode: two personas side by side plus their forward fusion result,
   clickable through to that persona.
 - Multi-step recipe finder (in the persona modal, see above).
-- `/arcana` index with a 22x22 arcana fusion matrix, a special-recipe list and
-  the seven protagonist Theurgy fusion spells.
+- `/arcana` index with a 22x22 arcana fusion matrix, a special-recipe list,
+  the seven protagonist Theurgy fusion spells and each party member's Theurgy
+  skill (base and evolved form).
 - Per-arcana pages (`/arcana/<slug>`) with the confidant / Social Link, the
   arcana's personas, and its ultimate persona plus how it unlocks.
 

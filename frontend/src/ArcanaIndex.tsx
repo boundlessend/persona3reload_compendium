@@ -6,6 +6,7 @@ import { ErrorNote } from "./ErrorNote";
 import { FusionMatrix } from "./FusionMatrix";
 import { SpecialFusions } from "./SpecialFusions";
 import { FusionSpells } from "./FusionSpells";
+import { PartyTheurgy } from "./PartyTheurgy";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
@@ -73,6 +74,7 @@ export function ArcanaIndex() {
         <FusionMatrix />
         {personas.length > 0 && <SpecialFusions personas={personas} />}
         {personas.length > 0 && <FusionSpells personas={personas} />}
+        <PartyTheurgy />
       </main>
       <Footer />
     </div>

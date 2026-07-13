@@ -402,6 +402,15 @@ test("theme toggle switches to dark and persists across reload", async ({
   await expect(page.locator("html")).toHaveClass(/theme-dark/);
 });
 
+test("arcana index lists party theurgy skills", async ({ page }) => {
+  await page.goto("/arcana/");
+  const section = page
+    .locator("section")
+    .filter({ hasText: "PARTY THEURGY" });
+  await expect(section.getByText("Cyclone Arrow")).toBeVisible();
+  await expect(section.getByText("Tranquility")).toBeVisible();
+});
+
 test("arcana detail shows the confidant and its personas", async ({ page }) => {
   await page.goto("/arcana/fool/");
   await expect(

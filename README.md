@@ -20,7 +20,8 @@ as static files. Installable as a PWA and usable offline after the first visit.
   relevant, its Theurgy fusion-spell pair. Deep-linkable at `/persona/<query>`.
 - **Fusion** - forward result in Compare (two personas -> product, click to
   open it), a multi-step recipe finder, a 22x22 arcana fusion matrix, a
-  special-recipe reference and the seven protagonist Theurgy fusion spells.
+  special-recipe reference, the seven protagonist Theurgy fusion spells and
+  each party member's Theurgy skill (base and its evolved form).
 - **Arcana / Social Link** - `/arcana` index and per-arcana pages with the
   confidant, its personas, and the arcana's ultimate persona plus how it unlocks.
 - **Skills** - `/skills` catalog with owners, effects and a "how skills work" guide.
