@@ -33,7 +33,7 @@ body {
     --color-paper2: #11140d;
     --color-card: #181c13;
     --color-ink: #e8e2d2;
-    --color-blood: #e0324a;
+    --color-blood: #f04d63;
     --color-mut: #9b937f;
   }
   :root:not(.theme-light) .mix-blend-multiply {
@@ -45,7 +45,7 @@ html.theme-dark {
   --color-paper2: #11140d;
   --color-card: #181c13;
   --color-ink: #e8e2d2;
-  --color-blood: #e0324a;
+  --color-blood: #f04d63;
   --color-mut: #9b937f;
 }
 /* артворк прозрачный: на тёмном фоне multiply давит его в чёрное - показываем как есть */

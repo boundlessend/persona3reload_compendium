@@ -227,7 +227,7 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
                         >
                           <PersonaImage
                             persona={persona}
-                            className="h-16 w-16 object-contain mix-blend-multiply transition hover:scale-105"
+                            className="h-16 w-16 object-contain mix-blend-multiply transition motion-safe:hover:scale-105"
                           />
                           <span className="font-mono text-[10px] uppercase leading-tight text-ink">
                             {persona.name}

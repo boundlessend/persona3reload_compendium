@@ -2,7 +2,7 @@
 // dist/index.html с персональной мета (title/description/canonical/og), чтобы
 // краулеры и OG-скраперы соцсетей видели корректные теги для каждой персоны.
 // SPA-шелл и ассеты те же (абсолютные пути), клиентский роутинг не меняется.
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -12,6 +12,20 @@ const SITE = "https://persona-compendium-1zox.onrender.com";
 
 const shell = readFileSync(resolve(DIST, "index.html"), "utf8");
 const personas = JSON.parse(readFileSync(resolve(DIST, "personas.json"), "utf8"));
+
+// preload the display face (Archivo Black): it renders the LCP hero heading, so
+// fetch it in parallel with the JS/CSS graph instead of after @fontsource loads.
+// hashed filename resolved from the build output; throw if it moved (drift guard)
+const displayFont = readdirSync(resolve(DIST, "assets")).find((file) =>
+  /^archivo-black-latin-400-normal-.*\.woff2$/.test(file),
+);
+if (!displayFont) {
+  throw new Error("prerender-meta: Archivo Black woff2 not found in dist/assets");
+}
+const shellPreloaded = shell.replace(
+  "</head>",
+  `<link rel="preload" href="/assets/${displayFont}" as="font" type="font/woff2" crossorigin /></head>`,
+);
 
 function escapeHtml(text) {
   return String(text)
@@ -120,7 +134,7 @@ function breadcrumbLd(items) {
 }
 
 // главная получает узел WebSite; пере­рендеренные копии наследуют его из shellWithLd
-const shellWithLd = injectLd(shell, [websiteLd]);
+const shellWithLd = injectLd(shellPreloaded, [websiteLd]);
 writeFileSync(resolve(DIST, "index.html"), shellWithLd);
 
 let count = 0;
