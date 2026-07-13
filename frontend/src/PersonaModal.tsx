@@ -5,6 +5,7 @@ import { PersonaImage } from "./PersonaImage";
 import { AffinityList, StatList } from "./PersonaDetails";
 import { useDialog } from "./useDialog";
 import { reverseRecipes, SPECIAL_RECIPES } from "./fusion";
+import { theurgyFor } from "./theurgy";
 import type { Skill } from "./useSkills";
 import { IconButton } from "./Controls";
 import { SkillIcon, SkillIconDefs } from "./SkillIcon";
@@ -31,6 +32,10 @@ export function PersonaModal({
   onToggleRegistered: (query: string) => void;
 }) {
   const special = SPECIAL_RECIPES[persona.query];
+  const theurgy = theurgyFor(persona.query);
+  const theurgyPartner = theurgy
+    ? personas.find((item) => item.query === theurgy.partner)
+    : undefined;
   const reverse = useMemo(
     () =>
       special || persona.dlc === 1
@@ -120,6 +125,23 @@ export function PersonaModal({
         </div>
 
         <p className="mt-6 leading-relaxed text-mut">{persona.description}</p>
+
+        {theurgy && (
+          <p className="mt-4 font-mono text-[11px] uppercase tracking-wider text-blood">
+            Theurgy · {theurgy.skill}
+            {theurgyPartner && (
+              <>
+                {" · fusion spell with "}
+                <a
+                  href={`/persona/${theurgyPartner.query}/`}
+                  className="text-ink underline decoration-blood underline-offset-2 hover:bg-ink hover:text-paper"
+                >
+                  {theurgyPartner.name} →
+                </a>
+              </>
+            )}
+          </p>
+        )}
 
         <div className="mt-8 grid gap-8 sm:grid-cols-2">
           <div>

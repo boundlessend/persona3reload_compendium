@@ -171,6 +171,16 @@ test("clicking the fusion result opens that persona", async ({ page }) => {
   await expect(page).toHaveURL(/\/persona\/angel\//);
 });
 
+test("theurgy persona shows its fusion spell and partner link", async ({
+  page,
+}) => {
+  await page.goto("/persona/orpheus/");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText(/Theurgy · Cadenza/)).toBeVisible();
+  await dialog.getByRole("link", { name: /Apsaras/ }).click();
+  await expect(page).toHaveURL(/\/persona\/apsaras\//);
+});
+
 test("persona modal lists fusion recipes", async ({ page }) => {
   await page.goto("/persona/forneus/");
   const dialog = page.getByRole("dialog");
