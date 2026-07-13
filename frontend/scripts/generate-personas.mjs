@@ -90,6 +90,7 @@ const arcanaSlugs = [...new Set(personas.map((row) => row.arcana))].map((name) =
 const urls = [
   `${SITE}/`,
   `${SITE}/skills/`,
+  `${SITE}/skills/guide/`,
   `${SITE}/arcana/`,
   ...arcanaSlugs.map((slug) => `${SITE}/arcana/${slug}/`),
   ...personas.map((row) => `${SITE}/persona/${row.query}/`),

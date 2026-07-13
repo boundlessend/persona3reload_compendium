@@ -43,6 +43,12 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  // смена фильтра скрывает открытый скилл из visible - сбрасываем раскрытие,
+  // чтобы не оставлять висящее состояние без видимой строки
+  useEffect(() => {
+    setExpanded(null);
+  }, [element]);
+
   const openGuide = () => {
     setGuideOpen(true);
     window.history.pushState(null, "", "/skills/guide/");
@@ -96,7 +102,10 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
     return map;
   }, [personas, skills]);
 
-  const visible = catalog.filter((s) => element === "All" || s.el === element);
+  const visible = useMemo(
+    () => catalog.filter((s) => element === "All" || s.el === element),
+    [catalog, element],
+  );
 
   return (
     <div className="min-h-screen bg-paper">
@@ -123,6 +132,7 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
             event.preventDefault();
             openGuide();
           }}
+          aria-haspopup="dialog"
           className="mt-6 inline-flex items-center gap-2 border-2 border-ink bg-card px-4 py-2 font-mono text-xs uppercase tracking-wider transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
         >
           How skills are named →
@@ -141,7 +151,10 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
           ))}
         </div>
 
-        <p className="mt-6 font-mono text-xs uppercase tracking-wider text-mut">
+        <p
+          aria-live="polite"
+          className="mt-6 font-mono text-xs uppercase tracking-wider text-mut"
+        >
           {loading ? "Loading…" : `${visible.length} skills`}
         </p>
 
@@ -152,11 +165,13 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
           {visible.map((skill) => {
             const isOpen = expanded === skill.name;
             const owners = isOpen ? (ownersBySkill.get(skill.name) ?? []) : [];
+            const panelId = `skill-owners-${skill.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
             return (
               <Fragment key={skill.name}>
                 <button
                   type="button"
                   aria-expanded={isOpen}
+                  aria-controls={isOpen ? panelId : undefined}
                   onClick={() => setExpanded(isOpen ? null : skill.name)}
                   className={`group flex flex-col border-b-2 border-r-2 border-ink bg-card p-4 text-left transition hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${isOpen ? "outline outline-2 -outline-offset-2 outline-blood" : ""}`}
                 >
@@ -171,13 +186,17 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
                     {skill.el} · {skill.tg}
                   </span>
                   <span className="mt-3 font-mono text-[11px] uppercase tracking-wider text-mut group-hover:text-paper2">
-                    {skill.count} {skill.count === 1 ? "persona" : "personas"}{" "}
-                    {isOpen ? "▾" : "→"}
+                    {isOpen ? "Hide" : "Show"} {skill.count}{" "}
+                    {skill.count === 1 ? "persona" : "personas"}{" "}
+                    {isOpen ? "▴" : "▾"}
                   </span>
                 </button>
 
                 {isOpen && (
-                  <div className="col-span-full border-b-2 border-r-2 border-ink bg-paper2 p-5">
+                  <div
+                    id={panelId}
+                    className="col-span-full border-b-2 border-r-2 border-ink bg-paper2 p-5"
+                  >
                     <p className="font-mono text-[11px] uppercase tracking-widest text-mut">
                       {owners.length}{" "}
                       {owners.length === 1 ? "persona learns" : "personas learn"}{" "}

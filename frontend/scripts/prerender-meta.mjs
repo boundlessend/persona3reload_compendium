@@ -66,8 +66,62 @@ function personalise(html, { title, description, url }) {
     /<meta\s+property="og:description"[\s\S]*?>/,
     `<meta property="og:description" content="${escapeHtml(description)}" />`,
   );
+  out = replaceTag(
+    out,
+    /<meta\s+name="twitter:title"[\s\S]*?>/,
+    `<meta name="twitter:title" content="${escapeHtml(title)}" />`,
+  );
+  out = replaceTag(
+    out,
+    /<meta\s+name="twitter:description"[\s\S]*?>/,
+    `<meta name="twitter:description" content="${escapeHtml(description)}" />`,
+  );
   return out;
 }
+
+// структурированные данные (JSON-LD). инлайн-<script type="application/ld+json">
+// не исполняется как JS, поэтому CSP script-src 'self' его не блокирует. экранируем
+// < > & чтобы данные не могли закрыть <script> досрочно
+function ldScript(node) {
+  const json = JSON.stringify(node)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+  return `<script type="application/ld+json">${json}</script>`;
+}
+function injectLd(html, nodes) {
+  if (!nodes.length) return html;
+  if (!html.includes("</head>")) {
+    throw new Error("prerender-meta: </head> not found for JSON-LD injection");
+  }
+  return html.replace("</head>", `${nodes.map(ldScript).join("")}</head>`);
+}
+
+const HOME = { name: "Home", url: `${SITE}/` };
+const websiteLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Persona Compendium",
+  url: `${SITE}/`,
+  description:
+    "A compendium of every persona in Persona 3 Reload: arcana, stats, elemental affinities, fusion recipes and skills.",
+};
+function breadcrumbLd(items) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+// главная получает узел WebSite; пере­рендеренные копии наследуют его из shellWithLd
+const shellWithLd = injectLd(shell, [websiteLd]);
+writeFileSync(resolve(DIST, "index.html"), shellWithLd);
 
 let count = 0;
 for (const persona of personas) {
@@ -82,7 +136,21 @@ for (const persona of personas) {
   const url = `${SITE}/persona/${encodeURIComponent(persona.query)}/`;
   const dir = resolve(DIST, "persona", persona.query);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(resolve(dir, "index.html"), personalise(shell, { title, description, url }));
+  const personaLd = {
+    "@context": "https://schema.org",
+    "@type": "Thing",
+    name: persona.name,
+    description,
+    image: `${SITE}${persona.image}`,
+    url,
+  };
+  writeFileSync(
+    resolve(dir, "index.html"),
+    injectLd(personalise(shellWithLd, { title, description, url }), [
+      breadcrumbLd([HOME, { name: persona.name, url }]),
+      personaLd,
+    ]),
+  );
   count += 1;
 }
 
@@ -99,14 +167,17 @@ const arcanaIndexDir = resolve(DIST, "arcana");
 mkdirSync(arcanaIndexDir, { recursive: true });
 writeFileSync(
   resolve(arcanaIndexDir, "index.html"),
-  personalise(shell, {
-    title: "The Arcana · Persona Compendium · Persona 3 Reload",
-    description: collapse(
-      `All ${arcanaOrder.length} arcana of Persona 3 Reload, each with its Social Link and personas.`,
-      180,
-    ),
-    url: `${SITE}/arcana/`,
-  }),
+  injectLd(
+    personalise(shellWithLd, {
+      title: "The Arcana · Persona Compendium · Persona 3 Reload",
+      description: collapse(
+        `All ${arcanaOrder.length} arcana of Persona 3 Reload, each with its Social Link and personas.`,
+        180,
+      ),
+      url: `${SITE}/arcana/`,
+    }),
+    [breadcrumbLd([HOME, { name: "The Arcana", url: `${SITE}/arcana/` }])],
+  ),
 );
 
 let arcanaCount = 0;
@@ -120,7 +191,16 @@ for (const arcana of arcanaOrder) {
   const url = `${SITE}/arcana/${encodeURIComponent(slug)}/`;
   const dir = resolve(arcanaIndexDir, slug);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(resolve(dir, "index.html"), personalise(shell, { title, description, url }));
+  writeFileSync(
+    resolve(dir, "index.html"),
+    injectLd(personalise(shellWithLd, { title, description, url }), [
+      breadcrumbLd([
+        HOME,
+        { name: "The Arcana", url: `${SITE}/arcana/` },
+        { name: `${arcana} Arcana`, url },
+      ]),
+    ]),
+  );
   arcanaCount += 1;
 }
 
@@ -129,14 +209,17 @@ const skillsDir = resolve(DIST, "skills");
 mkdirSync(skillsDir, { recursive: true });
 writeFileSync(
   resolve(skillsDir, "index.html"),
-  personalise(shell, {
-    title: "Skills · Persona Compendium · Persona 3 Reload",
-    description: collapse(
-      "Every skill personas learn in Persona 3 Reload, with element and target.",
-      180,
-    ),
-    url: `${SITE}/skills/`,
-  }),
+  injectLd(
+    personalise(shellWithLd, {
+      title: "Skills · Persona Compendium · Persona 3 Reload",
+      description: collapse(
+        "Every skill personas learn in Persona 3 Reload, with element and target.",
+        180,
+      ),
+      url: `${SITE}/skills/`,
+    }),
+    [breadcrumbLd([HOME, { name: "Skills", url: `${SITE}/skills/` }])],
+  ),
 );
 
 // гайд по именованию скиллов /skills/guide/
@@ -144,14 +227,23 @@ const skillsGuideDir = resolve(skillsDir, "guide");
 mkdirSync(skillsGuideDir, { recursive: true });
 writeFileSync(
   resolve(skillsGuideDir, "index.html"),
-  personalise(shell, {
-    title: "How skills work · Persona Compendium · Persona 3 Reload",
-    description: collapse(
-      "How Persona 3 Reload skill names are built: element roots, the Ma- prefix, power tiers, buffs, debuffs and recovery.",
-      180,
-    ),
-    url: `${SITE}/skills/guide/`,
-  }),
+  injectLd(
+    personalise(shellWithLd, {
+      title: "How skills work · Persona Compendium · Persona 3 Reload",
+      description: collapse(
+        "How Persona 3 Reload skill names are built: element roots, the Ma- prefix, power tiers, buffs, debuffs and recovery.",
+        180,
+      ),
+      url: `${SITE}/skills/guide/`,
+    }),
+    [
+      breadcrumbLd([
+        HOME,
+        { name: "Skills", url: `${SITE}/skills/` },
+        { name: "How skills work", url: `${SITE}/skills/guide/` },
+      ]),
+    ],
+  ),
 );
 
 console.log(

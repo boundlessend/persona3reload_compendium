@@ -30,7 +30,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood sm:inline-block"
+              className="hidden font-mono text-xs uppercase tracking-wider text-ink transition hover:text-blood focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood sm:inline-block"
             >
               {link.label}
             </a>
@@ -38,7 +38,7 @@ export function Navbar() {
           <a
             href={SOURCE_HREF}
             rel="noopener noreferrer"
-            className="hidden bg-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood sm:inline-block sm:px-5"
+            className="hidden bg-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-paper transition hover:bg-blood focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood sm:inline-block sm:px-5"
           >
             Source ↗
           </a>
@@ -65,7 +65,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="border-b border-ink/15 py-3.5 font-mono text-sm uppercase tracking-wider text-ink transition hover:text-blood"
+                className="border-b border-ink/15 py-3.5 font-mono text-sm uppercase tracking-wider text-ink transition hover:text-blood focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
               >
                 {link.label}
               </a>
@@ -74,7 +74,7 @@ export function Navbar() {
               href={SOURCE_HREF}
               rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="py-3.5 font-mono text-sm uppercase tracking-wider text-blood transition hover:text-ink"
+              className="py-3.5 font-mono text-sm uppercase tracking-wider text-blood transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
             >
               Source ↗
             </a>

@@ -1,6 +1,20 @@
+import { useEffect } from "react";
+
 // 404 в эстетике "Тёмного часа" из Persona 3: экран уходит в тень, а страницу
 // забрал Жнец (секретный враг, что приходит к медлящим в Тартаре)
 export function NotFound() {
+  // хостинг отдаёт SPA-фолбэк с кодом 200 на любой путь (soft-404); просим
+  // краулеров не индексировать несуществующие страницы
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex";
+    document.head.appendChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-ink px-6 text-center text-paper">
       <p className="font-display text-[clamp(5rem,25vw,12rem)] uppercase leading-none tracking-tight text-blood">
