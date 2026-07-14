@@ -1,3 +1,6 @@
 
 # Playwright MCP screenshot/snapshot artifacts
 .playwright-mcp/
+
+# Lighthouse CI local reports
+.lighthouseci/
