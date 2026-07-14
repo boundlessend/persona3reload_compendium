@@ -51,12 +51,15 @@ export function FusionMatrix() {
         <table className="border-collapse font-mono text-[10px] uppercase">
           <thead>
             <tr>
-              <th className="sticky left-0 z-10 border-b-2 border-r-2 border-ink bg-paper2 p-1.5" />
+              <th className="sticky left-0 z-10 border-b-2 border-r-2 border-ink bg-paper2 p-1.5">
+                <span className="sr-only">Row and column arcana</span>
+              </th>
               {RACES.map((name) => (
                 <th
                   key={name}
+                  scope="col"
                   title={name}
-                  className="border-b-2 border-r border-ink/40 bg-paper2 p-1.5 font-bold text-blood"
+                  className="border-b-2 border-r border-ink/40 bg-paper2 p-1.5 font-bold text-ink"
                 >
                   {ABBR[name]}
                 </th>
@@ -67,8 +70,9 @@ export function FusionMatrix() {
             {RACES.map((row) => (
               <tr key={row}>
                 <th
+                  scope="row"
                   title={row}
-                  className="sticky left-0 z-10 border-b border-r-2 border-ink bg-paper2 p-1.5 text-right font-bold text-blood"
+                  className="sticky left-0 z-10 border-b border-r-2 border-ink bg-paper2 p-1.5 text-right font-bold text-ink"
                 >
                   {ABBR[row]}
                 </th>
