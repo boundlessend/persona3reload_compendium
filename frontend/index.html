@@ -6,6 +6,20 @@
     <title>Persona Compendium · Persona 3 Reload</title>
     <script src="/theme-init.js"></script>
     <link rel="preload" href="/personas.json" as="fetch" crossorigin />
+    <!-- speculation rules: prefetch top-level sections on hover (moderate). в SPA
+         персона открывается модалкой, поэтому /persona/* не префетчим - только
+         полностраничные переходы навбара. CSP разрешает через 'inline-speculation-rules' -->
+    <script type="speculationrules">
+      {
+        "prefetch": [
+          {
+            "source": "list",
+            "urls": ["/", "/arcana/", "/skills/", "/bosses/", "/requests/"],
+            "eagerness": "moderate"
+          }
+        ]
+      }
+    </script>
     <meta
       name="description"
       content="Browse all 213 personas from Persona 3 Reload: arcana, stats and elemental affinities, with artwork mirrored locally."
