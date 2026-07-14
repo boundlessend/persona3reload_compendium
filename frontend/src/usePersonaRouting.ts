@@ -1,9 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import type { Persona } from "./api";
 import { decodeQuery } from "./constants";
 
 // хвостовой слэш опционален: хосты часто редиректят /persona/x -> /persona/x/
 const PERSONA_PATH = /^\/persona\/(.+?)\/?$/;
+
+// плавный переход открытия/закрытия модалки через View Transitions API (кросс-фейд
+// между сеткой и модалкой). flushSync нужен, чтобы браузер снял «новое» состояние
+// синхронно. без поддержки (Firefox) или при reduced-motion - применяем мгновенно
+function runViewTransition(apply: () => void): void {
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const start = (
+    document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    }
+  ).startViewTransition;
+  if (!start || reduced) {
+    apply();
+    return;
+  }
+  start.call(document, () => flushSync(apply));
+}
 
 // роутинг через History API: deep-link /persona/<query>, popstate, синхронизация
 // document.title и определение неизвестного пути (soft-404)
@@ -59,7 +77,7 @@ export function usePersonaRouting(personas: Persona[]): {
   }, [selected]);
 
   const openPersona = useCallback((persona: Persona) => {
-    setSelected(persona);
+    runViewTransition(() => setSelected(persona));
     // хвостовой слэш: так URL совпадает с prerender-файлом, который Render
     // отдаёт по /persona/<query>/ (см. scripts/prerender-meta.mjs)
     window.history.pushState(
@@ -71,7 +89,7 @@ export function usePersonaRouting(personas: Persona[]): {
   }, []);
 
   const closePersona = useCallback(() => {
-    setSelected(null);
+    runViewTransition(() => setSelected(null));
     // pop our own entry so Back does not re-open the modal; on a direct deep
     // link (no entry of ours) replace it instead, to avoid leaving the site
     if (historyPushedRef.current) {
