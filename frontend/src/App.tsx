@@ -41,6 +41,7 @@ import { useRegistered } from "./useRegistered";
 import { isSpecialFusion } from "./fusion";
 import { usePersonaRouting } from "./usePersonaRouting";
 import { useServiceWorker } from "./useServiceWorker";
+import { CommandPalette } from "./CommandPalette";
 
 // сколько карточек показывать за раз; "Load more" догружает ещё столько же
 const PAGE_SIZE = 48;
@@ -862,9 +863,24 @@ function routePage() {
 
 export default function App() {
   const { updateReady, applyUpdate } = useServiceWorker();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Cmd/Ctrl-K открывает/закрывает командную палитру на любой странице
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <>
       {routePage()}
+      {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
       {updateReady && (
         <div
           role="status"

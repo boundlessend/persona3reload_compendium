@@ -478,3 +478,18 @@ test("closing a persona does not let Back re-open it", async ({ page }) => {
   await page.goBack();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
+
+test("command palette opens anywhere and navigates to a persona", async ({
+  page,
+}) => {
+  // глобально: открываем с /bosses/, а не с главной
+  await page.goto("/bosses/");
+  await page.locator("body").press("Control+k");
+  await expect(
+    page.getByRole("dialog", { name: "Command palette" }),
+  ).toBeVisible();
+  await page.getByRole("combobox").fill("izanagi");
+  await page.getByRole("option", { name: /Izanagi/ }).first().click();
+  await expect(page).toHaveURL(/\/persona\/izanagi\/?$/);
+  await expect(page.getByRole("dialog")).toBeVisible();
+});

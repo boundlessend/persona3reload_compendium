@@ -30,6 +30,16 @@ test("open persona dialog has no a11y violations", async ({ page }) => {
   await expectNoViolations(page);
 });
 
+test("command palette has no a11y violations", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("body").press("Control+k");
+  await expect(
+    page.getByRole("dialog", { name: "Command palette" }),
+  ).toBeVisible();
+  await page.getByRole("combobox").fill("iza");
+  await expectNoViolations(page);
+});
+
 test("arcana index has no a11y violations", async ({ page }) => {
   await page.goto("/arcana/");
   await expect(page.getByRole("heading", { name: /Arcana/i }).first()).toBeVisible();
