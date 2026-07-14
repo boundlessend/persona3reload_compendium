@@ -493,3 +493,76 @@ test("command palette opens anywhere and navigates to a persona", async ({
   await expect(page).toHaveURL(/\/persona\/izanagi\/?$/);
   await expect(page.getByRole("dialog")).toBeVisible();
 });
+
+// --- покрытие ранее непроверенных критичных путей (audit H) ---
+
+test("load more reveals personas beyond the first page", async ({ page }) => {
+  await page.goto("/");
+  // грид ограничен PAGE_SIZE=48; поздняя персона (Lucifer, id 208) не в первой партии
+  const lucifer = page.getByRole("button", { name: /Lucifer/i });
+  await expect(lucifer).toHaveCount(0);
+  const loadMore = page.getByRole("button", { name: /Load more/ });
+  await expect(loadMore).toBeVisible();
+  // догружаем до конца: кнопка исчезает, когда показаны все
+  while ((await loadMore.count()) > 0) {
+    await loadMore.click();
+  }
+  await expect(lucifer.first()).toBeVisible();
+});
+
+test("shared filter URL restores the catalog state", async ({ page }) => {
+  // origin из строки запроса восстанавливается и сужает выдачу детерминированно
+  await page.goto("/?origin=Greek");
+  await expect(page.getByText("26 of 213 personas")).toBeVisible();
+  // arcana восстанавливается и подсвечивает свой чип
+  await page.goto("/?arcana=Fool");
+  await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Fool", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  // аффинити (стихия + отношение) восстанавливается и фильтрует
+  await page.goto("/?el=Fire&aff=weak");
+  await expect(page.getByText("213 of 213 personas")).toHaveCount(0);
+});
+
+test("recipe chain can switch to build-from-collection mode", async ({
+  page,
+}) => {
+  await page.goto("/persona/cybele/");
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: /Show full chain/ }).click();
+  const owned = dialog.getByRole("button", { name: "From my collection" });
+  await expect(owned).toHaveAttribute("aria-pressed", "false");
+  await owned.click();
+  await expect(owned).toHaveAttribute("aria-pressed", "true");
+  // пустая коллекция: дерево помечает, что не собрать из отмеченного
+  await expect(dialog.getByText(/Not fully buildable/i)).toBeVisible();
+});
+
+test("sort dropdown is keyboard navigable", async ({ page }) => {
+  await page.goto("/");
+  const sort = page.getByRole("button", { name: "Sort" });
+  await expect(sort).toContainText("Default");
+  // открываем с клавиатуры (Enter на триггере) - тогда фокус уходит на опцию,
+  // а не остаётся на кнопке, как было бы после мышиного клика
+  await sort.focus();
+  await page.keyboard.press("Enter");
+  const listbox = page.getByRole("listbox", { name: "Sort" });
+  await expect(listbox).toBeVisible();
+  // фокус на выбранной опции (Default); вниз -> Level, Enter коммитит и закрывает
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(listbox).toBeHidden();
+  await expect(sort).toContainText("Level");
+});
+
+test("mobile menu opens and closes", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const nav = page.locator("#mobile-nav");
+  await expect(nav).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Bosses" })).toBeVisible();
+  await page.getByRole("button", { name: "Close menu" }).click();
+  await expect(nav).toBeHidden();
+});
