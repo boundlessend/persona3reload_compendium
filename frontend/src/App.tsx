@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PERSONA_COUNT, type Persona } from "./api";
 import { usePersonas } from "./usePersonas";
 import { useSkills } from "./useSkills";
@@ -13,12 +6,10 @@ import {
   AFFINITY_FILTER_LABELS,
   AFFINITY_KEYS,
   SORT_LABELS,
-  SORTERS,
-  type AffinityKey,
   type DlcFilter,
   type SortKey,
 } from "./constants";
-import { reverseIndex } from "./fusion";
+import { isSpecialFusion, reverseIndex } from "./fusion";
 import { PersonaCard } from "./PersonaCard";
 import { PersonaModal } from "./PersonaModal";
 import { CompareModal } from "./CompareModal";
@@ -39,13 +30,11 @@ import { BossBrowser } from "./BossBrowser";
 import { RequestsBrowser } from "./RequestsBrowser";
 import { useFavorites } from "./useFavorites";
 import { useRegistered } from "./useRegistered";
-import { isSpecialFusion } from "./fusion";
+import { useCatalogFilters } from "./useCatalogFilters";
+import { useShareableFilters } from "./useShareableFilters";
 import { usePersonaRouting } from "./usePersonaRouting";
 import { useServiceWorker } from "./useServiceWorker";
 import { CommandPalette } from "./CommandPalette";
-
-// сколько карточек показывать за раз; "Load more" догружает ещё столько же
-const PAGE_SIZE = 48;
 
 function HomePage() {
   const { personas, loading, error } = usePersonas();
@@ -53,163 +42,77 @@ function HomePage() {
   // внутри модалки (та размонтируется при закрытии и теряет memo) - см. reverseIdx
   const reverseIdx = useMemo(() => reverseIndex(personas), [personas]);
   const { skills } = useSkills();
-  const [search, setSearch] = useState("");
-  // поле остаётся мгновенным на search; дорогой пересчёт каталога идёт по
-  // отстающему deferredSearch, чтобы печать не блокировалась ре-рендером сетки
-  const deferredSearch = useDeferredValue(search);
-  const [arcana, setArcana] = useState("All");
-  const [origin, setOrigin] = useState("All");
-  const [sort, setSort] = useState<SortKey>("id");
-  const [element, setElement] = useState("All");
-  const [affinityType, setAffinityType] = useState<AffinityKey>("weak");
-  const [element2, setElement2] = useState("All");
-  const [affinityType2, setAffinityType2] = useState<AffinityKey>("resists");
-  const [levelMin, setLevelMin] = useState(1);
-  const [levelMax, setLevelMax] = useState(99);
-  const [dlcFilter, setDlcFilter] = useState<DlcFilter>("all");
-  const [compareMode, setCompareMode] = useState(false);
-  const [compareList, setCompareList] = useState<Persona[]>([]);
-  const [teamMode, setTeamMode] = useState(false);
-  const [teamList, setTeamList] = useState<Persona[]>([]);
-  const [teamOpen, setTeamOpen] = useState(false);
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
-  const [noWeakness, setNoWeakness] = useState(false);
-  const [missingOnly, setMissingOnly] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [shown, setShown] = useState(PAGE_SIZE);
-
   const { favorites, toggleFavorite } = useFavorites();
   const { registered, toggleRegistered } = useRegistered();
   const { selected, notFound, openPersona, closePersona } =
     usePersonaRouting(personas);
 
-  // восстановить фильтры/сравнение/команду из query при заходе по расшаренной ссылке
-  useEffect(() => {
-    if (!personas.length) return;
-    // восстанавливаем только на главной; страница персоны (/persona/<q>/) владеет
-    // своим состоянием отдельно
-    if (window.location.pathname !== "/") return;
-    const params = new URLSearchParams(window.location.search);
-
-    // фильтры данных. неизвестные строковые значения (arcana/origin/element) просто
-    // дадут пустую выдачу - чип D7 позволит их снять; типизированные (affinity/source/
-    // level) валидируем, т.к. они сужены до union/числа
-    const affinityFromParam = (value: string | null): AffinityKey | null =>
-      value !== null && (AFFINITY_KEYS as readonly string[]).includes(value)
-        ? (value as AffinityKey)
-        : null;
-    const arcanaParam = params.get("arcana");
-    if (arcanaParam) setArcana(arcanaParam);
-    const searchParam = params.get("q");
-    if (searchParam) setSearch(searchParam);
-    const sourceParam = params.get("source");
-    if (sourceParam === "base" || sourceParam === "dlc" || sourceParam === "special")
-      setDlcFilter(sourceParam);
-    const elementParam = params.get("el");
-    if (elementParam) {
-      const key = affinityFromParam(params.get("aff"));
-      if (key) setAffinityType(key);
-      setElement(elementParam);
-    }
-    const element2Param = params.get("el2");
-    if (element2Param) {
-      const key = affinityFromParam(params.get("aff2"));
-      if (key) setAffinityType2(key);
-      setElement2(element2Param);
-    }
-    const levelMinParam = Number(params.get("lmin"));
-    if (Number.isInteger(levelMinParam) && levelMinParam >= 1 && levelMinParam <= 99)
-      setLevelMin(levelMinParam);
-    const levelMaxParam = Number(params.get("lmax"));
-    if (Number.isInteger(levelMaxParam) && levelMaxParam >= 1 && levelMaxParam <= 99)
-      setLevelMax(levelMaxParam);
-    const originParam = params.get("origin");
-    if (originParam) setOrigin(originParam);
-    if (params.get("noweak") === "1") setNoWeakness(true);
-
-    const resolve = (slugs: string) =>
-      slugs
-        .split(",")
-        .map((slug) => personas.find((p) => p.query === slug))
-        .filter((p): p is Persona => Boolean(p));
-    // compare и team взаимоисключающие; но если compare-ссылка битая (<2 валидных),
-    // не проглатываем её - падаем на team, если та валидна
-    const compareParam = params.get("compare");
-    const comparePicks = compareParam ? resolve(compareParam) : [];
-    if (comparePicks.length >= 2) {
-      setCompareMode(true);
-      setCompareList(comparePicks.slice(0, 2));
-    } else {
-      const teamParam = params.get("team");
-      const teamPicks = teamParam ? resolve(teamParam) : [];
-      if (teamPicks.length >= 2) {
-        setTeamMode(true);
-        setTeamList(teamPicks.slice(0, 4));
-        setTeamOpen(true);
-      }
-    }
-  }, [personas]);
-
-  // последний share-URL, что МЫ записали: чтобы убирать query только за собой,
-  // не затирая ?compare/?team из входящей ссылки до того, как её прочтёт restore
-  const sharedUrlRef = useRef<string | null>(null);
-
-  // отразить фильтры/сравнение/команду в URL (replaceState: без новых записей
-  // истории). Персона-модалка владеет своим путём отдельно, поэтому пропускаем
-  useEffect(() => {
-    if (selected) return;
-    const params = new URLSearchParams();
-    if (arcana !== "All") params.set("arcana", arcana);
-    const term = search.trim();
-    if (term) params.set("q", term);
-    if (dlcFilter !== "all") params.set("source", dlcFilter);
-    if (element !== "All") {
-      params.set("aff", affinityType);
-      params.set("el", element);
-    }
-    if (element2 !== "All") {
-      params.set("aff2", affinityType2);
-      params.set("el2", element2);
-    }
-    if (levelMin !== 1) params.set("lmin", String(levelMin));
-    if (levelMax !== 99) params.set("lmax", String(levelMax));
-    if (origin !== "All") params.set("origin", origin);
-    if (noWeakness) params.set("noweak", "1");
-    const a = compareList[0];
-    const b = compareList[1];
-    if (a && b) params.set("compare", `${a.query},${b.query}`);
-    else if (teamOpen && teamList.length >= 2)
-      params.set("team", teamList.map((p) => p.query).join(","));
-
-    const query = params.toString();
-    if (query) {
-      const next = `/?${query}`;
-      if (next !== sharedUrlRef.current) {
-        window.history.replaceState(null, "", next);
-        sharedUrlRef.current = next;
-      }
-    } else if (sharedUrlRef.current) {
-      // все наши условия сняли - убрать query, не трогая путь
-      window.history.replaceState(null, "", window.location.pathname);
-      sharedUrlRef.current = null;
-    }
-  }, [
-    arcana,
+  // вся стейт-машина фильтров каталога и производные - в отдельном хуке;
+  // деструктурируем обратно в локали, чтобы JSX ниже читался как раньше
+  const cf = useCatalogFilters(personas, favorites, registered);
+  const {
     search,
-    dlcFilter,
-    element,
-    affinityType,
-    element2,
-    affinityType2,
-    levelMin,
-    levelMax,
+    setSearch,
+    arcana,
+    setArcana,
     origin,
+    setOrigin,
+    sort,
+    setSort,
+    element,
+    setElement,
+    affinityType,
+    setAffinityType,
+    element2,
+    setElement2,
+    affinityType2,
+    setAffinityType2,
+    levelMin,
+    setLevelMin,
+    levelMax,
+    setLevelMax,
+    dlcFilter,
+    setDlcFilter,
+    favoritesOnly,
+    setFavoritesOnly,
     noWeakness,
-    compareList,
-    teamOpen,
-    teamList,
+    setNoWeakness,
+    missingOnly,
+    setMissingOnly,
+    advancedOpen,
+    setAdvancedOpen,
+    shown,
+    loadMore,
+    arcanas,
+    origins,
+    elements,
+    visible,
+    advancedActive,
+    activeFilters,
+    clearAllFilters,
+  } = cf;
+
+  // Compare/Team - оркестрация модалок, состояние остаётся в HomePage
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareList, setCompareList] = useState<Persona[]>([]);
+  const [teamMode, setTeamMode] = useState(false);
+  const [teamList, setTeamList] = useState<Persona[]>([]);
+  const [teamOpen, setTeamOpen] = useState(false);
+
+  // единый владелец URL: восстановление из расшаренной ссылки + отражение в query
+  useShareableFilters({
+    personas,
     selected,
-  ]);
+    filters: cf,
+    compareList,
+    setCompareMode,
+    setCompareList,
+    teamList,
+    teamOpen,
+    setTeamMode,
+    setTeamList,
+    setTeamOpen,
+  });
 
   // Compare и Team - взаимоисключающие режимы выбора карт
   const toggleCompareMode = () => {
@@ -265,178 +168,7 @@ function HomePage() {
     if (pick) openPersona(pick);
   }, [personas, openPersona]);
 
-  const arcanas = useMemo(
-    () => ["All", ...Array.from(new Set(personas.map((p) => p.arcana))).sort()],
-    [personas],
-  );
-
-  const origins = useMemo(
-    () => ["All", ...Array.from(new Set(personas.map((p) => p.origin))).sort()],
-    [personas],
-  );
-
-  const elements = useMemo(() => {
-    const set = new Set<string>();
-    for (const persona of personas)
-      for (const key of AFFINITY_KEYS)
-        for (const value of persona[key]) set.add(value);
-    return ["All", ...Array.from(set).sort()];
-  }, [personas]);
-
-  const visible = useMemo(() => {
-    const term = deferredSearch.trim().toLowerCase();
-    // диапазон уровней устойчив к перевёрнутому вводу (min > max)
-    const lo = Math.min(levelMin, levelMax);
-    const hi = Math.max(levelMin, levelMax);
-    const filtered = personas.filter((persona) => {
-      if (arcana !== "All" && persona.arcana !== arcana) return false;
-      if (origin !== "All" && persona.origin !== origin) return false;
-      if (term && !persona.name.toLowerCase().includes(term)) return false;
-      if (dlcFilter === "base" && persona.dlc !== 0) return false;
-      if (dlcFilter === "dlc" && persona.dlc !== 1) return false;
-      if (dlcFilter === "special" && !isSpecialFusion(persona.query))
-        return false;
-      if (favoritesOnly && !favorites.has(persona.query)) return false;
-      if (noWeakness && persona.weak.length > 0) return false;
-      if (missingOnly && registered.has(persona.query)) return false;
-      if (element !== "All" && !persona[affinityType].includes(element))
-        return false;
-      if (element2 !== "All" && !persona[affinityType2].includes(element2))
-        return false;
-      if (persona.level < lo || persona.level > hi) return false;
-      return true;
-    });
-    return filtered.sort(SORTERS[sort]);
-  }, [
-    personas,
-    deferredSearch,
-    arcana,
-    origin,
-    dlcFilter,
-    favoritesOnly,
-    noWeakness,
-    missingOnly,
-    favorites,
-    registered,
-    element,
-    affinityType,
-    element2,
-    affinityType2,
-    levelMin,
-    levelMax,
-    sort,
-  ]);
-
-  // при смене фильтра/поиска/сортировки снова показываем первую страницу
-  // (не завязано на favorites, чтобы лайк не схлопывал уже подгруженный список)
-  useEffect(() => {
-    setShown(PAGE_SIZE);
-  }, [
-    deferredSearch,
-    arcana,
-    origin,
-    sort,
-    element,
-    affinityType,
-    element2,
-    affinityType2,
-    levelMin,
-    levelMax,
-    dlcFilter,
-    favoritesOnly,
-    noWeakness,
-    missingOnly,
-  ]);
-
   const [compareA, compareB] = compareList;
-
-  // активны ли фильтры внутри Advanced - чтобы пометить кнопку, когда панель свёрнута
-  const advancedActive =
-    origin !== "All" ||
-    element !== "All" ||
-    element2 !== "All" ||
-    levelMin !== 1 ||
-    levelMax !== 99 ||
-    dlcFilter !== "all";
-
-  // сводка применённых фильтров убираемыми чипами над результатами; дефолт каждого
-  // совпадает с useState выше, клик по чипу сбрасывает только своё условие
-  const dlcLabels: Record<DlcFilter, string> = {
-    all: "All",
-    base: "Base",
-    dlc: "DLC",
-    special: "Special",
-  };
-  const activeFilters: { id: string; label: string; clear: () => void }[] = [];
-  if (search.trim())
-    activeFilters.push({
-      id: "search",
-      label: `Search: ${search.trim()}`,
-      clear: () => setSearch(""),
-    });
-  if (arcana !== "All")
-    activeFilters.push({ id: "arcana", label: arcana, clear: () => setArcana("All") });
-  if (dlcFilter !== "all")
-    activeFilters.push({
-      id: "source",
-      label: dlcLabels[dlcFilter],
-      clear: () => setDlcFilter("all"),
-    });
-  if (element !== "All")
-    activeFilters.push({
-      id: "element",
-      label: `${AFFINITY_FILTER_LABELS[affinityType]}: ${element}`,
-      clear: () => setElement("All"),
-    });
-  if (element2 !== "All")
-    activeFilters.push({
-      id: "element2",
-      label: `${AFFINITY_FILTER_LABELS[affinityType2]}: ${element2}`,
-      clear: () => setElement2("All"),
-    });
-  if (levelMin !== 1 || levelMax !== 99)
-    activeFilters.push({
-      id: "level",
-      label: `Lv ${Math.min(levelMin, levelMax)}-${Math.max(levelMin, levelMax)}`,
-      clear: () => {
-        setLevelMin(1);
-        setLevelMax(99);
-      },
-    });
-  if (origin !== "All")
-    activeFilters.push({ id: "origin", label: origin, clear: () => setOrigin("All") });
-  if (favoritesOnly)
-    activeFilters.push({
-      id: "favorites",
-      label: "★ Favorites",
-      clear: () => setFavoritesOnly(false),
-    });
-  if (noWeakness)
-    activeFilters.push({
-      id: "noWeakness",
-      label: "No weakness",
-      clear: () => setNoWeakness(false),
-    });
-  if (missingOnly)
-    activeFilters.push({
-      id: "missing",
-      label: "Missing",
-      clear: () => setMissingOnly(false),
-    });
-
-  const clearAllFilters = () => {
-    setSearch("");
-    setArcana("All");
-    setOrigin("All");
-    setElement("All");
-    setElement2("All");
-    setLevelMin(1);
-    setLevelMax(99);
-    setDlcFilter("all");
-    setFavoritesOnly(false);
-    setNoWeakness(false);
-    setMissingOnly(false);
-  };
 
   if (notFound) return <NotFound />;
 
@@ -765,7 +497,7 @@ function HomePage() {
 
           {visible.length > shown && (
             <div className="mt-10 flex justify-center">
-              <ControlButton onClick={() => setShown((n) => n + PAGE_SIZE)}>
+              <ControlButton onClick={loadMore}>
                 Load more ({visible.length - shown} left)
               </ControlButton>
             </div>
