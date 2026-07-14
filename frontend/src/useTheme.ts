@@ -22,8 +22,11 @@ export function useTheme(): { theme: Theme; toggleTheme: () => void } {
 
   useEffect(() => {
     const root = document.documentElement;
+    // Dark Hour: резкая смена без cross-fade - глушим transition на кадр флипа
+    root.classList.add("theme-switching");
     root.classList.toggle("theme-dark", theme === "dark");
     root.classList.toggle("theme-light", theme === "light");
+    requestAnimationFrame(() => root.classList.remove("theme-switching"));
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute("content", theme === "dark" ? "#0c0e0a" : "#eae4d6");

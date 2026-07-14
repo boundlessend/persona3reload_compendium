@@ -122,6 +122,14 @@ input[type="number"]::-webkit-outer-spin-button {
   color: #7a6f5c;
 }
 
+/* Dark Hour: смена темы должна быть резкой, а не плавным cross-fade. на один кадр
+   переключения глушим transition у всех (класс вешает useTheme, снимает через rAF) */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
+
 /* дерево рецептов слияния: скобочные коннекторы (правый угол, 2px ink) от родителя
    к каждому ребёнку - вертикаль плюс горизонтальный отвод на уровне узла. у
    последнего ребёнка вертикаль обрывается на отводе (└), у остальных сквозная (├) */
