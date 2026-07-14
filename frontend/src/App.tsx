@@ -18,6 +18,7 @@ import {
   type DlcFilter,
   type SortKey,
 } from "./constants";
+import { reverseIndex } from "./fusion";
 import { PersonaCard } from "./PersonaCard";
 import { PersonaModal } from "./PersonaModal";
 import { CompareModal } from "./CompareModal";
@@ -48,6 +49,9 @@ const PAGE_SIZE = 48;
 
 function HomePage() {
   const { personas, loading, error } = usePersonas();
+  // обратный индекс рецептов считаем один раз на уровне владельца personas, а не
+  // внутри модалки (та размонтируется при закрытии и теряет memo) - см. reverseIdx
+  const reverseIdx = useMemo(() => reverseIndex(personas), [personas]);
   const { skills } = useSkills();
   const [search, setSearch] = useState("");
   // поле остаётся мгновенным на search; дорогой пересчёт каталога идёт по
@@ -783,6 +787,7 @@ function HomePage() {
         <PersonaModal
           persona={selected}
           personas={personas}
+          reverseIdx={reverseIdx}
           skills={skills[selected.query] ?? null}
           onClose={closePersona}
           isFavorite={favorites.has(selected.query)}

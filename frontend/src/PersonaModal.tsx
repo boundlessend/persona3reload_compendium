@@ -6,7 +6,7 @@ import { StatList } from "./PersonaDetails";
 import { StatRadar } from "./StatRadar";
 import { AffinityMatrix } from "./AffinityMatrix";
 import { useDialog } from "./useDialog";
-import { reverseIndex, SPECIAL_RECIPES } from "./fusion";
+import { SPECIAL_RECIPES, type Recipe } from "./fusion";
 import { theurgyFor } from "./theurgy";
 import { buildRecipeTree, allOwned } from "./recipeTree";
 import type { Skill } from "./useSkills";
@@ -19,6 +19,7 @@ import { RecipeTree } from "./RecipeTreeView";
 export function PersonaModal({
   persona,
   personas,
+  reverseIdx,
   skills,
   onClose,
   isFavorite,
@@ -29,6 +30,7 @@ export function PersonaModal({
 }: {
   persona: Persona;
   personas: Persona[];
+  reverseIdx: Map<number, Recipe[]>;
   skills: Skill[] | null;
   onClose: () => void;
   isFavorite: boolean;
@@ -42,18 +44,17 @@ export function PersonaModal({
   const theurgyPartner = theurgy
     ? personas.find((item) => item.query === theurgy.partner)
     : undefined;
-  // общий обратный индекс (один O(n^2) проход): и плоский список рецептов, и
-  // многошаговое дерево читают его, а не пересчитывают пары дважды
-  const index = useMemo(() => reverseIndex(personas), [personas]);
+  // reverseIdx (единый O(n^2) обратный индекс) приходит пропом от владельца
+  // personas: он переживает открытие/закрытие модалки и не пересчитывается заново
   const reverse = useMemo(() => {
     if (special || persona.dlc === 1) return { recipes: [], total: 0 };
-    const all = index.get(persona.id) ?? [];
+    const all = reverseIdx.get(persona.id) ?? [];
     // плоский список - самые дешёвые по сумме уровней (индекс отсортирован иначе)
     const cheapest = [...all].sort(
       (x, y) => x.a.level + x.b.level - (y.a.level + y.b.level),
     );
     return { recipes: cheapest.slice(0, 8), total: all.length };
-  }, [persona, index, special]);
+  }, [persona, reverseIdx, special]);
   const [zoom, setZoom] = useState(false);
   const [showChain, setShowChain] = useState(false);
   const [chainOwned, setChainOwned] = useState(false);
@@ -62,9 +63,9 @@ export function PersonaModal({
   const chain = useMemo(
     () =>
       showChain
-        ? buildRecipeTree(persona, index, chainOwned ? registered : null)
+        ? buildRecipeTree(persona, reverseIdx, chainOwned ? registered : null)
         : null,
-    [showChain, chainOwned, persona, index, registered],
+    [showChain, chainOwned, persona, reverseIdx, registered],
   );
   const panelRef = useRef<HTMLDivElement>(null);
   const enlargeRef = useRef<HTMLButtonElement>(null);

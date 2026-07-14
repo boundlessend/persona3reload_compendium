@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { Persona } from "./api";
 import type { Skill } from "./useSkills";
+import { reverseIndex } from "./fusion";
 import { PersonaModal } from "./PersonaModal";
 
 // общая обвязка модалки персоны для вторичных страниц (арканы, скиллы): хранит
@@ -15,10 +16,14 @@ export function usePersonaModal(
   toggleRegistered: (query: string) => void,
 ): { open: (persona: Persona) => void; modal: ReactNode } {
   const [selected, setSelected] = useState<Persona | null>(null);
+  // индекс живёт на уровне хука (страницы), а не модалки, чтобы не пересчитываться
+  // на каждое открытие (см. PersonaModal.reverseIdx)
+  const reverseIdx = useMemo(() => reverseIndex(personas), [personas]);
   const modal = selected ? (
     <PersonaModal
       persona={selected}
       personas={personas}
+      reverseIdx={reverseIdx}
       skills={skills[selected.query] ?? null}
       onClose={() => setSelected(null)}
       isFavorite={favorites.has(selected.query)}
