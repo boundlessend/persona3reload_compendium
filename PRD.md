@@ -1,6 +1,6 @@
 # PRD - Persona Compendium (Persona 3 Reload)
 
-Status: shipped / maintained · Last updated: 2026-07-13
+Status: shipped / maintained · Last updated: 2026-07-15
 
 ## 1. Summary
 
@@ -48,12 +48,19 @@ backend.
   derived from the data.
 - Source filter (all / base / DLC / special-fusion), level-range and origin
   filters, favorites-only, no-weakness, and not-yet-collected filters.
+- Applied data filters render as removable chips and are serialized to the URL,
+  so a filtered view is shareable and restored on reload (device-local toggles
+  like favorites/collected stay out of the URL).
 - Live result counter with `aria-live`.
+- Command palette (`Cmd/Ctrl-K` or the navbar search button): a dependency-free
+  fuzzy finder over every persona, arcana and section, keyboard-navigable.
 
 ### Persona detail
-- Modal with description, five stats (bars normalized to 99), grouped
-  affinities, learned skills (name, element icon, effect, target, learn level)
-  and fusion recipes (special recipe, reverse recipes, or a DLC note).
+- Modal with description, five stats shown as both a radar and bars (normalized
+  to 99), an elemental affinity matrix over all nine elements (glyph-coded, not
+  colour-only), learned skills (name, element icon, effect, target, learn level)
+  and fusion recipes (special recipe, reverse recipes, or a DLC note). Opens
+  with a View Transitions cross-fade where supported.
 - Expandable multi-step fusion chain to build the persona: cheapest path, or
   a "from my collection" mode that backtracks to owned personas and marks gaps.
 - Theurgy line for the 14 personas in a fusion-spell pair, linking the partner.
@@ -89,7 +96,10 @@ backend.
 - Collection tracker: mark personas collected; a hero progress bar shows
   base and with-DLC totals, and drives the not-collected filter.
 - "Dark Hour" dark theme following `prefers-color-scheme` with a persisted
-  toggle; installable PWA with an offline service worker.
+  toggle that cuts over instantly (transitions suppressed for the switch, no
+  cross-fade); installable PWA with an offline service worker that prompts to
+  reload when a new build deploys (version-stamped worker + waiting-worker
+  detection).
 - Favorites drive the favorites filter and card badges.
 
 ### Accessibility
@@ -98,7 +108,13 @@ backend.
   focus restored to the trigger on close, and background scroll locked while
   open (shared `useDialog` hook).
 - Filter and mode controls have accessible names and pressed state.
-- `prefers-reduced-motion` disables smooth scroll and transitions.
+- `prefers-reduced-motion` disables smooth scroll, transitions and the modal
+  view transition.
+- `scroll-padding-top` keeps the sticky navbar from obscuring a focused element
+  or an in-page anchor target (WCAG 2.4.11); interactive targets meet the 2.5.8
+  minimum size (audited with axe `target-size`).
+- Accessibility is regression-tested in CI: `e2e/a11y.spec.ts` runs axe-core
+  over the main screens and open dialogs (including the command palette).
 
 ## 6. Architecture
 
@@ -125,12 +141,19 @@ skills: frontend/public/skills.json  (generate-skills.mjs, committed)
   the data. Routing is client-side (`/persona/<query>`, `/arcana/<slug>`,
   `/skills`), served through the host's SPA-fallback rewrite to `index.html`.
   `scripts/prerender-meta.mjs` (postbuild) writes per-route `index.html` files
-  with route-specific meta and JSON-LD for SEO.
+  for every persona, arcana, skills, bosses and requests route with
+  route-specific meta and JSON-LD (WebSite, BreadcrumbList, and ItemList on the
+  home and arcana listings), preloads the display font, and version-stamps the
+  service worker with the main-bundle hash. An inline speculation-rules script
+  prefetches the top-level section routes on hover (allowed by the CSP
+  `'inline-speculation-rules'` source).
 - **Offline** - `public/sw.js` is a dependency-free service worker registered
   only in production: network-first for navigations (per-route plus a `/`
   offline fallback), stale-while-revalidate for the JSON data, cache-first for
-  hashed assets and viewed artwork. `public/theme-init.js` sets the saved theme
-  before first paint (external file, so it passes the strict CSP).
+  hashed assets and viewed artwork. Its cache name is stamped with the build
+  hash so each deploy is a new worker; it waits instead of auto-activating and
+  the app surfaces a "reload" prompt. `public/theme-init.js` sets the saved
+  theme before first paint (external file, so it passes the strict CSP).
 - **No runtime backend** - there is no server process, database, auth or API.
   Client-side state is favorites, the collection tracker and the theme, all in
   localStorage.
@@ -159,7 +182,10 @@ absorbs[], nullifies[], dlc, query`.
   `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`) are set by the
   static host per `render.yaml`, not by a runtime process.
 - **Performance**: the dataset is generated once at build time into a static
-  JSON served from a CDN; images are lazy-loaded with async decode.
+  JSON served from a CDN; images are lazy-loaded with async decode; the catalog
+  re-filter is deferred (`useDeferredValue`) so typing stays responsive; and
+  speculation-rules prefetch the section routes on hover. Budgets are enforced
+  in CI (Lighthouse-CI: CLS and LCP regressions fail the run).
 - **Reliability**: no runtime process to crash; the deployed site is static
   files on a CDN with an SPA-fallback rewrite.
 - **Data integrity**: the generators raise so a bad dataset fails the build:
@@ -168,9 +194,11 @@ absorbs[], nullifies[], dlc, query`.
   throw on a malformed JSON payload instead of rendering an empty page.
 - **Testing**: Playwright e2e smoke tests (catalog load, search, all filters,
   modal, deep links, fusion, Theurgy, arcana ultimate, skills, bosses, requests,
-  team, tracker, favorites, theme toggle) run in CI against the static
-  production build served by `vite preview`. ESLint (`typescript-eslint`,
-  `react-hooks`, `jsx-a11y`) runs in CI too.
+  team, tracker, favorites, theme toggle, command palette) run in CI against the
+  static production build served by `vite preview`; a separate axe-core spec
+  gates accessibility on the main screens and dialogs. ESLint
+  (`typescript-eslint`, `react-hooks`, `jsx-a11y`) and Lighthouse-CI budgets run
+  in CI too.
 
 ## 9. Tech stack
 
@@ -179,11 +207,11 @@ absorbs[], nullifies[], dlc, query`.
   `generate-skills.mjs` (skills JSON), `generate-bosses.mjs` (boss JSON),
   `prerender-meta.mjs` (per-route meta and JSON-LD, postbuild). `requests.json`
   is curated (no machine-readable upstream), committed directly.
-- Testing / linting: Playwright (e2e); ESLint (typescript-eslint, react-hooks,
-  jsx-a11y).
+- Testing / linting: Playwright (e2e + `@axe-core/playwright` a11y); ESLint
+  (typescript-eslint, react-hooks, jsx-a11y); Lighthouse-CI (`@lhci/cli`).
 - Hosting / CI: static hosting (Render via `render.yaml`; Vercel / Netlify /
-  Cloudflare Pages compatible), GitHub Actions CI (frontend typecheck + lint +
-  build, Playwright e2e).
+  Cloudflare Pages compatible), GitHub Actions CI with three jobs (frontend
+  typecheck + lint + build, Playwright e2e, Lighthouse-CI).
 
 ## 10. Data
 

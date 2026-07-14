@@ -13,11 +13,18 @@ as static files. Installable as a PWA and usable offline after the first visit.
 - **Catalog** - grid of all 213 personas with search, sortable columns, and
   paginated "Load more". Filters: arcana, source (base / DLC / special-fusion),
   elemental affinity (two stackable element + relation conditions), level range,
-  origin, favorites, no-weakness, and not-yet-collected.
-- **Persona detail** - modal with description, stats, affinities, learned
-  skills (element icon and effect), fusion recipes with an expandable multi-step
-  "full chain" (cheapest, or buildable from your collection), and, where
-  relevant, its Theurgy fusion-spell pair. Deep-linkable at `/persona/<query>`.
+  origin, favorites, no-weakness, and not-yet-collected. Applied filters show as
+  removable chips, and the data filters live in the URL so a filtered view is
+  shareable and survives a reload.
+- **Command palette** - `Cmd/Ctrl-K` (or the navbar search button) opens a
+  fuzzy finder over every persona, arcana and section page; arrow keys and Enter
+  navigate without the mouse.
+- **Persona detail** - modal with description, a stat radar plus value bars, an
+  elemental affinity matrix (all nine elements, glyph-coded so it reads without
+  colour), learned skills (element icon and effect), fusion recipes with an
+  expandable multi-step "full chain" (cheapest, or buildable from your
+  collection), and, where relevant, its Theurgy fusion-spell pair. Opens with a
+  view transition and is deep-linkable at `/persona/<query>`.
 - **Fusion** - forward result in Compare (two personas -> product, click to
   open it), a multi-step recipe finder, a 22x22 arcana fusion matrix, a
   special-recipe reference, the seven protagonist Theurgy fusion spells and
@@ -33,7 +40,8 @@ as static files. Installable as a PWA and usable offline after the first visit.
 - **Collection tracker** - mark personas as collected; progress shows in the
   hero and drives the not-collected filter.
 - **Dark mode** - a "Dark Hour" theme following the system setting, with a
-  toggle; and an offline-capable service worker.
+  toggle that cuts over instantly (no cross-fade). An offline-capable service
+  worker caches the app; when a new version deploys it prompts to reload.
 
 State is client-side only (favorites, collection, theme in `localStorage`).
 
@@ -97,9 +105,11 @@ You can regenerate the data on its own with `npm run generate:data`.
 
 ## Tests
 
-End-to-end smoke tests (Playwright, `frontend/e2e/compendium.spec.ts`) run
-against the static production build served by `vite preview` - no Python and no
-backend:
+End-to-end smoke tests (Playwright) run against the static production build
+served by `vite preview` - no Python and no backend. `e2e/compendium.spec.ts`
+covers browsing, filters, fusion, the command palette and routing;
+`e2e/a11y.spec.ts` runs `@axe-core/playwright` over the main screens and open
+dialogs and fails on any violation:
 
 ```bash
 cd frontend
@@ -107,10 +117,12 @@ npm run test:e2e
 ```
 
 Lint (ESLint with `typescript-eslint`, `react-hooks` and `jsx-a11y`) runs on
-`npm run lint`. CI (GitHub Actions) runs two jobs: `frontend` (typecheck + lint +
-build) and `e2e`. Data integrity is enforced at generation time: the generators
-fail the build on a duplicate or empty `query`, a bad TSV column count, or
-upstream schema drift (skill / boss match counts out of range).
+`npm run lint`. CI (GitHub Actions) runs three jobs: `frontend`
+(typecheck + lint + build), `e2e`, and `lighthouse` (Lighthouse-CI against the
+built `dist` with performance budgets - CLS and LCP regressions fail the run).
+Data integrity is enforced at generation time: the generators fail the build on
+a duplicate or empty `query`, a bad TSV column count, or upstream schema drift
+(skill / boss match counts out of range).
 
 ## Deploy
 
