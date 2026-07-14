@@ -50,7 +50,7 @@ export function PersonaOfTheDay({
         event.preventDefault();
         onSelect(persona);
       }}
-      className="group flex items-center gap-4 border-2 border-ink bg-card p-4 transition hover:border-blood hover:shadow-[6px_6px_0_0_#16130d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood sm:gap-6 sm:p-5"
+      className="group flex items-center gap-4 border-2 border-ink bg-card p-4 shadow-[6px_6px_0_0_#16130d] transition hover:border-blood focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood motion-safe:hover:translate-x-[3px] motion-safe:hover:translate-y-[3px] motion-safe:hover:shadow-[3px_3px_0_0_#16130d] sm:gap-6 sm:p-5"
     >
       <PersonaImage
         persona={persona}
