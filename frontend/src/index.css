@@ -133,3 +133,33 @@ input[type="number"]::-webkit-outer-spin-button {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* печать = чтение данных на бумаге. форсим тёмный текст на белом (важно: в тёмной
+   теме --color-ink светлый и на бумаге был бы невидим), гасим чернильные offset-тени,
+   убираем экранный хром и прилипшие элементы. !important на переменных перебивает
+   тему без завязки на порядок/специфичность */
+@media print {
+  :root {
+    --color-paper: #fff !important;
+    --color-paper2: #fff !important;
+    --color-card: #fff !important;
+    --color-ink: #16130d !important;
+    --color-mut: #4f463a !important;
+  }
+  body {
+    background: #fff;
+    color: var(--color-ink);
+  }
+  * {
+    box-shadow: none !important;
+  }
+  header {
+    display: none !important;
+  }
+  .sticky {
+    position: static !important;
+  }
+  @page {
+    margin: 1.5cm;
+  }
+}
