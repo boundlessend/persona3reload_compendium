@@ -27,6 +27,23 @@ const shellPreloaded = shell.replace(
   `<link rel="preload" href="/assets/${displayFont}" as="font" type="font/woff2" crossorigin /></head>`,
 );
 
+// версионируем service worker хешем главного бандла: sw.js меняется побайтово
+// только при изменении кода, поэтому браузер видит новый SW ровно на новом
+// деплое (иначе update-prompt не сработал бы - sw.js оставался бы неизменным)
+const mainBundle = readdirSync(resolve(DIST, "assets")).find((file) =>
+  /^index-.*\.js$/.test(file),
+);
+if (!mainBundle) {
+  throw new Error("prerender-meta: main index-*.js bundle not found in dist/assets");
+}
+const swPath = resolve(DIST, "sw.js");
+const swSource = readFileSync(swPath, "utf8");
+if (!swSource.includes('"p3r-v1"')) {
+  throw new Error('prerender-meta: cache version token "p3r-v1" not found in sw.js');
+}
+const swHash = mainBundle.replace(/^index-|\.js$/g, "");
+writeFileSync(swPath, swSource.replace('"p3r-v1"', `"p3r-${swHash}"`));
+
 function escapeHtml(text) {
   return String(text)
     .replace(/&/g, "&amp;")

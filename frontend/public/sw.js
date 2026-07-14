@@ -27,7 +27,13 @@ const SWR_PATHS = new Set([
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
-  self.skipWaiting();
+  // НЕ skipWaiting автоматически: новый worker остаётся waiting, пока страница не
+  // спросит пользователя и не пришлёт SKIP_WAITING (иначе апдейт без спроса)
+});
+
+// страница подтвердила обновление -> активируемся немедленно (см. useServiceWorker)
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {

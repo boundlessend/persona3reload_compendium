@@ -40,6 +40,7 @@ import { useFavorites } from "./useFavorites";
 import { useRegistered } from "./useRegistered";
 import { isSpecialFusion } from "./fusion";
 import { usePersonaRouting } from "./usePersonaRouting";
+import { useServiceWorker } from "./useServiceWorker";
 
 // сколько карточек показывать за раз; "Load more" догружает ещё столько же
 const PAGE_SIZE = 48;
@@ -775,7 +776,7 @@ function HomePage() {
 // тонкий роутер верхнего уровня: /arcana/* - отдельные страницы, всё остальное
 // (включая /persona/<q>/) обслуживает HomePage. Межстраничные переходы идут
 // обычной навигацией по ссылкам, поэтому pathname читается один раз при загрузке
-export default function App() {
+function routePage() {
   const path = window.location.pathname;
   const detail = path.match(/^\/arcana\/([^/]+)\/?$/);
   if (detail) {
@@ -787,4 +788,30 @@ export default function App() {
   if (/^\/bosses\/?$/.test(path)) return <BossBrowser />;
   if (/^\/requests\/?$/.test(path)) return <RequestsBrowser />;
   return <HomePage />;
+}
+
+export default function App() {
+  const { updateReady, applyUpdate } = useServiceWorker();
+  return (
+    <>
+      {routePage()}
+      {updateReady && (
+        <div
+          role="status"
+          className="fixed inset-x-0 bottom-4 z-50 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center gap-4 border-2 border-ink bg-card px-4 py-3 shadow-[6px_6px_0_0_#16130d]"
+        >
+          <span className="font-mono text-xs uppercase tracking-wider text-ink">
+            New version available
+          </span>
+          <button
+            type="button"
+            onClick={applyUpdate}
+            className="border-2 border-blood bg-blood px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-paper transition hover:border-ink hover:bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+          >
+            Reload
+          </button>
+        </div>
+      )}
+    </>
+  );
 }
