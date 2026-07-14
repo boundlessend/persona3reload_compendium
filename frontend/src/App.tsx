@@ -2,20 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PERSONA_COUNT, type Persona } from "./api";
 import { usePersonas } from "./usePersonas";
 import { useSkills } from "./useSkills";
-import {
-  AFFINITY_FILTER_LABELS,
-  AFFINITY_KEYS,
-  SORT_LABELS,
-  type DlcFilter,
-  type SortKey,
-} from "./constants";
 import { isSpecialFusion, reverseIndex } from "./fusion";
 import { PersonaCard } from "./PersonaCard";
 import { PersonaModal } from "./PersonaModal";
 import { CompareModal } from "./CompareModal";
 import { TeamModal } from "./TeamModal";
 import { ControlButton, Chip } from "./Controls";
-import { Dropdown } from "./Dropdown";
+import { CatalogControls } from "./CatalogControls";
+import { AdvancedPanel } from "./AdvancedPanel";
+import { ActiveFilterChips } from "./ActiveFilterChips";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { PersonaOfTheDay } from "./PersonaOfTheDay";
@@ -50,44 +45,18 @@ function HomePage() {
   // вся стейт-машина фильтров каталога и производные - в отдельном хуке;
   // деструктурируем обратно в локали, чтобы JSX ниже читался как раньше
   const cf = useCatalogFilters(personas, favorites, registered);
+  // App использует напрямую только это; остальное - внутри CatalogControls /
+  // AdvancedPanel / ActiveFilterChips через объект cf целиком
   const {
     search,
     setSearch,
     arcana,
     setArcana,
-    origin,
-    setOrigin,
-    sort,
-    setSort,
-    element,
-    setElement,
-    affinityType,
-    setAffinityType,
-    element2,
-    setElement2,
-    affinityType2,
-    setAffinityType2,
-    levelMin,
-    setLevelMin,
-    levelMax,
-    setLevelMax,
-    dlcFilter,
-    setDlcFilter,
-    favoritesOnly,
-    setFavoritesOnly,
-    noWeakness,
-    setNoWeakness,
-    missingOnly,
-    setMissingOnly,
+    arcanas,
     advancedOpen,
-    setAdvancedOpen,
+    visible,
     shown,
     loadMore,
-    arcanas,
-    origins,
-    elements,
-    visible,
-    advancedActive,
     activeFilters,
     clearAllFilters,
   } = cf;
@@ -213,207 +182,16 @@ function HomePage() {
             />
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-mut">
-              Sort
-              <Dropdown
-                value={sort}
-                options={(Object.keys(SORT_LABELS) as SortKey[]).map((key) => ({
-                  value: key,
-                  label: SORT_LABELS[key],
-                }))}
-                onChange={setSort}
-                ariaLabel="Sort"
-              />
-            </span>
+          <CatalogControls
+            cf={cf}
+            compareMode={compareMode}
+            teamMode={teamMode}
+            onToggleCompareMode={toggleCompareMode}
+            onToggleTeamMode={toggleTeamMode}
+            onShuffle={shuffle}
+          />
 
-            <ControlButton
-              pressed={advancedOpen}
-              onClick={() => setAdvancedOpen((prev) => !prev)}
-            >
-              Advanced{advancedActive && <span className="text-blood"> •</span>}{" "}
-              {advancedOpen ? "▴" : "▾"}
-            </ControlButton>
-
-            <ControlButton
-              pressed={noWeakness}
-              onClick={() => setNoWeakness((on) => !on)}
-              className="ml-auto"
-            >
-              No weakness
-            </ControlButton>
-
-            <ControlButton
-              pressed={favoritesOnly}
-              onClick={() => setFavoritesOnly((on) => !on)}
-            >
-              ★ Favorites
-            </ControlButton>
-
-            <ControlButton
-              pressed={missingOnly}
-              onClick={() => setMissingOnly((on) => !on)}
-            >
-              Missing
-            </ControlButton>
-
-            <ControlButton pressed={compareMode} onClick={toggleCompareMode}>
-              {compareMode ? "Comparing…" : "Compare"}
-            </ControlButton>
-
-            <ControlButton pressed={teamMode} onClick={toggleTeamMode}>
-              {teamMode ? "Team…" : "Team"}
-            </ControlButton>
-
-            <ControlButton onClick={shuffle}>Shuffle</ControlButton>
-          </div>
-
-          {advancedOpen && (
-            <div className="mt-4 border-2 border-ink bg-card p-4 sm:p-5">
-              <div className="flex flex-wrap items-end gap-x-8 gap-y-5">
-                <div className="flex flex-col gap-2">
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-blood">
-                    Affinity
-                  </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Dropdown
-                      value={affinityType}
-                      options={AFFINITY_KEYS.map((key) => ({
-                        value: key,
-                        label: AFFINITY_FILTER_LABELS[key],
-                      }))}
-                      onChange={setAffinityType}
-                      ariaLabel="Affinity type"
-                    />
-                    <Dropdown
-                      value={element}
-                      options={elements.map((name) => ({
-                        value: name,
-                        label: name === "All" ? "Any element" : name,
-                      }))}
-                      onChange={setElement}
-                      ariaLabel="Element"
-                    />
-                    <span
-                      className="font-mono text-[11px] uppercase tracking-wider text-mut"
-                      aria-hidden="true"
-                    >
-                      and
-                    </span>
-                    <Dropdown
-                      value={affinityType2}
-                      options={AFFINITY_KEYS.map((key) => ({
-                        value: key,
-                        label: AFFINITY_FILTER_LABELS[key],
-                      }))}
-                      onChange={setAffinityType2}
-                      ariaLabel="Second affinity type"
-                    />
-                    <Dropdown
-                      value={element2}
-                      options={elements.map((name) => ({
-                        value: name,
-                        label: name === "All" ? "Any element" : name,
-                      }))}
-                      onChange={setElement2}
-                      ariaLabel="Second element"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-blood">
-                    Level
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={99}
-                      value={levelMin}
-                      onChange={(event) =>
-                        setLevelMin(
-                          Math.max(
-                            1,
-                            Math.min(99, Number(event.target.value) || 1),
-                          ),
-                        )
-                      }
-                      aria-label="Minimum level"
-                      className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center font-mono text-ink outline-none transition focus:border-blood"
-                    />
-                    <span aria-hidden="true">-</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={99}
-                      value={levelMax}
-                      onChange={(event) =>
-                        setLevelMax(
-                          Math.max(
-                            1,
-                            Math.min(99, Number(event.target.value) || 99),
-                          ),
-                        )
-                      }
-                      aria-label="Maximum level"
-                      className="w-14 border-2 border-ink bg-transparent px-2 py-2 text-center font-mono text-ink outline-none transition focus:border-blood"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-blood">
-                    Origin
-                  </span>
-                  <Dropdown
-                    value={origin}
-                    options={origins.map((name) => ({
-                      value: name,
-                      label: name === "All" ? "Any origin" : name,
-                    }))}
-                    onChange={setOrigin}
-                    ariaLabel="Origin"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-blood">
-                    Source
-                  </span>
-                  <div
-                    className="flex border-2 border-ink"
-                    role="group"
-                    aria-label="Filter by source"
-                  >
-                    {(
-                      [
-                        ["all", "All"],
-                        ["base", "Base"],
-                        ["dlc", "DLC"],
-                        ["special", "Special"],
-                      ] as [DlcFilter, string][]
-                    ).map(([value, label], index) => (
-                      <button
-                        key={value}
-                        onClick={() => setDlcFilter(value)}
-                        aria-pressed={dlcFilter === value}
-                        className={`px-3 py-2 font-mono text-xs uppercase tracking-wider transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood ${
-                          index < 3 ? "border-r-2 border-ink" : ""
-                        } ${
-                          dlcFilter === value
-                            ? "bg-ink text-paper"
-                            : "text-ink hover:bg-ink/10"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {advancedOpen && <AdvancedPanel cf={cf} />}
 
           {compareMode && (
             <p className="mt-3 font-mono text-xs uppercase tracking-wider text-blood">
@@ -440,39 +218,7 @@ function HomePage() {
             ))}
           </div>
 
-          {activeFilters.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[11px] uppercase tracking-wider text-mut">
-                Filters
-              </span>
-              {activeFilters.map((filter) => (
-                <button
-                  key={filter.id}
-                  type="button"
-                  onClick={filter.clear}
-                  aria-label={`Remove filter: ${filter.label}`}
-                  className="group flex items-center gap-1.5 border-2 border-ink bg-card px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-ink transition hover:border-blood hover:text-blood focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
-                >
-                  {filter.label}
-                  <span
-                    aria-hidden="true"
-                    className="text-mut transition group-hover:text-blood"
-                  >
-                    ✕
-                  </span>
-                </button>
-              ))}
-              {activeFilters.length > 1 && (
-                <button
-                  type="button"
-                  onClick={clearAllFilters}
-                  className="font-mono text-[11px] uppercase tracking-wider text-blood underline underline-offset-2 transition hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
-                >
-                  Clear all
-                </button>
-              )}
-            </div>
-          )}
+          <ActiveFilterChips filters={activeFilters} onClearAll={clearAllFilters} />
 
           {error && <ErrorNote message={`Could not load personas: ${error}.`} />}
 
