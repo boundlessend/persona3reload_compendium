@@ -155,7 +155,7 @@ export function PersonaModal({
               <>
                 {" · fusion spell with "}
                 <a
-                  href={`/persona/${theurgyPartner.query}/`}
+                  href={`/persona/${encodeURIComponent(theurgyPartner.query)}/`}
                   className="text-ink underline decoration-blood underline-offset-2 hover:bg-ink hover:text-paper"
                 >
                   {theurgyPartner.name} →

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import type { Persona } from "./api";
 import { PersonaImage } from "./PersonaImage";
 import { StatList } from "./PersonaDetails";
@@ -23,7 +23,7 @@ export function CompareModal({
   const panelRef = useRef<HTMLDivElement>(null);
   useDialog(panelRef, onClose, true);
 
-  const fused = fuseResult(a, b, personas);
+  const fused = useMemo(() => fuseResult(a, b, personas), [a, b, personas]);
 
   return (
     <div

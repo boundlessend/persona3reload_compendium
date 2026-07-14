@@ -62,7 +62,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         type: "Persona",
         label: item.name,
         hint: `${item.arcana} · Lv ${item.level}`,
-        url: `/persona/${item.query}/`,
+        url: `/persona/${encodeURIComponent(item.query)}/`,
       });
     }
     return [...PAGES, ...arcana, ...persona];

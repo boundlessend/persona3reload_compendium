@@ -1,9 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-// axe-core sweep of the main surfaces (incl. an open dialog). guards against a11y
-// regressions - a планированное нарушение (bad contrast, missing label, ARIA) валит
-// прогон. violations сводим к id/impact/count, чтобы падение читалось без дампа
+// axe-core-проход по основным экранам (включая открытый диалог): страхует от
+// a11y-регрессий - любое нарушение (низкий контраст, отсутствие label, битый
+// aria) валит прогон. violations сводим к id/impact/count, чтобы падение
+// читалось без дампа
 async function expectNoViolations(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page }).analyze();
   const summary = results.violations.map((violation) => ({

@@ -26,7 +26,7 @@ function Node({ node }: { node: RecipeNode }) {
     <li>
       <span className={color}>
         <a
-          href={`/persona/${persona.query}/`}
+          href={`/persona/${encodeURIComponent(persona.query)}/`}
           className="hover:text-blood hover:underline"
         >
           {persona.name}

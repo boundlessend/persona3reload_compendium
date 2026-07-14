@@ -28,5 +28,6 @@ export function usePersonaModal(
       registered={registered}
     />
   ) : null;
-  return { open: setSelected, modal };
+  const open = (persona: Persona): void => setSelected(persona);
+  return { open, modal };
 }

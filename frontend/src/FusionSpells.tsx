@@ -1,18 +1,21 @@
+import { useMemo } from "react";
 import type { Persona } from "./api";
 import { FUSION_SPELLS } from "./theurgy";
 
 // справочник Theurgy-«Fusion Spells» протагониста: 7 навыков, каждый от пары
 // зарегистрированных персон (см. theurgy.ts)
 export function FusionSpells({ personas }: { personas: Persona[] }) {
-  const byQuery = new Map(personas.map((persona) => [persona.query, persona]));
-  const entries = FUSION_SPELLS.map((spell) => ({
-    skill: spell.skill,
-    a: byQuery.get(spell.a),
-    b: byQuery.get(spell.b),
-  })).filter(
-    (entry): entry is { skill: string; a: Persona; b: Persona } =>
-      entry.a !== undefined && entry.b !== undefined,
-  );
+  const entries = useMemo(() => {
+    const byQuery = new Map(personas.map((persona) => [persona.query, persona]));
+    return FUSION_SPELLS.map((spell) => ({
+      skill: spell.skill,
+      a: byQuery.get(spell.a),
+      b: byQuery.get(spell.b),
+    })).filter(
+      (entry): entry is { skill: string; a: Persona; b: Persona } =>
+        entry.a !== undefined && entry.b !== undefined,
+    );
+  }, [personas]);
 
   return (
     <section className="mt-20">
@@ -34,14 +37,14 @@ export function FusionSpells({ personas }: { personas: Persona[] }) {
             </span>
             <span className="font-mono text-[11px] uppercase tracking-wider text-mut">
               <a
-                href={`/persona/${a.query}/`}
+                href={`/persona/${encodeURIComponent(a.query)}/`}
                 className="hover:text-ink hover:underline"
               >
                 {a.name}
               </a>
               {" × "}
               <a
-                href={`/persona/${b.query}/`}
+                href={`/persona/${encodeURIComponent(b.query)}/`}
                 className="hover:text-ink hover:underline"
               >
                 {b.name}

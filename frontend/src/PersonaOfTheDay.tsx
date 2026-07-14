@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { Persona } from "./api";
 import { idTag } from "./constants";
 import { PersonaImage } from "./PersonaImage";
@@ -32,7 +33,7 @@ export function PersonaOfTheDay({
   personas: Persona[];
   onSelect: (persona: Persona) => void;
 }) {
-  const persona = pickOfTheDay(personas);
+  const persona = useMemo(() => pickOfTheDay(personas), [personas]);
   if (!persona) return null;
   return (
     <a
