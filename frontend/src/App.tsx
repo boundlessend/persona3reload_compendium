@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { PERSONA_COUNT, type Persona } from "./api";
 import { usePersonas } from "./usePersonas";
 import { useSkills } from "./useSkills";
@@ -41,6 +48,9 @@ function HomePage() {
   const { personas, loading, error } = usePersonas();
   const { skills } = useSkills();
   const [search, setSearch] = useState("");
+  // поле остаётся мгновенным на search; дорогой пересчёт каталога идёт по
+  // отстающему deferredSearch, чтобы печать не блокировалась ре-рендером сетки
+  const deferredSearch = useDeferredValue(search);
   const [arcana, setArcana] = useState("All");
   const [origin, setOrigin] = useState("All");
   const [sort, setSort] = useState<SortKey>("id");
@@ -196,7 +206,7 @@ function HomePage() {
   }, [personas]);
 
   const visible = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const term = deferredSearch.trim().toLowerCase();
     // диапазон уровней устойчив к перевёрнутому вводу (min > max)
     const lo = Math.min(levelMin, levelMax);
     const hi = Math.max(levelMin, levelMax);
@@ -221,7 +231,7 @@ function HomePage() {
     return filtered.sort(SORTERS[sort]);
   }, [
     personas,
-    search,
+    deferredSearch,
     arcana,
     origin,
     dlcFilter,
@@ -244,7 +254,7 @@ function HomePage() {
   useEffect(() => {
     setShown(PAGE_SIZE);
   }, [
-    search,
+    deferredSearch,
     arcana,
     origin,
     sort,
