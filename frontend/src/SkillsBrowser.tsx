@@ -7,7 +7,7 @@ import { useRegistered } from "./useRegistered";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { ErrorNote } from "./ErrorNote";
-import { Chip } from "./Controls";
+import { ChipRow } from "./Controls";
 import { SkillIcon, SkillIconDefs } from "./SkillIcon";
 import { SkillGuideModal } from "./SkillsGuide";
 import { PersonaImage } from "./PersonaImage";
@@ -148,17 +148,13 @@ export function SkillsBrowser({ initialGuideOpen }: { initialGuideOpen: boolean 
           How skills are named →
         </a>
 
-        <div className="mt-10 flex flex-wrap gap-2">
-          {elements.map((name) => (
-            <Chip
-              key={name}
-              pressed={element === name}
-              onClick={() => setElement(name)}
-              className="px-3 text-[11px]"
-            >
-              {name}
-            </Chip>
-          ))}
+        <div className="mt-10">
+          <ChipRow
+            options={elements.map((name) => ({ key: name, label: name }))}
+            selected={element}
+            onSelect={setElement}
+            chipClassName="px-3 text-[11px]"
+          />
         </div>
 
         <p

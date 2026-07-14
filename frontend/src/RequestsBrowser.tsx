@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useRequests } from "./useRequests";
 import type { RequestType } from "./useRequests";
 import { ErrorNote } from "./ErrorNote";
-import { Chip } from "./Controls";
+import { ChipRow, ResultCount } from "./Controls";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
@@ -67,16 +67,7 @@ export function RequestsBrowser() {
         ) : (
           <>
             <div className="mt-10 flex flex-wrap items-center gap-2">
-              {TYPES.map(({ key, label }) => (
-                <Chip
-                  key={key}
-                  pressed={type === key}
-                  onClick={() => setType(key)}
-                  className="px-3 text-xs"
-                >
-                  {label}
-                </Chip>
-              ))}
+              <ChipRow options={TYPES} selected={type} onSelect={setType} />
               {/* ponytail: сырая кнопка, а не Chip - у неё blood-акцент при нажатии
                   (в тон deadline/missable-бейджам ниже), которого Chip не даёт */}
               <button
@@ -91,9 +82,11 @@ export function RequestsBrowser() {
               </button>
             </div>
 
-            <p className="mt-8 font-mono text-xs uppercase tracking-wider text-mut">
-              {visible.length} of {requests.length} requests
-            </p>
+            <ResultCount
+              visible={visible.length}
+              total={requests.length}
+              noun="requests"
+            />
             <ul className="mt-4 border-t-2 border-ink">
               {visible.map((request) => (
                 <li

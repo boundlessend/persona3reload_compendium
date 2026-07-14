@@ -86,3 +86,52 @@ export function Chip({
     </button>
   );
 }
+
+// одиночный select-ряд чипов: единый источник для каталожных фильтров (боссы,
+// запросы, скиллы). K - тип ключа опции (строковый union или string)
+export function ChipRow<K extends string>({
+  options,
+  selected,
+  onSelect,
+  chipClassName = "px-3 text-xs",
+}: {
+  options: { key: K; label: string }[];
+  selected: K;
+  onSelect: (key: K) => void;
+  chipClassName?: string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map(({ key, label }) => (
+        <Chip
+          key={key}
+          pressed={selected === key}
+          onClick={() => onSelect(key)}
+          className={chipClassName}
+        >
+          {label}
+        </Chip>
+      ))}
+    </div>
+  );
+}
+
+// строка счётчика результатов каталога с aria-live (боссы, запросы)
+export function ResultCount({
+  visible,
+  total,
+  noun,
+}: {
+  visible: number;
+  total: number;
+  noun: string;
+}) {
+  return (
+    <p
+      aria-live="polite"
+      className="mt-8 font-mono text-xs uppercase tracking-wider text-mut"
+    >
+      {visible} of {total} {noun}
+    </p>
+  );
+}

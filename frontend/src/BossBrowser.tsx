@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useBosses } from "./useBosses";
 import { AFFINITIES } from "./constants";
 import { ErrorNote } from "./ErrorNote";
-import { Chip } from "./Controls";
+import { ChipRow, ResultCount } from "./Controls";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
@@ -54,23 +54,21 @@ export function BossBrowser() {
               <span className="font-mono text-[11px] uppercase tracking-wider text-blood">
                 Weak to
               </span>
-              <div className="flex flex-wrap gap-2">
-                {["All", ...weaknessElements].map((element) => (
-                  <Chip
-                    key={element}
-                    pressed={weakTo === element}
-                    onClick={() => setWeakTo(element)}
-                    className="px-3 text-xs"
-                  >
-                    {element}
-                  </Chip>
-                ))}
-              </div>
+              <ChipRow
+                options={["All", ...weaknessElements].map((element) => ({
+                  key: element,
+                  label: element,
+                }))}
+                selected={weakTo}
+                onSelect={setWeakTo}
+              />
             </div>
 
-            <p className="mt-8 font-mono text-xs uppercase tracking-wider text-mut">
-              {visible.length} of {bosses.length} bosses
-            </p>
+            <ResultCount
+              visible={visible.length}
+              total={bosses.length}
+              noun="bosses"
+            />
             <div className="mt-4 grid gap-px border border-ink bg-ink sm:grid-cols-2 lg:grid-cols-3">
               {visible.map((boss) => {
                 const hasAny = AFFINITIES.some(({ key }) => boss[key].length);
