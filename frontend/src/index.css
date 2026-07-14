@@ -122,6 +122,43 @@ input[type="number"]::-webkit-outer-spin-button {
   color: #7a6f5c;
 }
 
+/* дерево рецептов слияния: скобочные коннекторы (правый угол, 2px ink) от родителя
+   к каждому ребёнку - вертикаль плюс горизонтальный отвод на уровне узла. у
+   последнего ребёнка вертикаль обрывается на отводе (└), у остальных сквозная (├) */
+.recipe-branch {
+  margin-left: 0.5rem;
+}
+.recipe-branch > li {
+  position: relative;
+  padding-left: 1rem;
+  padding-bottom: 0.25rem;
+}
+.recipe-branch > li:last-child {
+  padding-bottom: 0;
+}
+.recipe-branch > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--color-ink);
+  opacity: 0.25;
+}
+.recipe-branch > li:last-child::before {
+  bottom: auto;
+  height: 0.62em;
+}
+.recipe-branch > li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 0.7rem;
+  border-top: 2px solid var(--color-ink);
+  opacity: 0.25;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -38,7 +38,7 @@ function Node({ node }: { node: RecipeNode }) {
         </span>
       </span>
       {isBranch(node) && (
-        <ul className="mt-1 ml-2 space-y-1 border-l-2 border-ink/20 pl-3">
+        <ul className="recipe-branch mt-1">
           <Node node={node.a} />
           <Node node={node.b} />
         </ul>
