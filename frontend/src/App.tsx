@@ -114,9 +114,11 @@ function HomePage() {
       setElement2(element2Param);
     }
     const levelMinParam = Number(params.get("lmin"));
-    if (levelMinParam >= 1 && levelMinParam <= 99) setLevelMin(levelMinParam);
+    if (Number.isInteger(levelMinParam) && levelMinParam >= 1 && levelMinParam <= 99)
+      setLevelMin(levelMinParam);
     const levelMaxParam = Number(params.get("lmax"));
-    if (levelMaxParam >= 1 && levelMaxParam <= 99) setLevelMax(levelMaxParam);
+    if (Number.isInteger(levelMaxParam) && levelMaxParam >= 1 && levelMaxParam <= 99)
+      setLevelMax(levelMaxParam);
     const originParam = params.get("origin");
     if (originParam) setOrigin(originParam);
     if (params.get("noweak") === "1") setNoWeakness(true);
@@ -126,19 +128,19 @@ function HomePage() {
         .split(",")
         .map((slug) => personas.find((p) => p.query === slug))
         .filter((p): p is Persona => Boolean(p));
+    // compare и team взаимоисключающие; но если compare-ссылка битая (<2 валидных),
+    // не проглатываем её - падаем на team, если та валидна
     const compareParam = params.get("compare");
-    const teamParam = params.get("team");
-    if (compareParam) {
-      const picks = resolve(compareParam);
-      if (picks.length >= 2) {
-        setCompareMode(true);
-        setCompareList(picks.slice(0, 2));
-      }
-    } else if (teamParam) {
-      const picks = resolve(teamParam);
-      if (picks.length >= 2) {
+    const comparePicks = compareParam ? resolve(compareParam) : [];
+    if (comparePicks.length >= 2) {
+      setCompareMode(true);
+      setCompareList(comparePicks.slice(0, 2));
+    } else {
+      const teamParam = params.get("team");
+      const teamPicks = teamParam ? resolve(teamParam) : [];
+      if (teamPicks.length >= 2) {
         setTeamMode(true);
-        setTeamList(picks.slice(0, 4));
+        setTeamList(teamPicks.slice(0, 4));
         setTeamOpen(true);
       }
     }

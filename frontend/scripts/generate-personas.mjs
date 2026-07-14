@@ -57,6 +57,11 @@ const personas = lines.slice(1).map((line) => {
   if (!row.query) {
     throw new Error(`row with id=${row.id} has no query field`);
   }
+  // query уходит в путь ФС (dist/persona/<query>) и в URL: жёстко ограничиваем
+  // безопасным набором, чтобы исключить ../ и path-traversal при пре-рендере
+  if (!/^[a-z0-9-]+$/.test(row.query)) {
+    throw new Error(`row with id=${row.id} has unsafe query: ${row.query}`);
+  }
   // локально зеркалированный арт лежит в public/personas/<query>.webp
   row.image = `/personas/${row.query}.webp`;
   return row;
