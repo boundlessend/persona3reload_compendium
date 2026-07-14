@@ -133,9 +133,35 @@ function breadcrumbLd(items) {
   };
 }
 
-// главная получает узел WebSite; пере­рендеренные копии наследуют его из shellWithLd
+// ItemList для листингов, у которых элементы имеют собственные detail-URL: даёт
+// краулеру машиночитаемый индекс страниц персон/аркан. Листинги без detail-роутов
+// (skills/bosses/requests) намеренно без ItemList - ссылок нет, SEO-ценности ноль
+function itemListLd(name, entries) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: entries.length,
+    itemListElement: entries.map((entry, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: entry.name,
+      url: entry.url,
+    })),
+  };
+}
+
+// shellWithLd (WebSite-узел) - база для всех detail-копий; главная дополнительно
+// получает ItemList своего каталога персон, чтобы он не протёк на detail-страницы
 const shellWithLd = injectLd(shellPreloaded, [websiteLd]);
-writeFileSync(resolve(DIST, "index.html"), shellWithLd);
+const personasItemList = itemListLd(
+  "Personas of Persona 3 Reload",
+  personas.map((persona) => ({
+    name: persona.name,
+    url: `${SITE}/persona/${encodeURIComponent(persona.query)}/`,
+  })),
+);
+writeFileSync(resolve(DIST, "index.html"), injectLd(shellWithLd, [personasItemList]));
 
 let count = 0;
 for (const persona of personas) {
@@ -190,7 +216,16 @@ writeFileSync(
       ),
       url: `${SITE}/arcana/`,
     }),
-    [breadcrumbLd([HOME, { name: "The Arcana", url: `${SITE}/arcana/` }])],
+    [
+      breadcrumbLd([HOME, { name: "The Arcana", url: `${SITE}/arcana/` }]),
+      itemListLd(
+        "The Arcana of Persona 3 Reload",
+        arcanaOrder.map((arcana) => ({
+          name: `${arcana} Arcana`,
+          url: `${SITE}/arcana/${encodeURIComponent(arcana.toLowerCase())}/`,
+        })),
+      ),
+    ],
   ),
 );
 
