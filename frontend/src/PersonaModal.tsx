@@ -3,6 +3,7 @@ import type { Persona } from "./api";
 import { idTag } from "./constants";
 import { PersonaImage } from "./PersonaImage";
 import { AffinityList, StatList } from "./PersonaDetails";
+import { StatRadar } from "./StatRadar";
 import { useDialog } from "./useDialog";
 import { reverseIndex, SPECIAL_RECIPES } from "./fusion";
 import { theurgyFor } from "./theurgy";
@@ -166,6 +167,9 @@ export function PersonaModal({
         <div className="mt-8 grid gap-8 sm:grid-cols-2">
           <div>
             <SectionHeading>Stats</SectionHeading>
+            <div className="mt-4">
+              <StatRadar persona={persona} />
+            </div>
             <div className="mt-4">
               <StatList persona={persona} />
             </div>
