@@ -97,13 +97,16 @@ function buildCtx(personas: Persona[]): FusionCtx {
 function fuseCtx(a: Persona, b: Persona, ctx: FusionCtx): Persona | null {
   if (a.id === b.id) return null;
   if (a.arcana === b.arcana) {
-    // одинаковая аркана: вниз - высшая персона арканы строго ниже среднего
-    const avg = (a.level + b.level) / 2;
+    // одинаковая аркана: высшая персона арканы (кроме самих ингредиентов) с уровнем
+    // <= avg+1. правило P3R-калькулятора aqiu384 (на его данных построена таблица):
+    // порог floor(avg)+1, поиск вниз, ингредиенты исключены (иначе слияние вернуло
+    // бы один из них); если ничего не подходит - слияния нет. было ошибочно "< avg"
+    const threshold = (a.level + b.level) / 2 + 1;
     const list = ctx.byArcana.get(a.arcana) ?? [];
     let best: Persona | null = null;
     for (const persona of list) {
       if (persona.id === a.id || persona.id === b.id) continue;
-      if (persona.level < avg) best = persona;
+      if (persona.level <= threshold) best = persona;
     }
     return best;
   }
