@@ -271,6 +271,85 @@ function HomePage() {
     levelMax !== 99 ||
     dlcFilter !== "all";
 
+  // сводка применённых фильтров убираемыми чипами над результатами; дефолт каждого
+  // совпадает с useState выше, клик по чипу сбрасывает только своё условие
+  const dlcLabels: Record<DlcFilter, string> = {
+    all: "All",
+    base: "Base",
+    dlc: "DLC",
+    special: "Special",
+  };
+  const activeFilters: { id: string; label: string; clear: () => void }[] = [];
+  if (search.trim())
+    activeFilters.push({
+      id: "search",
+      label: `Search: ${search.trim()}`,
+      clear: () => setSearch(""),
+    });
+  if (arcana !== "All")
+    activeFilters.push({ id: "arcana", label: arcana, clear: () => setArcana("All") });
+  if (dlcFilter !== "all")
+    activeFilters.push({
+      id: "source",
+      label: dlcLabels[dlcFilter],
+      clear: () => setDlcFilter("all"),
+    });
+  if (element !== "All")
+    activeFilters.push({
+      id: "element",
+      label: `${AFFINITY_FILTER_LABELS[affinityType]}: ${element}`,
+      clear: () => setElement("All"),
+    });
+  if (element2 !== "All")
+    activeFilters.push({
+      id: "element2",
+      label: `${AFFINITY_FILTER_LABELS[affinityType2]}: ${element2}`,
+      clear: () => setElement2("All"),
+    });
+  if (levelMin !== 1 || levelMax !== 99)
+    activeFilters.push({
+      id: "level",
+      label: `Lv ${Math.min(levelMin, levelMax)}-${Math.max(levelMin, levelMax)}`,
+      clear: () => {
+        setLevelMin(1);
+        setLevelMax(99);
+      },
+    });
+  if (origin !== "All")
+    activeFilters.push({ id: "origin", label: origin, clear: () => setOrigin("All") });
+  if (favoritesOnly)
+    activeFilters.push({
+      id: "favorites",
+      label: "★ Favorites",
+      clear: () => setFavoritesOnly(false),
+    });
+  if (noWeakness)
+    activeFilters.push({
+      id: "noWeakness",
+      label: "No weakness",
+      clear: () => setNoWeakness(false),
+    });
+  if (missingOnly)
+    activeFilters.push({
+      id: "missing",
+      label: "Missing",
+      clear: () => setMissingOnly(false),
+    });
+
+  const clearAllFilters = () => {
+    setSearch("");
+    setArcana("All");
+    setOrigin("All");
+    setElement("All");
+    setElement2("All");
+    setLevelMin(1);
+    setLevelMax(99);
+    setDlcFilter("all");
+    setFavoritesOnly(false);
+    setNoWeakness(false);
+    setMissingOnly(false);
+  };
+
   if (notFound) return <NotFound />;
 
   return (
@@ -540,6 +619,40 @@ function HomePage() {
               </Chip>
             ))}
           </div>
+
+          {activeFilters.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="font-mono text-[11px] uppercase tracking-wider text-mut">
+                Filters
+              </span>
+              {activeFilters.map((filter) => (
+                <button
+                  key={filter.id}
+                  type="button"
+                  onClick={filter.clear}
+                  aria-label={`Remove filter: ${filter.label}`}
+                  className="group flex items-center gap-1.5 border-2 border-ink bg-card px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-ink transition hover:border-blood hover:text-blood focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+                >
+                  {filter.label}
+                  <span
+                    aria-hidden="true"
+                    className="text-mut transition group-hover:text-blood"
+                  >
+                    ✕
+                  </span>
+                </button>
+              ))}
+              {activeFilters.length > 1 && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="font-mono text-[11px] uppercase tracking-wider text-blood underline underline-offset-2 transition hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          )}
 
           {error && <ErrorNote message={`Could not load personas: ${error}.`} />}
 
