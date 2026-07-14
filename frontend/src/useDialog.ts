@@ -1,28 +1,51 @@
 import { useEffect, useRef, type RefObject } from "react";
 
-// shared dialog behaviour: scroll lock, initial focus, focus restore on close,
-// Escape, and a Tab focus trap (disabled while trapActive is false)
+// общий стек открытых диалогов: блокировку скролла ref-count'им (снимаем, только
+// когда закрылся последний), а Escape/Tab-ловушку и активность отдаём лишь
+// верхнему диалогу - нижние помечаем inert (уходят из Tab-порядка и из скринридера)
+type DialogEntry = { ref: RefObject<HTMLDivElement | null> };
+
+const stack: DialogEntry[] = [];
+
+// верхний диалог активен, все, что под ним, - inert
+function refreshInert(): void {
+  stack.forEach((entry, index) => {
+    const panel = entry.ref.current;
+    if (!panel) return;
+    if (index === stack.length - 1) panel.removeAttribute("inert");
+    else panel.setAttribute("inert", "");
+  });
+}
+
 export function useDialog(
   ref: RefObject<HTMLDivElement | null>,
   onEscape: () => void,
   trapActive: boolean,
 ) {
-  // hold the latest onEscape so the key listener is not re-bound every render
+  // держим свежий onEscape, чтобы не перевешивать слушатель на каждый рендер
   const escapeRef = useRef(onEscape);
   escapeRef.current = onEscape;
 
   useEffect(() => {
+    const entry: DialogEntry = { ref };
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = "hidden";
+    stack.push(entry);
+    if (stack.length === 1) document.body.style.overflow = "hidden";
+    refreshInert();
     ref.current?.focus();
     return () => {
-      document.body.style.overflow = "";
+      const index = stack.indexOf(entry);
+      if (index !== -1) stack.splice(index, 1);
+      if (stack.length === 0) document.body.style.overflow = "";
+      refreshInert();
       previouslyFocused?.focus();
     };
   }, [ref]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      // на клавиши реагирует только верхний диалог стека
+      if (stack[stack.length - 1]?.ref !== ref) return;
       if (event.key === "Escape") {
         escapeRef.current();
         return;
