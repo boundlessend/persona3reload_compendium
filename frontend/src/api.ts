@@ -1,3 +1,5 @@
+import { isRecord, isStringArray } from "./validate";
+
 export type Persona = {
   id: number;
   name: string;
@@ -20,39 +22,40 @@ export type Persona = {
   origin: string;
 };
 
-// узкая проверка формы данных на границе доверия: personas.json генерится на
-// билде, но тип Promise<Persona[]> без рантайм-контроля - фикция
-function assertPersonas(data: unknown): asserts data is Persona[] {
+// полная проверка формы на границе доверия: personas.json генерится на билде, но
+// тип Persona[] без рантайм-контроля - фикция. валидируем все поля, которые UI
+// дереференсит (статы, аффинити-массивы), а не только имя/аркану
+export function parsePersonas(data: unknown): Persona[] {
   if (!Array.isArray(data)) {
-    throw new Error("Malformed personas.json: expected an array");
+    throw new Error("malformed personas.json: expected an array");
   }
   for (const item of data) {
-    if (typeof item !== "object" || item === null) {
-      throw new Error("Malformed personas.json: unexpected persona shape");
-    }
-    const fields = item as Record<string, unknown>;
     if (
-      typeof fields.id !== "number" ||
-      typeof fields.name !== "string" ||
-      typeof fields.query !== "string" ||
-      typeof fields.arcana !== "string" ||
-      typeof fields.origin !== "string"
+      !isRecord(item) ||
+      typeof item.id !== "number" ||
+      typeof item.level !== "number" ||
+      typeof item.dlc !== "number" ||
+      typeof item.strength !== "number" ||
+      typeof item.magic !== "number" ||
+      typeof item.endurance !== "number" ||
+      typeof item.agility !== "number" ||
+      typeof item.luck !== "number" ||
+      typeof item.name !== "string" ||
+      typeof item.arcana !== "string" ||
+      typeof item.query !== "string" ||
+      typeof item.origin !== "string" ||
+      typeof item.image !== "string" ||
+      typeof item.description !== "string" ||
+      !isStringArray(item.weak) ||
+      !isStringArray(item.resists) ||
+      !isStringArray(item.reflects) ||
+      !isStringArray(item.absorbs) ||
+      !isStringArray(item.nullifies)
     ) {
-      throw new Error("Malformed personas.json: unexpected persona shape");
+      throw new Error("malformed personas.json: unexpected persona shape");
     }
   }
-}
-
-export async function fetchPersonas(signal: AbortSignal): Promise<Persona[]> {
-  // статический справочник, собираемый из TSV на этапе сборки (см.
-  // frontend/scripts/generate-personas.mjs) - рантайм-бэкенд не нужен
-  const response = await fetch("/personas.json", { signal });
-  if (!response.ok) {
-    throw new Error(`Failed to load personas: ${response.status}`);
-  }
-  const data: unknown = await response.json();
-  assertPersonas(data);
-  return data;
+  return data as Persona[];
 }
 
 export const STAT_KEYS = [

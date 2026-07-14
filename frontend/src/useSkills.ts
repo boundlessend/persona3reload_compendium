@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useJsonResource } from "./useJsonResource";
+import { isRecord } from "./validate";
 
 // выученный скилл персоны: имя, уровень изучения (0 = врождённый, null = особый),
 // стихия/тип, цель и эффект (порт из upstream, см. scripts/generate-skills.mjs).
@@ -11,6 +12,32 @@ export type Skill = {
   e?: string;
 };
 
+// полная проверка формы: словарь query -> массив скиллов, каждый с валидными
+// полями (UI дереференсит n/lv/el/tg/e)
+function parseSkills(data: unknown): Record<string, Skill[]> {
+  if (!isRecord(data)) {
+    throw new Error("malformed skills.json: expected an object");
+  }
+  for (const list of Object.values(data)) {
+    if (!Array.isArray(list)) {
+      throw new Error("malformed skills.json: expected skill arrays");
+    }
+    for (const skill of list) {
+      if (
+        !isRecord(skill) ||
+        typeof skill.n !== "string" ||
+        (skill.lv !== null && typeof skill.lv !== "number") ||
+        typeof skill.el !== "string" ||
+        typeof skill.tg !== "string" ||
+        (skill.e !== undefined && typeof skill.e !== "string")
+      ) {
+        throw new Error("malformed skills.json: unexpected skill shape");
+      }
+    }
+  }
+  return data as Record<string, Skill[]>;
+}
+
 // загрузка каталога скиллов по персонам; error поднимаем для страницы /skills,
 // где скиллы - основной контент. В PersonaModal это доп-слой: там error игнорят
 export function useSkills(): {
@@ -18,32 +45,10 @@ export function useSkills(): {
   loading: boolean;
   error: string | null;
 } {
-  const [skills, setSkills] = useState<Record<string, Skill[]>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/skills.json", { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`skills.json ${response.status}`);
-        return response.json();
-      })
-      .then((data: unknown) => {
-        if (!data || typeof data !== "object" || Array.isArray(data)) {
-          throw new Error("malformed skills.json: expected an object");
-        }
-        setSkills(data as Record<string, Skill[]>);
-      })
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : String(err));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
-
-  return { skills, loading, error };
+  const { data, loading, error } = useJsonResource<Record<string, Skill[]>>(
+    "/skills.json",
+    {},
+    parseSkills,
+  );
+  return { skills: data, loading, error };
 }

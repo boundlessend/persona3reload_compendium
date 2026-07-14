@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { fetchPersonas, type Persona } from "./api";
+import { parsePersonas, type Persona } from "./api";
+import { useJsonResource } from "./useJsonResource";
 
 // загрузка статического справочника персон; общий хук для всех страниц
 export function usePersonas(): {
@@ -7,23 +7,10 @@ export function usePersonas(): {
   loading: boolean;
   error: string | null;
 } {
-  const [personas, setPersonas] = useState<Persona[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetchPersonas(controller.signal)
-      .then(setPersonas)
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : String(err));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
-
-  return { personas, loading, error };
+  const { data, loading, error } = useJsonResource<Persona[]>(
+    "/personas.json",
+    [],
+    parsePersonas,
+  );
+  return { personas: data, loading, error };
 }

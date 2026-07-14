@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import type { AffinityKey } from "./constants";
+import { useJsonResource } from "./useJsonResource";
+import { isRecord, isStringArray } from "./validate";
 
 // story-босс P3R со слабостями/резистами (те же бакеты, что аффинити персон).
 // данные из public/bosses.json (см. scripts/generate-bosses.mjs)
@@ -8,38 +9,41 @@ export type Boss = { name: string; query: string; arcana: string; level: number 
   string[]
 >;
 
+// полная проверка формы: массив боссов, у каждого имя/query/аркана/уровень и все
+// пять аффинити-массивов (BossBrowser читает boss.weak.length и т.п.)
+function parseBosses(data: unknown): Boss[] {
+  if (!Array.isArray(data)) {
+    throw new Error("malformed bosses.json: expected an array");
+  }
+  for (const item of data) {
+    if (
+      !isRecord(item) ||
+      typeof item.name !== "string" ||
+      typeof item.query !== "string" ||
+      typeof item.arcana !== "string" ||
+      typeof item.level !== "number" ||
+      !isStringArray(item.weak) ||
+      !isStringArray(item.resists) ||
+      !isStringArray(item.reflects) ||
+      !isStringArray(item.absorbs) ||
+      !isStringArray(item.nullifies)
+    ) {
+      throw new Error("malformed bosses.json: unexpected boss shape");
+    }
+  }
+  return data as Boss[];
+}
+
 // загрузка справочника боссов; error поднимаем для страницы /bosses
 export function useBosses(): {
   bosses: Boss[];
   loading: boolean;
   error: string | null;
 } {
-  const [bosses, setBosses] = useState<Boss[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/bosses.json", { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`bosses.json ${response.status}`);
-        return response.json();
-      })
-      .then((data: unknown) => {
-        if (!Array.isArray(data)) {
-          throw new Error("malformed bosses.json: expected an array");
-        }
-        setBosses(data as Boss[]);
-      })
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : String(err));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
-
-  return { bosses, loading, error };
+  const { data, loading, error } = useJsonResource<Boss[]>(
+    "/bosses.json",
+    [],
+    parseBosses,
+  );
+  return { bosses: data, loading, error };
 }
