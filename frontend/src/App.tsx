@@ -865,7 +865,7 @@ export default function App() {
   const { updateReady, applyUpdate } = useServiceWorker();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Cmd/Ctrl-K открывает/закрывает командную палитру на любой странице
+  // Cmd/Ctrl-K открывает/закрывает палитру; кнопка-хинт в навбаре шлёт open-событие
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -873,8 +873,13 @@ export default function App() {
         setPaletteOpen((open) => !open);
       }
     };
+    const onOpen = () => setPaletteOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("open-command-palette", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("open-command-palette", onOpen);
+    };
   }, []);
 
   return (

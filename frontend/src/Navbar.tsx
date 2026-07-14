@@ -16,6 +16,8 @@ export function Navbar() {
   // на мобильном ссылки прячутся за бургер; на десктопе видны в строку
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  // палитра открывается по Cmd/Ctrl-K (App); подпись клавиши под платформу
+  const shortcut = /Mac|iPhone|iPad/.test(navigator.userAgent) ? "⌘K" : "Ctrl K";
 
   return (
     <header className="sticky top-0 z-30 border-b-2 border-ink bg-paper">
@@ -39,6 +41,27 @@ export function Navbar() {
               {link.label}
             </a>
           ))}
+          <button
+            type="button"
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("open-command-palette"))
+            }
+            aria-label={`Open search (${shortcut})`}
+            className="hidden items-center gap-2 border-2 border-ink px-3 py-2 font-mono text-xs uppercase tracking-wider text-mut transition hover:border-blood hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-blood sm:flex"
+          >
+            <svg
+              viewBox="0 0 16 16"
+              width="12"
+              height="12"
+              aria-hidden="true"
+              className="fill-none stroke-current"
+              strokeWidth={2}
+            >
+              <circle cx="7" cy="7" r="5" />
+              <line x1="11" y1="11" x2="15" y2="15" />
+            </svg>
+            <span aria-hidden="true">{shortcut}</span>
+          </button>
           <a
             href={SOURCE_HREF}
             rel="noopener noreferrer"
