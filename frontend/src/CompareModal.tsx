@@ -1,7 +1,8 @@
 import { useRef } from "react";
 import type { Persona } from "./api";
 import { PersonaImage } from "./PersonaImage";
-import { AffinityList, StatList } from "./PersonaDetails";
+import { StatList } from "./PersonaDetails";
+import { AffinityMatrix } from "./AffinityMatrix";
 import { useDialog } from "./useDialog";
 import { fuseResult } from "./fusion";
 import { IconButton } from "./Controls";
@@ -61,7 +62,7 @@ export function CompareModal({
                 </p>
               </div>
               <StatList persona={persona} />
-              <AffinityList persona={persona} />
+              <AffinityMatrix persona={persona} />
             </div>
           ))}
         </div>

@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Persona } from "./api";
 import { idTag } from "./constants";
 import { PersonaImage } from "./PersonaImage";
-import { AffinityList, StatList } from "./PersonaDetails";
+import { StatList } from "./PersonaDetails";
 import { StatRadar } from "./StatRadar";
+import { AffinityMatrix } from "./AffinityMatrix";
 import { useDialog } from "./useDialog";
 import { reverseIndex, SPECIAL_RECIPES } from "./fusion";
 import { theurgyFor } from "./theurgy";
@@ -177,7 +178,7 @@ export function PersonaModal({
           <div>
             <SectionHeading>Affinities</SectionHeading>
             <div className="mt-4">
-              <AffinityList persona={persona} />
+              <AffinityMatrix persona={persona} />
             </div>
           </div>
         </div>
