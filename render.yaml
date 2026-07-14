@@ -9,6 +9,11 @@ services:
     staticPublishPath: frontend/dist
     # client-side routing: serve real files, fall back to the SPA shell
     routes:
+      # у нас нет favicon.ico (иконка объявлена как favicon.svg); без этой строки
+      # голый /favicon.ico ловит SPA-fallback и отдаёт HTML вместо иконки
+      - type: redirect
+        source: /favicon.ico
+        destination: /favicon.svg
       - type: rewrite
         source: /*
         destination: /index.html
@@ -23,7 +28,7 @@ services:
           form-action 'self'
       - path: /*
         name: Strict-Transport-Security
-        value: max-age=63072000; includeSubDomains; preload
+        value: max-age=315360000; includeSubDomains; preload
       - path: /*
         name: X-Content-Type-Options
         value: nosniff

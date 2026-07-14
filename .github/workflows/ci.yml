@@ -26,6 +26,10 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm run lint
       - run: npm run build
+      # аудит только прод-зависимостей (то, что реально уезжает в бандл); dev-only
+      # находки в @lhci/cli тут не шумят. info-шаг: не валит сборку
+      - run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
 
   e2e:
     runs-on: ubuntu-latest
