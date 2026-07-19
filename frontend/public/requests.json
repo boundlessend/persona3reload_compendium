@@ -83,7 +83,7 @@
 {"n":82,"task":"Retrieve the 8th (final) Old Document (Harabah Fl.198)","reward":"120,000 Yen","type":"money"},
 {"n":83,"task":"Retrieve a progress report (Harabah Fl.226)","reward":"150,000 Yen","type":"money"},
 {"n":84,"task":"Create a Persona that knows Tempest Slash","reward":"Empowering Sutra x3","type":"item"},
-{"n":85,"task":"Create a Persona that knows Auto-Maraku","reward":"Debilitor Sutra x3","type":"item"},
+{"n":85,"task":"Create a Persona that knows Auto Maraku","reward":"Debilitor Sutra x3","type":"item"},
 {"n":86,"task":"Fuse Alice (special Death fusion)","reward":"Maid Outfit costume","type":"item"},
 {"n":87,"task":"Fuse Loki (Fool) at level 75+","reward":"Masakados (unlocks Masakado fusion)","type":"key-unlock"},
 {"n":88,"task":"Defeat a Greedy Shadow (Harabah block)","reward":"Life Aid Skill Card","type":"skill-card","skill":"Life Aid"},
