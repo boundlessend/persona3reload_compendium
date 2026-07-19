@@ -80,8 +80,11 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     return scored.slice(0, 20).map((item) => item.entry);
   }, [query, entries]);
 
-  // active мог указывать за пределы после сужения списка
-  const activeIndex = results.length ? Math.min(active, results.length - 1) : 0;
+  // active мог указывать за пределы после сужения списка; нижний клэмп нулём
+  // выправляет -1, в который ArrowDown загоняет active при пустой выдаче
+  const activeIndex = results.length
+    ? Math.max(0, Math.min(active, results.length - 1))
+    : 0;
 
   const go = (entry: Entry | undefined): void => {
     if (entry) window.location.href = entry.url;
