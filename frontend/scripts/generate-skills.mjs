@@ -95,16 +95,41 @@ for (const [name, data] of Object.entries(demonData)) {
   demonByNorm[norm(name)] = data;
 }
 
+// романизация расходится с upstream demon-data, поэтому norm() не матчит. ключ -
+// query, значение - точный ключ в demon-data.json (upstream метит DLC-вариант
+// суффиксом " A")
+const DEMON_ALIAS = {
+  "seiten-taisei": "Seiten Taisei A",
+};
+
+// единственные персоны, которых законно нет в upstream demon-data: сопартийцы и
+// Strega - их скиллы в игре сюжетно фиксированы, калькулятор их не моделирует.
+// всё остальное обязано сматчиться, иначе это дрейф upstream, а не легит-пробел
+const EXPECTED_UNMATCHED = new Set([
+  "hermes", "trismegistus", "io", "isis", "lucia", "juno", "penthesilea",
+  "artemisia", "polydeuces", "caesar", "castor", "palladion", "athena",
+  "nemesis", "kala-nemi", "cerberus", "hypnos", "moros", "medea",
+]);
+
 const personas = JSON.parse(readFileSync(PERSONAS_PATH, "utf8"));
 const out = {};
-let matched = 0;
+const unmatched = [];
 for (const persona of personas) {
-  const demon = demonByNorm[norm(persona.name)];
-  if (!demon) continue;
-  matched += 1;
+  const alias = DEMON_ALIAS[persona.query];
+  const demon = alias ? demonData[alias] : demonByNorm[norm(persona.name)];
+  if (!demon) {
+    unmatched.push(persona.query);
+    continue;
+  }
   out[persona.query] = Object.entries(demon.skills)
     .map(([name, value]) => {
-      const def = skillDef[name] ?? { el: "-", tg: "-", effect: "" };
+      // неизвестное имя скилла = дрейф upstream, а не "-"-заглушка: падаем громко
+      const def = skillDef[name];
+      if (!def) {
+        throw new Error(
+          `unknown skill "${name}" for ${persona.query} - upstream schema drift?`,
+        );
+      }
       // <1 - врождённый (стартовый); 1..99 - уровень; иначе неизвестно
       const lv = value < 1 ? 0 : value <= 99 ? value : null;
       const skill = { n: name, lv, el: def.el, tg: def.tg };
@@ -114,13 +139,15 @@ for (const persona of personas) {
     .sort((a, b) => (a.lv ?? 999) - (b.lv ?? 999));
 }
 
-// схема upstream закреплена по SHA; если имена/структура уедут, matched рухнет.
-// порог 0.8 ловит обвал, но пропускает легит-пробел по DLC-персонам (нет в base)
-if (matched < personas.length * 0.8) {
+// схема upstream закреплена по SHA. если реальная персона перестала матчиться -
+// это дрейф, а не легит-пробел: падаем на любой непокрытой query вне allowlist
+const unexpected = unmatched.filter((query) => !EXPECTED_UNMATCHED.has(query));
+if (unexpected.length) {
   throw new Error(
-    `only ${matched}/${personas.length} personas matched demon-data - upstream schema drift?`,
+    `personas missing from demon-data (upstream drift?): ${unexpected.join(", ")}`,
   );
 }
+const matched = personas.length - unmatched.length;
 
 writeFileSync(OUT_PATH, JSON.stringify(out));
 console.log(
