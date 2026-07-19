@@ -41,6 +41,13 @@ const leaf = (persona: Persona, kind: LeafKind): RecipeNode => ({
 
 type Index = Map<number, { a: Persona; b: Persona }[]>;
 
+// сколько ингредиентов рецепта уже в коллекции (0..2)
+const ownedCount = (
+  recipe: { a: Persona; b: Persona },
+  owned: Set<string>,
+): number =>
+  (owned.has(recipe.a.query) ? 1 : 0) + (owned.has(recipe.b.query) ? 1 : 0);
+
 // cheapest: на каждом узле берём самый дешёвый (по сумме уровней) рецепт,
 // останавливаемся на низкоуровневых/неразложимых персонах или по глубине
 function buildCheapest(
@@ -92,8 +99,15 @@ function buildOwned(
   )
     return leaf(target, "need");
   const next = new Set(visiting).add(target.id);
+  // приоритет рецептам, чьи ингредиенты уже собраны: индекс отсортирован под
+  // cheapest (по возрастанию уровня), поэтому прямой рецепт из высокоуровневых
+  // owned-персон оседает в хвосте и без ранжирования не попадает в окно CANDIDATES.
+  // сорт стабилен - при равенстве owned-числа сохраняется дешёвый порядок
+  const ranked = [...recipes].sort(
+    (x, y) => ownedCount(y, owned) - ownedCount(x, owned),
+  );
   let fallback: RecipeNode | null = null;
-  for (const recipe of recipes.slice(0, CANDIDATES)) {
+  for (const recipe of ranked.slice(0, CANDIDATES)) {
     const a = buildOwned(recipe.a, index, owned, depth - 1, next, budget);
     const b = buildOwned(recipe.b, index, owned, depth - 1, next, budget);
     const node: RecipeNode = { persona: target, a, b };
