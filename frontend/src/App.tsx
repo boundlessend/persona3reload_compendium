@@ -29,6 +29,7 @@ import { useCatalogFilters } from "./useCatalogFilters";
 import { useShareableFilters } from "./useShareableFilters";
 import { usePersonaRouting } from "./usePersonaRouting";
 import { useServiceWorker } from "./useServiceWorker";
+import { decodeQuery } from "./constants";
 import { CommandPalette } from "./CommandPalette";
 
 function HomePage() {
@@ -336,7 +337,10 @@ function routePage() {
   const path = window.location.pathname;
   const detail = path.match(/^\/arcana\/([^/]+)\/?$/);
   if (detail) {
-    return <ArcanaDetail slug={decodeURIComponent(detail[1] ?? "").toLowerCase()} />;
+    // битый percent-encoding не должен ронять рендер (decodeQuery ловит URIError);
+    // тот же безопасный путь, что и у persona-роутов
+    const slug = decodeQuery(detail[1] ?? "");
+    return slug === null ? <NotFound /> : <ArcanaDetail slug={slug.toLowerCase()} />;
   }
   if (/^\/arcana\/?$/.test(path)) return <ArcanaIndex />;
   if (/^\/skills\/guide\/?$/.test(path)) return <SkillsBrowser initialGuideOpen={true} />;
