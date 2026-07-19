@@ -15,7 +15,7 @@ type Ladder = { el: string; single: string[]; multi: string[] | null };
 const DAMAGE: Ladder[] = [
   { el: "Fire", single: ["Agi", "Agilao", "Agidyne"], multi: ["Maragi", "Maragion", "Maragidyne"] },
   { el: "Ice", single: ["Bufu", "Bufula", "Bufudyne"], multi: ["Mabufu", "Mabufula", "Mabufudyne"] },
-  { el: "Elec", single: ["Zio", "Zionga", "Ziodyne"], multi: ["Mazio", "Mazionga", "Maziodyne"] },
+  { el: "Electric", single: ["Zio", "Zionga", "Ziodyne"], multi: ["Mazio", "Mazionga", "Maziodyne"] },
   { el: "Wind", single: ["Garu", "Garula", "Garudyne"], multi: ["Magaru", "Magarula", "Magarudyne"] },
   { el: "Light", single: ["Kouha", "Kouga", "Kougaon"], multi: ["Makouha", "Makouga", "Makougaon"] },
   { el: "Dark", single: ["Eiha", "Eiga", "Eigaon"], multi: ["Maeiha", "Maeiga", "Maeigaon"] },

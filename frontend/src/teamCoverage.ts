@@ -9,7 +9,7 @@ const DAMAGE_ELEMENTS = [
   "Pierce",
   "Fire",
   "Ice",
-  "Elec",
+  "Electric",
   "Wind",
   "Light",
   "Dark",

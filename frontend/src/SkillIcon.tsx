@@ -10,7 +10,7 @@ const SYMBOL: Record<string, string> = {
   Pierce: "gun-icon",
   Fire: "fire-icon",
   Ice: "ice-icon",
-  Elec: "elec-icon",
+  Electric: "elec-icon",
   Wind: "wind-icon",
   Light: "light-icon",
   Dark: "smt-dark-icon",

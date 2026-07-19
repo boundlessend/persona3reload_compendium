@@ -19,7 +19,7 @@ const BASE = `https://raw.githubusercontent.com/aqiu384/megaten-fusion-tool/${UP
 
 const ELEM = {
   sla: "Slash", str: "Strike", pie: "Pierce", fir: "Fire", ice: "Ice",
-  ele: "Elec", win: "Wind", lig: "Light", dar: "Dark", alm: "Almighty",
+  ele: "Electric", win: "Wind", lig: "Light", dar: "Dark", alm: "Almighty",
   ail: "Ailment", rec: "Recovery", sup: "Support", spe: "Special",
   pas: "Passive",
 };
