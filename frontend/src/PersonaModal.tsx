@@ -70,6 +70,8 @@ export function PersonaModal({
   const panelRef = useRef<HTMLDivElement>(null);
   const enlargeRef = useRef<HTMLButtonElement>(null);
   const zoomCloseRef = useRef<HTMLButtonElement>(null);
+  // закрывать зум только если и mousedown, и click начались на самом затемнении
+  const zoomDownOnOverlay = useRef(false);
 
   const closeZoom = () => {
     setZoom(false);
@@ -313,9 +315,12 @@ export function PersonaModal({
           aria-label={`${persona.name} artwork`}
           tabIndex={-1}
           className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/95 p-4"
+          onMouseDown={(event) => {
+            zoomDownOnOverlay.current = event.target === event.currentTarget;
+          }}
           onClick={(event) => {
-            event.stopPropagation();
-            closeZoom();
+            if (zoomDownOnOverlay.current && event.target === event.currentTarget)
+              closeZoom();
           }}
           onKeyDown={(event) => {
             if (event.key === "Tab") {
@@ -324,7 +329,7 @@ export function PersonaModal({
             }
           }}
         >
-          <div onClick={(event) => event.stopPropagation()}>
+          <div>
             <PersonaImage
               persona={persona}
               className="max-h-[90vh] max-w-[90vw] object-contain"

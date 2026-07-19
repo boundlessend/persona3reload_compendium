@@ -22,13 +22,22 @@ export function CompareModal({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   useDialog(panelRef, onClose, true);
+  // закрывать только если и mousedown, и click начались на самом затемнении
+  // (иначе выделение текста с отпусканием над затемнением ложно закрывает)
+  const downOnOverlay = useRef(false);
 
   const fused = useMemo(() => fuseResult(a, b, personas), [a, b, personas]);
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-      onClick={onClose}
+      onMouseDown={(event) => {
+        downOnOverlay.current = event.target === event.currentTarget;
+      }}
+      onClick={(event) => {
+        if (downOnOverlay.current && event.target === event.currentTarget)
+          onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-label="Compare personas"
@@ -37,7 +46,6 @@ export function CompareModal({
         ref={panelRef}
         tabIndex={-1}
         className="max-h-[92vh] w-full max-w-3xl overflow-y-auto border-2 border-ink bg-paper p-5 outline-none sm:p-8 sm:shadow-[8px_8px_0_0_#16130d]"
-        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b-2 border-ink pb-5">
           <h2 className="font-display text-3xl uppercase">Compare</h2>

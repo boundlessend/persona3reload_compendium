@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from "react";
+import { useRef, type ReactNode, type RefObject } from "react";
 
 // общий каркас модалки: затемнение с блюром, центральная панель, закрытие по
 // клику вне панели. фокус-трап/Escape вызывающий вешает сам через useDialog на
@@ -20,10 +20,20 @@ export function ModalShell({
   ariaHidden?: boolean;
   children: ReactNode;
 }) {
+  // закрываем только если и mousedown, и click начались на самом затемнении:
+  // иначе выделение текста в панели с отпусканием мыши над затемнением роняет
+  // click на общего предка и ложно закрывает модалку
+  const downOnOverlay = useRef(false);
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-      onClick={onClose}
+      onMouseDown={(event) => {
+        downOnOverlay.current = event.target === event.currentTarget;
+      }}
+      onClick={(event) => {
+        if (downOnOverlay.current && event.target === event.currentTarget)
+          onClose();
+      }}
     >
       <div
         ref={panelRef}
@@ -33,7 +43,6 @@ export function ModalShell({
         aria-label={label}
         aria-hidden={ariaHidden}
         className={`max-h-[92vh] w-full overflow-y-auto border-2 border-ink bg-paper outline-none sm:shadow-[8px_8px_0_0_#16130d] ${className}`}
-        onClick={(event) => event.stopPropagation()}
       >
         {children}
       </div>
