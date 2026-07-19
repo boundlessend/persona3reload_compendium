@@ -64,9 +64,25 @@ export const SPECIAL_RECIPES: Record<string, string[]> = {
 
 const SPECIAL_ONLY = new Set(Object.keys(SPECIAL_RECIPES));
 
+// персоны сопартийцев и Strega: есть в компендиуме (уровни/статы показываем), но
+// протагонист их не фьюзит - они не входят в пул слияния. без этого фильтра они
+// всплывали бы и как результат, и как ингредиент обычных рецептов. роспись сверена
+// с party-data первоисточника (aqiu384/megaten-fusion-tool); dlc=0, поэтому обычный
+// dlc-фильтр их не ловит. ключи - query
+const NON_FUSABLE = new Set([
+  "hermes", "trismegistus", "io", "isis", "lucia", "juno", "penthesilea",
+  "artemisia", "polydeuces", "caesar", "castor", "palladion", "athena",
+  "nemesis", "kala-nemi", "cerberus", "hypnos", "moros", "medea",
+]);
+
 // делается ли персона только особым рецептом (обычное слияние её пропускает)
 export function isSpecialFusion(query: string): boolean {
   return SPECIAL_ONLY.has(query);
+}
+
+// персона сопартийца/Strega (для honest-сообщения в модалке вместо «нет рецепта»)
+export function isPartyPersona(query: string): boolean {
+  return NON_FUSABLE.has(query);
 }
 
 // результирующая аркана пары (null = слияния нет; для одинаковой арканы см. fuse)
@@ -84,7 +100,12 @@ type FusionCtx = { byArcana: Map<string, Persona[]> };
 function buildCtx(personas: Persona[]): FusionCtx {
   const byArcana = new Map<string, Persona[]>();
   for (const persona of personas) {
-    if (persona.dlc !== 0 || SPECIAL_ONLY.has(persona.query)) continue;
+    if (
+      persona.dlc !== 0 ||
+      SPECIAL_ONLY.has(persona.query) ||
+      NON_FUSABLE.has(persona.query)
+    )
+      continue;
     const list = byArcana.get(persona.arcana);
     if (list) list.push(persona);
     else byArcana.set(persona.arcana, [persona]);

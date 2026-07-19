@@ -6,7 +6,7 @@ import { StatList } from "./PersonaDetails";
 import { StatRadar } from "./StatRadar";
 import { AffinityMatrix } from "./AffinityMatrix";
 import { useDialog } from "./useDialog";
-import { SPECIAL_RECIPES, type Recipe } from "./fusion";
+import { SPECIAL_RECIPES, isPartyPersona, type Recipe } from "./fusion";
 import { theurgyFor } from "./theurgy";
 import { buildRecipeTree, allOwned } from "./recipeTree";
 import type { Skill } from "./useSkills";
@@ -293,6 +293,10 @@ export function PersonaModal({
                   </div>
                 )}
               </>
+            ) : isPartyPersona(persona.query) ? (
+              <p className="font-mono text-sm text-mut">
+                Party persona - not obtained by fusion.
+              </p>
             ) : (
               <p className="font-mono text-sm text-mut">
                 No normal fusion recipe.
