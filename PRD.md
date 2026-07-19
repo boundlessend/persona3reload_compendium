@@ -1,6 +1,6 @@
 # PRD - Persona Compendium (Persona 3 Reload)
 
-Status: shipped / maintained · Last updated: 2026-07-15
+Status: shipped / maintained · Last updated: 2026-07-19
 
 ## 1. Summary
 
@@ -148,8 +148,9 @@ skills: frontend/public/skills.json  (generate-skills.mjs, committed)
   prefetches the top-level section routes on hover (allowed by the CSP
   `'inline-speculation-rules'` source).
 - **Offline** - `public/sw.js` is a dependency-free service worker registered
-  only in production: network-first for navigations (per-route plus a `/`
-  offline fallback), stale-while-revalidate for the JSON data, cache-first for
+  only in production: network-first for navigations (all navigations share one
+  cached SPA shell under `/`, which doubles as the offline fallback),
+  stale-while-revalidate for the JSON data, cache-first for
   hashed assets and viewed artwork. Its cache name is stamped with the build
   hash so each deploy is a new worker; it waits instead of auto-activating and
   the app surfaces a "reload" prompt. `public/theme-init.js` sets the saved
