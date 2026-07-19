@@ -339,7 +339,7 @@ writeFileSync(
     personalise(shellWithLd, {
       title: "Elizabeth's Requests · Persona Compendium · Persona 3 Reload",
       description: collapse(
-        "All 101 of Elizabeth's Requests in Persona 3 Reload, with rewards, deadlines and missable flags.",
+        "All 101 of Elizabeth's Requests in Persona 3 Reload, with their tasks and rewards.",
         180,
       ),
       url: `${SITE}/requests/`,
