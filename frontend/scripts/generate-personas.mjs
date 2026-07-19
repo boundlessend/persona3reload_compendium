@@ -45,7 +45,13 @@ const personas = lines.slice(1).map((line) => {
   headers.forEach((header, index) => {
     const value = (cells[index] ?? "").trim();
     if (INT_FIELDS.has(header)) {
-      row[header] = value ? Number.parseInt(value, 10) : 0;
+      // пустая/нечисловая ячейка = дрейф данных: падаем, а не молча пишем 0
+      if (value === "" || !Number.isInteger(Number(value))) {
+        throw new Error(
+          `row id=${cells[0]} has non-integer "${header}": "${value}"`,
+        );
+      }
+      row[header] = Number(value);
     } else if (ARRAY_FIELDS.has(header)) {
       row[header] = value
         ? value.split(",").map((item) => item.trim()).filter(Boolean)
