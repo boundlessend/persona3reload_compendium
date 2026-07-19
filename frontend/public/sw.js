@@ -1,5 +1,5 @@
 // офлайн-кэш P3R-компендиума (рукопашный, без зависимостей). стратегии:
-// - навигации (HTML): network-first, кэш маршрута, офлайн-фолбэк на shell "/"
+// - навигации (HTML): network-first, кэшируем shell под "/", офлайн-фолбэк на него
 // - данные (personas/skills.json): stale-while-revalidate
 // - остальное same-origin (хешированные JS/CSS, картинки, шрифты): cache-first
 // версию бампаем, чтобы сбросить старый кэш при несовместимом изменении стратегии
@@ -72,12 +72,12 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
+    // все навигации отдают один и тот же SPA-shell: кэшируем его под "/", а не по
+    // полному URL с query, иначе поток уникальных ссылок раздувал бы CacheStorage
     event.respondWith(
       fetch(request)
-        .then((response) => cachePut(request, response))
-        .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match("/")),
-        ),
+        .then((response) => cachePut(new Request("/"), response))
+        .catch(() => caches.match("/")),
     );
     return;
   }
